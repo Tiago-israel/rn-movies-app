@@ -18,7 +18,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.tico77.rnapp"
     },
     "web": {
       "bundler": "metro",
@@ -41,6 +42,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "7ca5cad6-2b90-4543-ae2b-c8357c62463e"
+      }
     }
   }
 }

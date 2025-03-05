@@ -14,7 +14,7 @@ export function MoviePoster({
   ...props
 }: MoviePosterProps) {
   return (
-    <Box as="Pressable" onPress={props.onPress}>
+    <Box as="Pressable" width={width} height={height} onPress={props.onPress}>
       <Image
         source={{ uri: props.posterUrl }}
         style={{

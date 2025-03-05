@@ -1,5 +1,9 @@
 import { FlashList, type FlashListProps } from "@shopify/flash-list";
 
-export function List<T>(props: FlashListProps<T>) {
-  return <FlashList {...props} />;
+type ListProps<T> = FlashListProps<T> & {
+  innerRef?: any;
+};
+
+export function List<T>(props: ListProps<T>) {
+  return <FlashList ref={props.innerRef} {...props} />;
 }

@@ -104,6 +104,7 @@ export function MediaGallery(props: ImageGalleryProps) {
           style={[{ opacity: videoOpacity }]}
         >
           <YoutubePlayer
+            forceAndroidAutoplay={false}
             height={300}
             videoId={props.videoKey}
             width={width}

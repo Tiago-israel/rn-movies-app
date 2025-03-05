@@ -1,8 +1,9 @@
+import { ScrollViewProps } from "react-native";
+import * as Updates from "expo-updates";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
+import { List, Toggle } from "@/components";
 import { useUserStore } from "../store";
 import { Box, NavBar } from "../components";
-import { ScrollViewProps } from "react-native";
-import { List, Toggle } from "@/components";
 
 export type PreferencesProps = {
   theme?: "light" | "dark";
@@ -98,7 +99,10 @@ export function PreferencesView(props: PreferencesProps) {
                   flexDirection="row"
                   alignItems="center"
                   justifyContent="space-between"
-                  onPress={() => setLanguage(item.id)}
+                  onPress={() => {
+                    setLanguage(item.id);
+                    Updates.reloadAsync();
+                  }}
                 >
                   <Box as="Text" color="onSurface" flex={1} fontSize={16}>
                     {item.label}

@@ -1,8 +1,6 @@
-import { getLocales } from "expo-localization";
 import { I18n } from "i18n-js";
 import { ptBRTexts } from "./pt-br";
 import { usTexts } from "./en";
-import { useUserStore } from "../store";
 
 const i18n = new I18n({
   en: usTexts,

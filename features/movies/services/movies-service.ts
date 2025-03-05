@@ -10,7 +10,11 @@ import type {
   MovieReviewResponse,
   ImageResponse,
   MovieVideoResponse,
+  GenresResponse,
+  CreditResponse,
+  Cast,
 } from "../interfaces";
+import { formatDate } from "../helpers";
 
 export class MoviesService {
   private headers = {
@@ -27,7 +31,7 @@ export class MoviesService {
   }
 
   async getMovieDetails(id: number): Promise<MovieDetails> {
-    console.log('----->', id, this.language)
+    console.log("----->", id, this.language);
     const response = await this.httpClient.get<MovieDetailsResponse>(
       `movie/${id}?language=${this.language}`,
       {
@@ -159,16 +163,45 @@ export class MoviesService {
     return result;
   }
 
+  async getGenres() {
+    const { genres } = await this.httpClient.get<GenresResponse>(
+      `genre/movie/list?language=${this.language}`,
+      {
+        headers: this.headers,
+      }
+    );
+
+    return genres;
+  }
+
+  async getMovieCredits(id: number): Promise<Cast[]> {
+    const result = await this.httpClient.get<CreditResponse>(
+      `movie/${id}/credits?language=${this.language}`,
+      {
+        headers: this.headers,
+      }
+    );
+
+    if (!result.cast) return new Promise(() => []);
+
+    return result.cast.map((item) => ({
+      id: item.id,
+      character: item.character,
+      name: item.name,
+      originalName: item.original_name,
+      popularity: item.popularity,
+      profilePath: item.profile_path
+        ? `${movieDBBaseImageUrl}${item.profile_path}`
+        : "",
+    }));
+  }
+
   private getYear(date: string): string {
     const result = new Date(date);
     return result.getFullYear().toString();
   }
 
-  private formatDate(dateStr: string): string {
-    const date = new Date(dateStr);
-    const formattedDate = new Intl.DateTimeFormat("pt-BR").format(date);
-    return formattedDate;
-  }
+ 
 
   private formatRuntime(runtime: number = 0): string {
     const hours = Math.floor(runtime / 60);
@@ -216,7 +249,7 @@ export class MoviesService {
         : undefined,
       content: response.content,
       rating: response.author_details.rating,
-      createdAt: this.formatDate(response.created_at),
+      createdAt: formatDate(response.created_at),
     };
   };
 }

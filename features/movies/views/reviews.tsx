@@ -2,7 +2,7 @@ import { Image, List, StarRating } from "@/components";
 import { useMovieReview } from "../controllers";
 import { MovieReview } from "../interfaces";
 import { ScrollViewProps } from "react-native";
-import { NavBar, Box } from "../components";
+import { NavBar, Box, Text, ViewMoreText } from "../components";
 
 export type MovieReviewsViewProps = {
   movieId: number;
@@ -55,19 +55,19 @@ function CommentItem(info: { item: MovieReview; index: number }) {
       />
       <Box flexDirection="column" flex={1}>
         <Box flexDirection="row" alignItems="center" gap={"xxs"}>
-          <Box as="Text" fontSize={14} color="onSurface" fontWeight={700}>
+          <Text fontSize={14} color="onSurface" fontWeight={700}>
             {info.item.userName}
-          </Box>
-          <Box fontSize={14} as="Text" color="#7f8c8d">
+          </Text>
+          <Text fontSize={14} as="Text" color="#7f8c8d">
             {info.item.createdAt}
-          </Box>
+          </Text>
         </Box>
         <Box py="xxs">
           <StarRating rating={info.item.rating} />
         </Box>
-        <Box as="Text" fontSize={16} numberOfLines={3} color="onSurface">
+        <ViewMoreText fontSize={16} numberOfLines={3} color="onSurface">
           {info.item.content}
-        </Box>
+        </ViewMoreText>
       </Box>
     </Box>
   );
@@ -83,22 +83,16 @@ export function MovieReviewsView(props: MovieReviewsViewProps) {
         onPressTrailing={props.goBack}
         title={`comments (${movieReviews.length})`}
       />
-      <Box<ScrollViewProps>
-        as="ScrollView"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{flex: 1}}
-      >
-        <List
-          scrollEnabled={false}
-          data={movieReviews}
-          keyExtractor={(item, index) => `${item.userName}-${index}`}
-          estimatedItemSize={70}
-          renderItem={CommentItem}
-          ItemSeparatorComponent={() => (
-            <Box width="100%" height={1} backgroundColor="#bdc3c7" />
-          )}
-        />
-      </Box>
+
+      <List
+        data={movieReviews}
+        keyExtractor={(item, index) => `${item.userName}-${index}`}
+        estimatedItemSize={70}
+        renderItem={CommentItem}
+        ItemSeparatorComponent={() => (
+          <Box width="100%" height={1} backgroundColor="#bdc3c7" />
+        )}
+      />
     </Box>
   );
 }

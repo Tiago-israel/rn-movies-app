@@ -92,6 +92,22 @@ export default function MoviesLayout() {
           tabBarStyle: { display: "none" },
         }}
       />
+      <Tabs.Screen
+        name="[id]/cast/[id]"
+        options={{
+          ...tabBarStyle,
+          href: null,
+          tabBarStyle: { display: "none" },
+        }}
+      />
+      <Tabs.Screen
+        name="[id]/people/[id]"
+        options={{
+          ...tabBarStyle,
+          href: null,
+          tabBarStyle: { display: "none" },
+        }}
+      />
     </Tabs>
   );
 }

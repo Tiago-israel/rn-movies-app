@@ -13,6 +13,10 @@ export default function MovieDetails() {
     router.navigate(`/movies/${id}/reviews/${id}`);
   }
 
+  function goToCast() {
+    router.navigate(`/movies/${id}/cast/${id}`);
+  }
+
   function goToRecommendation(id?: number) {
     router.setParams({ id: id });
   }
@@ -28,6 +32,7 @@ export default function MovieDetails() {
       movieId={Number(id)}
       goBack={goBack}
       onPressReview={goToReviews}
+      onPressCast={goToCast}
       onPressRecommendation={goToRecommendation}
       onShareMovie={onShareMovie}
     />

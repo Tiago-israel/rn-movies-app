@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MoviesService } from "../services";
 import { useUserStore } from "../store";
-import type { MovieDetails } from "../interfaces";
+import type { Cast, MovieDetails } from "../interfaces";
 
 export function useMovieDetails(movieId: number) {
   const moviesService = useRef(new MoviesService());
@@ -9,7 +9,8 @@ export function useMovieDetails(movieId: number) {
   const [recommendations, setRecommendations] = useState<MovieDetails[]>([]);
   const [images, setImages] = useState<string[]>([]);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
-  
+  const [cast, setCast] = useState<Cast[]>([]);
+
   const addFavoriteMovie = useUserStore((state) => state.addFavoriteMovie);
   const getFavorite = useUserStore((state) => state.getFavorite);
   const removeFavoriteMovie = useUserStore(
@@ -29,6 +30,11 @@ export function useMovieDetails(movieId: number) {
   async function getImages(id: number) {
     const result = await moviesService.current.getImages(id);
     setImages(result);
+  }
+
+  async function getCast(id: number) {
+    const result = await moviesService.current.getMovieCredits(id);
+    setCast(result);
   }
 
   const setFavorite = useCallback(
@@ -52,6 +58,7 @@ export function useMovieDetails(movieId: number) {
     async (id: number) => {
       getRecommendations(id);
       getImages(id);
+      getCast(id);
       await getMovieDetails(id);
       setFavorite(id);
     },
@@ -67,5 +74,5 @@ export function useMovieDetails(movieId: number) {
     };
   }, [movieId]);
 
-  return { movie, isFavorite, recommendations, images, onFavoriteMovie };
+  return { movie, isFavorite, recommendations, images, cast, onFavoriteMovie };
 }

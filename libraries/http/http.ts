@@ -3,7 +3,7 @@ export class HttpClient {
     this.baseUrl = baseUrl;
   }
   async get<T>(url: string, options: RequestInit = {}): Promise<T> {
-    const response = await fetch(`${this.baseUrl}/${url}`, options);
+    const response = await fetch(`${this.baseUrl}${url}`, options);
     return response.json();
   }
 }

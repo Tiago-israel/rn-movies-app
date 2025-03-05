@@ -63,7 +63,7 @@ export function NavBar({
               icon={item.name}
               color={item.color}
               children={item.children}
-              onPress={item.onPress}
+              onPress={item.onPress || props.onPressTrailing}
             />
           ))}
       </Box>

@@ -1,9 +1,15 @@
 import { ReactNode, useRef } from "react";
-import { useWindowDimensions, type ScrollViewProps } from "react-native";
+import { type ScrollViewProps } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
-import ContentLoader, { Rect, Circle, Path } from "react-content-loader/native";
 import { Image, StarRating } from "@/components";
-import { NavBar, Pill, MovieCarousel, Box, MediaGallery } from "../components";
+import {
+  NavBar,
+  Pill,
+  MovieCarousel,
+  Box,
+  MediaGallery,
+  ViewMoreText,
+} from "../components";
 import { useMovieDetails } from "../controllers";
 import { type MovieDetails } from "../interfaces";
 import { getText } from "../localization";
@@ -13,41 +19,14 @@ type MovieDetailsProps = {
   goBack: () => void;
   onPressReview: (movieId?: number) => void;
   onPressRecommendation: (movieId?: number) => void;
+  onPressCast: (movieId?: number) => void;
   onShareMovie: (movieName: string) => void;
 };
 
-type MovieDetailsLoadingProps = {
-  children?: ReactNode;
-};
-
-export function MovieDetailsLoading(props: MovieDetailsLoadingProps) {
-  const { width, height } = useWindowDimensions();
-  return (
-    <Box width={width} height={height} backgroundColor="surface" px="sm">
-      <ContentLoader
-        viewBox={`0 0 ${width} ${height}`}
-        backgroundColor="#f3f3f3"
-        foregroundColor="#ecebeb"
-      >
-        <Rect x="48" y="8" rx="3" ry="3" width="88" height="6" />
-        <Rect x="48" y="26" rx="3" ry="3" width="52" height="6" />
-        <Rect x="0" y="56" rx="3" ry="3" width="410" height="6" />
-        <Rect x="0" y="72" rx="3" ry="3" width="380" height="6" />
-        <Rect x="0" y="88" rx="3" ry="3" width="178" height="6" />
-        <Circle cx="20" cy="20" r="20" />
-      </ContentLoader>
-    </Box>
-  );
-}
-
 export function MovieDetails(props: MovieDetailsProps) {
   const scrollViewRef = useRef();
-  const { movie, isFavorite, recommendations, images, onFavoriteMovie } =
+  const { movie, isFavorite, recommendations, images, cast, onFavoriteMovie } =
     useMovieDetails(props.movieId);
-
-  if (true) {
-    return <MovieDetailsLoading />;
-  }
 
   return (
     <Box height={"100%"} backgroundColor="surface">
@@ -135,11 +114,14 @@ export function MovieDetails(props: MovieDetailsProps) {
               }}
               style={{ width: "100%", height: 200, borderRadius: 32 }}
             />
-            <Box p={"sm"}>
-              <Box as="Text" fontSize={16} color="onSurface" numberOfLines={5}>
-                {movie?.overview}
-              </Box>
-            </Box>
+            <ViewMoreText
+              fontSize={16}
+              color="onSurface"
+              numberOfLines={5}
+              containerStyle={{ p: "sm" }}
+            >
+              {movie?.overview}
+            </ViewMoreText>
           </Box>
           <Box gap={"xs"} flexDirection="row" pt={"sm"}>
             <Box
@@ -186,19 +168,34 @@ export function MovieDetails(props: MovieDetailsProps) {
             </Box>
 
             <Box
+              as="Pressable"
               flex={1}
               height={100}
               backgroundColor="surfaceVariant"
               borderRadius="lg"
               p="xs"
               justifyContent="space-between"
+              onPress={props.onPressCast}
             >
-              <Box as="Text" color="onSurfaceVariant" fontSize={14}>
-                {getText("movie_details_companies_title")}
+              <Box flexDirection="row" justifyContent="space-between">
+                <Box as="Text" color="onSurfaceVariant" fontSize={14}>
+                  {getText("movie_details_cast_title")}
+                </Box>
+                <Box
+                  width={24}
+                  height={24}
+                  borderRadius="full"
+                  backgroundColor="primary"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Icon size={16} name="arrow-top-right" color={"#fff"} />
+                </Box>
               </Box>
+
               <Box flexDirection="row" gap={"xxs"} alignItems="center">
                 <Box flexDirection="row">
-                  {movie?.companies?.slice(0, 4).map((companyImg, index) => (
+                  {cast.slice(0, 4).map((cast, index) => (
                     <Box
                       width={36}
                       height={36}
@@ -214,7 +211,7 @@ export function MovieDetails(props: MovieDetailsProps) {
                       <Box
                         as="Image"
                         source={{
-                          uri: companyImg,
+                          uri: cast.profilePath,
                         }}
                         width={36}
                         height={36}
@@ -225,7 +222,7 @@ export function MovieDetails(props: MovieDetailsProps) {
                   ))}
                 </Box>
                 <Box as="Text" fontSize={14} color="onSurface">
-                  {movie?.restCompanies}
+                  +{cast.length - 4}
                 </Box>
               </Box>
             </Box>
