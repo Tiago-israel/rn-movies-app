@@ -4,28 +4,20 @@ import {
   MovieCarousel,
   Box,
   Header,
-  Drawer,
-  DrawerRef,
 } from "../components";
 import { getText } from "../localization";
-import { useRef } from "react";
 
 export type HomeMoviesProps = {
   navigateToMovieDetails: (movieId: number) => void;
 };
 
 export function HomeMoviesView(props: HomeMoviesProps) {
-  const drawerRef = useRef<DrawerRef>();
   const { nowPlayingMovies, popularMovies, topRatedMovies, upcomingMovies } =
     useMovieHome();
 
   return (
     <Box width={"100%"} height="100%" backgroundColor="surface">
-      <Header
-        onMenuPress={() => {
-          drawerRef.current?.open();
-        }}
-      />
+      <Header />
       <Box as="ScrollView" contentContainerStyle={{ paddingBottom: 40 }}>
         <HomeTitle icon={{ name: "film", color: "#2980b9" }}>
           {getText("movie_home_now_playing")}
@@ -56,7 +48,6 @@ export function HomeMoviesView(props: HomeMoviesProps) {
           onPressItem={props.navigateToMovieDetails}
         />
       </Box>
-      <Drawer ref={drawerRef} />
     </Box>
   );
 }

@@ -31,14 +31,10 @@ export function ViewMoreText({
 
   const onTextLayout = useCallback(
     (e: NativeSyntheticEvent<TextLayoutEventData>) => {
-      setLengthMore(e.nativeEvent.lines?.length >= numberOfLines);
+      setLengthMore(e.nativeEvent.lines?.length > numberOfLines);
     },
-    []
+    [numberOfLines]
   );
-
-  useEffect(() => {
-    console.log('loaded')
-  },[])
 
   return (
     <Box {...containerStyle}>

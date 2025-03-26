@@ -77,6 +77,10 @@ export function MediaGallery(props: ImageGalleryProps) {
 
   useEffect(() => {
     setSelectedImage(props.images[0]);
+    console.log("images", props.images);
+    if (!props.videoKey) {
+      animateTransition(true);
+    }
   }, [props.images]);
 
   return (
@@ -95,24 +99,26 @@ export function MediaGallery(props: ImageGalleryProps) {
             style={{ width: width, height: 247, marginBottom: 2 }}
           />
         </Box>
-        <Box
-          as="AnimatedView"
-          position="absolute"
-          bottom={-50}
-          left={0}
-          backgroundColor="#000"
-          style={[{ opacity: videoOpacity }]}
-        >
-          <YoutubePlayer
-            forceAndroidAutoplay={false}
-            height={300}
-            videoId={props.videoKey}
-            width={width}
-            initialPlayerParams={{
-              controls: false,
-            }}
-          />
-        </Box>
+        {props.videoKey && (
+          <Box
+            as="AnimatedView"
+            position="absolute"
+            bottom={-50}
+            left={0}
+            backgroundColor="#000"
+            style={[{ opacity: videoOpacity }]}
+          >
+            <YoutubePlayer
+              forceAndroidAutoplay={false}
+              height={300}
+              videoId={props.videoKey}
+              width={width}
+              initialPlayerParams={{
+                controls: false,
+              }}
+            />
+          </Box>
+        )}
       </Box>
       <List
         horizontal
@@ -120,7 +126,7 @@ export function MediaGallery(props: ImageGalleryProps) {
         estimatedListSize={{ width, height: 70 }}
         data={props.images}
         keyExtractor={(item) => `${item}`}
-        ListHeaderComponent={videoPlayButton}
+        ListHeaderComponent={props.videoKey ? videoPlayButton : undefined}
         ItemSeparatorComponent={() => <Box width={2} height={2} />}
         renderItem={renderItem}
       />

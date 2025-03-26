@@ -1,4 +1,4 @@
-import { ReactNode, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { type ScrollViewProps } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { Image, StarRating } from "@/components";
@@ -20,13 +20,17 @@ type MovieDetailsProps = {
   onPressReview: (movieId?: number) => void;
   onPressRecommendation: (movieId?: number) => void;
   onPressCast: (movieId?: number) => void;
-  onShareMovie: (movieName: string) => void;
+  onShareMovie: (movieName?: string) => void;
 };
 
 export function MovieDetails(props: MovieDetailsProps) {
-  const scrollViewRef = useRef();
+  const scrollViewRef = useRef<any>(null);
   const { movie, isFavorite, recommendations, images, cast, onFavoriteMovie } =
     useMovieDetails(props.movieId);
+    
+    useEffect(() => {
+      scrollViewRef.current?.scrollToOffset?.(0);
+    },[props.movieId]);
 
   return (
     <Box height={"100%"} backgroundColor="surface">
@@ -75,7 +79,7 @@ export function MovieDetails(props: MovieDetailsProps) {
         >
           <Pill children={`${movie?.genre}`} />
           <Pill children={`${movie?.releaseDate}`} />
-          <Pill icon="clock-o" children={movie?.runtime} />
+          <Pill icon="clock" children={movie?.runtime} />
           <Pill icon="thumbs-up" children={movie?.voteCount} />
         </Box>
         <Box px={"sm"}>

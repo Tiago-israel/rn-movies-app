@@ -13,7 +13,7 @@ export default function Index() {
         justifyContent="center"
         height={200}
         onPress={() => {
-          router.navigate("/movies", { withAnchor: true });
+          router.replace("/movies", { withAnchor: true });
         }}
       >
         <Box as="Text" fontSize={24} color="#000">

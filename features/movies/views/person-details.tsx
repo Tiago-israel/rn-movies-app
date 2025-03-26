@@ -45,8 +45,8 @@ export function PersonDetailsView(props: PersonDetailsViewProps) {
             {person?.name}
           </Text>
           <Box flexDirection="row" pt="xs" gap="xxs" px="sm">
-            <Pill>{person?.birthday}</Pill>
-            {person?.deathday && <Pill>{person?.deathday}</Pill>}
+            <Pill icon='star'>{person?.birthday}</Pill>
+            {person?.deathday && <Pill icon='cross'>{person?.deathday}</Pill>}
           </Box>
           <ViewMoreText
             color="#7f8c8d"

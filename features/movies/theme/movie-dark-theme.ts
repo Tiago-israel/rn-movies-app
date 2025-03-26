@@ -13,6 +13,7 @@ export const movieDarkTheme = {
     onSurfaceVariant: "#ffffff",
     "surface-overlay": "rgba(16, 18, 24, 0.9)",
     onSurfaceBorder: "#272727",
+    onSurfaceVariantBorder: "#ffffff",
     alternates: {
       primary: "#ffffff",
     },
@@ -30,6 +31,20 @@ export const movieDarkTheme = {
       "nav-bar": {
         container: {
           color: "#272727",
+        },
+      },
+      button: {
+        primary: {
+          color: "#ffffff",
+          backgroundColor: "#000000",
+        },
+        secondary: {
+          color: "#000000",
+          backgroundColor: "#ffffff",
+        },
+        disabled: {
+          color: "#7f8c8d",
+          backgroundColor: "#bdc3c7",
         },
       },
     },

@@ -1,4 +1,4 @@
-import Icon from "@expo/vector-icons/FontAwesome";
+import Icon from "@expo/vector-icons/FontAwesome6";
 import { Box } from "@/components/Box";
 import { useTheme } from "@/lib/theme-provider";
 import { MovieTheme } from "../theme";
@@ -22,7 +22,7 @@ export function Pill(props: PillProps) {
       justifyContent="center"
     >
       {props.icon && (
-        <Icon name={props.icon || "han"} size={24} color={colors.onSecondary} />
+        <Icon name={props.icon || "han"} size={16} color={colors.onSecondary} />
       )}
 
       <Box as="Text" color={colors.onSecondary} fontSize={14} fontWeight={700}>

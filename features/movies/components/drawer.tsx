@@ -1,11 +1,23 @@
-import { forwardRef, ReactNode, useImperativeHandle, useState } from "react";
-import { Animated, Easing, useAnimatedValue } from "react-native";
+import {
+  forwardRef,
+  ReactNode,
+  useCallback,
+  useImperativeHandle,
+  useState,
+} from "react";
+import {
+  Animated,
+  Easing,
+  useAnimatedValue,
+  useWindowDimensions,
+} from "react-native";
 import { Box } from "./box";
 import { IconButton } from "./Icon-button";
 
-const WIDTH = 300;
+const DRAWER_WIDTH = 300;
 
 export type DrawerProps = {
+  direction?: "left" | "right";
   children?: ReactNode;
 };
 
@@ -14,33 +26,41 @@ export type DrawerRef = {
   close: () => void;
 };
 
-export function useDrawer() {
-  const left = useAnimatedValue(-WIDTH);
+export function useDrawer(props: DrawerProps) {
+  const { width } = useWindowDimensions();
+  const left = useAnimatedValue(-DRAWER_WIDTH);
+  const right = useAnimatedValue(-DRAWER_WIDTH);
 
-  function open() {
-    Animated.timing(left, {
+  const open = useCallback(() => {
+    const direction = props.direction === "right" ? right : left;
+    Animated.timing(direction, {
       toValue: 0,
       duration: 300,
       easing: Easing.ease,
       useNativeDriver: false,
     }).start();
-  }
+  }, [left, right, props.direction]);
 
-  function close(callback: () => void) {
-    Animated.timing(left, {
-      toValue: -WIDTH,
-      duration: 300,
-      easing: Easing.ease,
-      useNativeDriver: false,
-    }).start(({ finished }) => {
-      if (finished) {
-        callback();
-      }
-    });
-  }
+  const close = useCallback(
+    (callback: () => void) => {
+      const direction = props.direction === "right" ? right : left;
+      Animated.timing(direction, {
+        toValue: -DRAWER_WIDTH,
+        duration: 300,
+        easing: Easing.ease,
+        useNativeDriver: false,
+      }).start(({ finished }) => {
+        if (finished) {
+          callback();
+        }
+      });
+    },
+    [right, left, width, props.direction]
+  );
 
   return {
     left,
+    right,
     open,
     close,
   };
@@ -48,7 +68,7 @@ export function useDrawer() {
 
 export const Drawer = forwardRef((props: DrawerProps, ref) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { left, open, close } = useDrawer();
+  const { left, right, open, close } = useDrawer(props);
 
   function onClose() {
     close(() => setIsOpen(false));
@@ -79,12 +99,17 @@ export const Drawer = forwardRef((props: DrawerProps, ref) => {
       <Box
         as="AnimatedView"
         position="absolute"
-        width={WIDTH}
+        width={DRAWER_WIDTH}
         height="100%"
         zIndex={2}
         backgroundColor="surfaceVariant"
         top={0}
-        style={[{ left }]}
+        style={[
+          {
+            left: props.direction === "left" ? left : undefined,
+            right: props.direction === "right" ? right : undefined,
+          },
+        ]}
       >
         <Box
           width="100%"
