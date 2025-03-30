@@ -44,7 +44,9 @@ export class PeopleService {
     };
   }
 
-  async getMovieCreditis(id: number): Promise<Array<string>> {
+  async getMovieCreditis(
+    id: number
+  ): Promise<Array<{ id: number; backdropPath: string }>> {
     const { cast = [], crew = [] } =
       await this.httpClient.get<PersonMovieCreditsResponse>(
         `person/${id}/movie_credits?language=${this.language}`,
@@ -53,8 +55,9 @@ export class PeopleService {
         }
       );
 
-    return [...cast, ...crew].map(
-      (item) => `${movieDBBaseImageUrl}${item.poster_path}`
-    );
+    return [...cast, ...crew].map((item) => ({
+      id: item.id,
+      backdropPath: `${movieDBBaseImageUrl}${item.poster_path}`,
+    }));
   }
 }

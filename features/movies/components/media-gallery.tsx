@@ -60,24 +60,30 @@ export function MediaGallery(props: ImageGalleryProps) {
   const videoPlayButton = useCallback(() => {
     return (
       <Box
-        as="Pressable"
+        as="ImageBackground"
         width={100}
         height={70}
-        alignItems="center"
-        justifyContent="center"
-        backgroundColor="#000"
-        onPress={() => {
-          animateTransition(false);
-        }}
+        source={{ uri: props.images[0] }}
+        opacity={0.5}
       >
-        <Icon name="play" size={24} color={"#fff"} />
+        <Box
+          as="Pressable"
+          width={"100%"}
+          height={"100%"}
+          alignItems="center"
+          justifyContent="center"
+          onPress={() => {
+            animateTransition(false);
+          }}
+        >
+          <Icon name="play" size={24} color={"#fff"} />
+        </Box>
       </Box>
     );
-  }, []);
+  }, [props.images]);
 
   useEffect(() => {
     setSelectedImage(props.images[0]);
-    console.log("images", props.images);
     if (!props.videoKey) {
       animateTransition(true);
     }

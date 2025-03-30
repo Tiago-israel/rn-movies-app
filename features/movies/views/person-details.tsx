@@ -6,15 +6,20 @@ import { useEffect, useRef } from "react";
 export type PersonDetailsViewProps = {
   personId: number;
   goBack: () => void;
+  goToMovie: (movieId: number) => void;
 };
 
 export function PersonDetailsView(props: PersonDetailsViewProps) {
-  const moviesListRef = useRef();
+  const moviesListRef = useRef<any>();
+  const viewMoreTextRef = useRef<any>(null);
   const { person, movies } = usePerson(props.personId);
 
   useEffect(() => {
+    viewMoreTextRef.current?.hideText?.();
+  }, [props.personId]);
+
+  useEffect(() => {
     return () => {
-      console.log('destroy details')
       moviesListRef.current?.scrollToOffset(0);
     };
   });
@@ -45,10 +50,11 @@ export function PersonDetailsView(props: PersonDetailsViewProps) {
             {person?.name}
           </Text>
           <Box flexDirection="row" pt="xs" gap="xxs" px="sm">
-            <Pill icon='star'>{person?.birthday}</Pill>
-            {person?.deathday && <Pill icon='cross'>{person?.deathday}</Pill>}
+            <Pill icon="star">{person?.birthday}</Pill>
+            {person?.deathday && <Pill icon="cross">{person?.deathday}</Pill>}
           </Box>
           <ViewMoreText
+            ref={viewMoreTextRef}
             color="#7f8c8d"
             fontSize={16}
             fontWeight={700}
@@ -67,14 +73,21 @@ export function PersonDetailsView(props: PersonDetailsViewProps) {
                 contentContainerStyle={{ paddingHorizontal: 20 }}
                 showsHorizontalScrollIndicator={false}
                 renderItem={({ item }) => (
-                  <Image
-                    source={{ uri: item }}
-                    style={{
-                      width: 150,
-                      height: 250,
-                      borderRadius: 16,
-                    }}
-                  />
+                  <Box
+                    as="Pressable"
+                    width={150}
+                    height={250}
+                    onPress={() => props.goToMovie?.(item.id)}
+                  >
+                    <Image
+                      source={{ uri: item.backdropPath }}
+                      style={{
+                        width: 150,
+                        height: 250,
+                        borderRadius: 16,
+                      }}
+                    />
+                  </Box>
                 )}
                 ItemSeparatorComponent={() => <Box width={8} height={8} />}
               />

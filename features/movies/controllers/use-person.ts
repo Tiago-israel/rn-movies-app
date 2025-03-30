@@ -5,7 +5,7 @@ import { PeopleService } from "../services";
 export function usePerson(id: number) {
   const moviesService = useRef(new PeopleService());
   const [person, setPerson] = useState<Person>();
-  const [movies, setMovies] = useState<string[]>([]);
+  const [movies, setMovies] = useState<any[]>([]);
 
   async function getPerson(id: number) {
     const personDetails = await moviesService.current.getPersonDetails(id);

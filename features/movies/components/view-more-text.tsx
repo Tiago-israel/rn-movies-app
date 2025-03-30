@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import type {
   NativeSyntheticEvent,
   Text as RNText,
@@ -9,6 +16,7 @@ import { Text, TextProps } from "./text";
 import { Box } from "./box";
 import { BoxProps } from "@/lib";
 import { MovieTheme } from "../theme";
+import { hide } from "expo-splash-screen";
 
 export type ViewMoreTextProps = TextProps & {
   seeMoreText?: string;
@@ -16,38 +24,53 @@ export type ViewMoreTextProps = TextProps & {
   containerStyle?: BoxProps<ViewProps, MovieTheme>;
 };
 
-export function ViewMoreText({
-  seeLessText = "See less",
-  seeMoreText = "See more",
-  containerStyle,
-  numberOfLines = 4,
-  ...props
-}: ViewMoreTextProps) {
-  const [textShow, setTextShow] = useState(false);
-  const [lengthMore, setLengthMore] = useState(false);
-  const toggleNumberOfLines = () => {
-    setTextShow((value) => !value);
-  };
+export const ViewMoreText = forwardRef(
+  (
+    {
+      seeLessText = "See less",
+      seeMoreText = "See more",
+      containerStyle,
+      numberOfLines = 4,
+      ...props
+    }: ViewMoreTextProps,
+    ref
+  ) => {
+    const [textShow, setTextShow] = useState(false);
+    const [lengthMore, setLengthMore] = useState(false);
+    const toggleNumberOfLines = () => {
+      setTextShow((value) => !value);
+    };
 
-  const onTextLayout = useCallback(
-    (e: NativeSyntheticEvent<TextLayoutEventData>) => {
-      setLengthMore(e.nativeEvent.lines?.length > numberOfLines);
-    },
-    [numberOfLines]
-  );
+    const onTextLayout = useCallback(
+      (e: NativeSyntheticEvent<TextLayoutEventData>) => {
+        setLengthMore(e.nativeEvent.lines?.length > numberOfLines);
+      },
+      [numberOfLines]
+    );
 
-  return (
-    <Box {...containerStyle}>
-      <Text
-        {...props}
-        numberOfLines={textShow ? undefined : numberOfLines}
-        onTextLayout={onTextLayout}
-      />
-      {lengthMore ? (
-        <Text color="#3498db" onPress={toggleNumberOfLines}>
-          {textShow ? seeLessText : seeMoreText}
-        </Text>
-      ) : null}
-    </Box>
-  );
-}
+    useImperativeHandle(
+      ref,
+      () => ({
+        hideText: () => {
+          setTextShow(false);
+        },
+      }),
+      []
+    );
+
+    return (
+      <Box {...containerStyle}>
+        <Text
+          {...props}
+          numberOfLines={textShow ? undefined : numberOfLines}
+          onTextLayout={onTextLayout}
+        />
+        {lengthMore ? (
+          <Text color="#3498db" onPress={toggleNumberOfLines}>
+            {textShow ? seeLessText : seeMoreText}
+          </Text>
+        ) : null}
+      </Box>
+    );
+  }
+);
