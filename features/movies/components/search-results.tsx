@@ -1,7 +1,7 @@
 import { memo, useCallback, useMemo } from "react";
 import { useWindowDimensions, type ScrollViewProps } from "react-native";
 import { List } from "@/components";
-import { MoviePoster, Box, EmptyState } from "../components";
+import { ItemPoster, Box, EmptyState } from "../components";
 import { type MovieDetails } from "../interfaces";
 import { ListRenderItemInfo } from "@shopify/flash-list";
 
@@ -28,7 +28,7 @@ export const SearchResults = memo(
             marginHorizontal={4}
             marginBottom={8}
           >
-            <MoviePoster
+            <ItemPoster
               width={columnWidth}
               height={200}
               posterUrl={info.item.posterPath}

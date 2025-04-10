@@ -6,11 +6,13 @@ export type HeaderProps = {
   onMenuPress?: () => void;
 };
 
+const HEADER_HEIGHT = 72;
+
 export function Header(props: HeaderProps) {
   return (
     <Box
       width="100%"
-      height={72}
+      height={HEADER_HEIGHT}
       flexDirection="row"
       justifyContent="space-between"
       alignItems="center"
@@ -28,3 +30,5 @@ export function Header(props: HeaderProps) {
     </Box>
   );
 }
+
+Header.HEIGHT = HEADER_HEIGHT;

@@ -6,11 +6,12 @@ import {
   useRef,
   useState,
 } from "react";
-import type {
-  NativeSyntheticEvent,
-  Text as RNText,
-  TextLayoutEventData,
-  ViewProps,
+import {
+  Platform,
+  type NativeSyntheticEvent,
+  type Text as RNText,
+  type TextLayoutEventData,
+  type ViewProps,
 } from "react-native";
 import { Text, TextProps } from "./text";
 import { Box } from "./box";
@@ -43,7 +44,11 @@ export const ViewMoreText = forwardRef(
 
     const onTextLayout = useCallback(
       (e: NativeSyntheticEvent<TextLayoutEventData>) => {
-        setLengthMore(e.nativeEvent.lines?.length > numberOfLines);
+        const result = Platform.select<boolean>({
+          android: e.nativeEvent.lines?.length > numberOfLines,
+          ios: e.nativeEvent.lines?.length >= numberOfLines,
+        });
+        setLengthMore(result || false);
       },
       [numberOfLines]
     );

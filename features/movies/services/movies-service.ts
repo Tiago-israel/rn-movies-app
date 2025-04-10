@@ -31,7 +31,6 @@ export class MoviesService {
   }
 
   async getMovieDetails(id: number): Promise<MovieDetails> {
-    console.log("----->", id, this.language);
     const response = await this.httpClient.get<MovieDetailsResponse>(
       `movie/${id}?language=${this.language}`,
       {
@@ -47,45 +46,41 @@ export class MoviesService {
   }
 
   async getNowPlayingMovies(): Promise<MovieDetails[]> {
-    const response = await this.httpClient.get<MovieListResponse>(
-      `movie/now_playing?language=${this.language}&page=1`,
-      {
-        headers: this.headers,
-      }
-    );
+    const response = await this.httpClient.get<
+      PaginatedResultResponse<MovieDetailsResponse>
+    >(`movie/now_playing?language=${this.language}&page=1`, {
+      headers: this.headers,
+    });
     const result = response.results.map(this.mapMovieDetails);
     return result;
   }
 
   async getPopularMovies(): Promise<MovieDetails[]> {
-    const response = await this.httpClient.get<MovieListResponse>(
-      `movie/popular?language=${this.language}&page=1`,
-      {
-        headers: this.headers,
-      }
-    );
+    const response = await this.httpClient.get<
+      PaginatedResultResponse<MovieDetailsResponse>
+    >(`movie/popular?language=${this.language}&page=1`, {
+      headers: this.headers,
+    });
     const result = response.results.map(this.mapMovieDetails);
     return result;
   }
 
   async getTopRatedMovies(): Promise<MovieDetails[]> {
-    const response = await this.httpClient.get<MovieListResponse>(
-      `movie/top_rated?language=${this.language}&page=1`,
-      {
-        headers: this.headers,
-      }
-    );
+    const response = await this.httpClient.get<
+      PaginatedResultResponse<MovieDetailsResponse>
+    >(`movie/top_rated?language=${this.language}&page=1`, {
+      headers: this.headers,
+    });
     const result = response.results.map(this.mapMovieDetails);
     return result;
   }
 
   async getUpcomingMovies(): Promise<MovieDetails[]> {
-    const response = await this.httpClient.get<MovieListResponse>(
-      `movie/upcoming?language=${this.language}&page=1`,
-      {
-        headers: this.headers,
-      }
-    );
+    const response = await this.httpClient.get<
+      PaginatedResultResponse<MovieDetailsResponse>
+    >(`movie/upcoming?language=${this.language}&page=1`, {
+      headers: this.headers,
+    });
     const result = response.results.map(this.mapMovieDetails);
     return result;
   }
@@ -101,12 +96,11 @@ export class MoviesService {
   }
 
   async getRecommendations(id: number): Promise<MovieDetails[]> {
-    const response = await this.httpClient.get<MovieListResponse>(
-      `movie/${id}/recommendations?language=${this.language}&page=1`,
-      {
-        headers: this.headers,
-      }
-    );
+    const response = await this.httpClient.get<
+      PaginatedResultResponse<MovieDetailsResponse>
+    >(`movie/${id}/recommendations?language=${this.language}&page=1`, {
+      headers: this.headers,
+    });
     const result = response.results.map(this.mapMovieDetails);
     return result;
   }
@@ -200,8 +194,6 @@ export class MoviesService {
     const result = new Date(date);
     return result.getFullYear().toString();
   }
-
- 
 
   private formatRuntime(runtime: number = 0): string {
     const hours = Math.floor(runtime / 60);

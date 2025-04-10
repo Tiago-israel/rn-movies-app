@@ -11,6 +11,7 @@ export const Image = forwardRef((props: ImageProps, ref: any) => {
     <ExpoImage
       ref={ref}
       transition={{ duration: 300, timing: "ease-out" }}
+      allowDownscaling
       {...props}
     />
   );

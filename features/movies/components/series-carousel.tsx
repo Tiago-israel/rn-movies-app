@@ -1,17 +1,17 @@
 import { Box, List } from "@/components";
 import { ItemPoster } from "./item-poster";
-import { MovieDetails } from "../interfaces";
+import type { TVSeriesListItem } from "../interfaces";
 import { memo, useCallback } from "react";
 import { useWindowDimensions } from "react-native";
 
-type MovieCarouselProps = {
-  data: MovieDetails[];
+type SeriesCarouselProps = {
+  data: TVSeriesListItem[];
   itemWidth?: number;
   itemHeight?: number;
   onPressItem: (movieId: number) => void | Promise<void>;
 };
 
-export const MovieCarousel = memo(({ ...props }: MovieCarouselProps) => {
+export const SeriesCarousel = memo(({ ...props }: SeriesCarouselProps) => {
   const { width } = useWindowDimensions();
   const renderItem = useCallback(
     ({ item }: any) => (

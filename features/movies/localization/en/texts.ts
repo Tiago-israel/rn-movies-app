@@ -8,4 +8,8 @@ export const usTexts = {
   movie_details_cast_title: "Cast",
   movie_details_companies_galeria_title: "Gallery",
   movie_details_you_also_may_like: "You may also like",
+  tv_series_home_airing_today: "Airing Today",
+  tv_series_home_on_the_air: "On the Air",
+  tv_series_home_popular: "Popular",
+  tv_series_home_top_rated: "Top Rated",
 };

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { useWindowDimensions } from "react-native";
 import { type ListRenderItemInfo } from "@shopify/flash-list";
-import { Box, NavBar } from "../components";
+import { Box, NavBar, Text } from "../components";
 import { useMovieCast } from "../controllers";
 import { List } from "@/components";
 import { getText } from "../localization";
@@ -45,12 +45,12 @@ export function CastView(props: CastProps) {
             position="absolute"
           />
           <Box width="100%" backgroundColor="rgba(0,0,0,0.9)" gap={2}>
-            <Box as="Text" color="onPrimary" textAlign="center">
+            <Text color="onPrimary" textAlign="center">
               {item.name}
-            </Box>
-            <Box as="Text" color="#c2c2c2" textAlign="center">
+            </Text>
+            <Text color="#c2c2c2" textAlign="center" numberOfLines={1}>
               {item.character}
-            </Box>
+            </Text>
           </Box>
         </Box>
       );

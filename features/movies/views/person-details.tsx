@@ -1,7 +1,17 @@
-import { Image, List } from "@/components";
-import { Box, NavBar, Pill, Text, ViewMoreText } from "../components";
-import { usePerson } from "../controllers";
 import { useEffect, useRef } from "react";
+import { FlatListProps, ImageBackgroundProps, Linking } from "react-native";
+import Icon from "@expo/vector-icons/Ionicons";
+import { Image, List } from "@/components";
+import {
+  Box,
+  IconButton,
+  NavBar,
+  Pill,
+  Text,
+  ViewMoreText,
+} from "../components";
+import { usePerson } from "../controllers";
+import { MediaItem } from "../interfaces";
 
 export type PersonDetailsViewProps = {
   personId: number;
@@ -12,7 +22,7 @@ export type PersonDetailsViewProps = {
 export function PersonDetailsView(props: PersonDetailsViewProps) {
   const moviesListRef = useRef<any>();
   const viewMoreTextRef = useRef<any>(null);
-  const { person, movies } = usePerson(props.personId);
+  const { person, movies, externalMedias } = usePerson(props.personId);
 
   useEffect(() => {
     viewMoreTextRef.current?.hideText?.();
@@ -53,16 +63,47 @@ export function PersonDetailsView(props: PersonDetailsViewProps) {
             <Pill icon="star">{person?.birthday}</Pill>
             {person?.deathday && <Pill icon="cross">{person?.deathday}</Pill>}
           </Box>
-          <ViewMoreText
-            ref={viewMoreTextRef}
-            color="#7f8c8d"
-            fontSize={16}
-            fontWeight={700}
-            numberOfLines={4}
-            containerStyle={{ py: "md", px: "sm" }}
-          >
-            {person?.biography}
-          </ViewMoreText>
+          <Box<FlatListProps<MediaItem>>
+            as="FlatList"
+            data={externalMedias}
+            horizontal
+            contentContainerStyle={{
+              paddingHorizontal: 20,
+              paddingTop: 20,
+              gap: 8,
+            }}
+            renderItem={({ item }) => {
+              return (
+                <IconButton
+                  onPress={() => {
+                    console.log(item.path);
+                    if (item.path) {
+                      Linking.openURL(item.path);
+                    }
+                  }}
+                >
+                  <Icon
+                    name={`logo-${item.media}` as any}
+                    size={24}
+                    color={"#fff"}
+                  />
+                </IconButton>
+              );
+            }}
+          />
+          {person?.biography && (
+            <ViewMoreText
+              ref={viewMoreTextRef}
+              color="#7f8c8d"
+              fontSize={16}
+              fontWeight={700}
+              numberOfLines={4}
+              containerStyle={{ py: "md", px: "sm" }}
+            >
+              {person?.biography}
+            </ViewMoreText>
+          )}
+
           <Box width={"100%"} height={250}>
             {movies.length > 0 && (
               <List

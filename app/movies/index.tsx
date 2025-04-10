@@ -1,10 +1,10 @@
 import { router } from "expo-router";
-import { HomeMoviesView } from "@/features";
+import { HomeView } from "@/features";
 
 export default function MoviesHome() {
   function goToMovieDetails(movieId: number) {
     router.push(`/movies/${movieId}`);
   }
 
-  return <HomeMoviesView navigateToMovieDetails={goToMovieDetails} />;
+  return <HomeView navigateToMovieDetails={goToMovieDetails} />;
 }

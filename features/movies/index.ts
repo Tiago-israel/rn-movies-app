@@ -1,6 +1,6 @@
 export {
   MovieDetails,
-  HomeMoviesView,
+  HomeView,
   MovieReviewsView,
   FavoriteMoviesView,
   SearchView,

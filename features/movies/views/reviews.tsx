@@ -3,6 +3,9 @@ import { useMovieReview } from "../controllers";
 import { MovieReview } from "../interfaces";
 import { ScrollViewProps } from "react-native";
 import { NavBar, Box, Text, ViewMoreText } from "../components";
+import { useTheme } from "@/lib/theme-provider";
+import { MovieTheme } from "../theme";
+import { useMemo } from "react";
 
 export type MovieReviewsViewProps = {
   movieId: number;
@@ -15,6 +18,14 @@ export type AvatarProps = {
 };
 
 function Avatar(props: AvatarProps) {
+  const theme = useTheme<MovieTheme>();
+
+  const ramdomColor = useMemo(() => {
+    const colors = Object.values(theme.colors.alternatives);
+    const randomIndex = Math.floor(Math.random() * colors.length);
+    return colors[randomIndex];
+  },[theme.colors.alternatives])
+
   if (props.urlImage) {
     return (
       <Image
@@ -31,10 +42,10 @@ function Avatar(props: AvatarProps) {
       borderRadius="full"
       alignItems="center"
       justifyContent="center"
-      backgroundColor="#e74c3c"
+      backgroundColor={ramdomColor}
     >
       <Box as="Text" color="#fff">
-        {props.initials}
+        {`${props.initials}`.toUpperCase()}
       </Box>
     </Box>
   );

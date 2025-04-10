@@ -3,7 +3,7 @@ import { ScrollViewProps, useWindowDimensions } from "react-native";
 import { List } from "@/components";
 import { useFavoriteMovies } from "../controllers";
 import {
-  MoviePoster,
+  ItemPoster,
   Box,
   NavBar,
   DrawerRef,
@@ -11,6 +11,7 @@ import {
   Text,
   Input,
   Button,
+  SelectableCard,
 } from "../components";
 
 export type FavoriteMoviesViewProps = {
@@ -59,16 +60,19 @@ export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
               marginHorizontal={4}
               marginBottom={8}
             >
-              <MoviePoster
-                width={columnWidth}
-                height={200}
-                posterUrl={info.item.posterPath}
-                onPress={() => props.goToDetails(info.item.id)}
-              />
+              <SelectableCard width={columnWidth} height={200} borderRadius="lg">
+                <ItemPoster
+                  width={columnWidth}
+                  height={200}
+                  posterUrl={info.item.posterPath}
+                  borderRadius="none"
+                  //onPress={() => props.goToDetails(info.item.id)}
+                />
+              </SelectableCard>
             </Box>
           )}
         />
-        <List
+        {/* <List
           scrollEnabled={false}
           estimatedItemSize={200}
           data={favoriteItems}
@@ -76,7 +80,7 @@ export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
           renderItem={(info) => <Box width={"100%"} height={56}>
             <Text>{info.item.name}</Text>
           </Box>}
-        />
+        /> */}
       </Box>
       <Drawer ref={drawerRef} direction="right">
         <Box px="sm" gap="sm">

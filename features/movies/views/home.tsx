@@ -1,52 +1,58 @@
-import { useMovieHome } from "../controllers";
-import {
-  HomeTitle,
-  MovieCarousel,
-  Box,
-  Header,
-} from "../components";
-import { getText } from "../localization";
-
-export type HomeMoviesProps = {
+import { useTheme } from "@/lib/theme-provider";
+import { Box, Header, TabsGroup } from "../components";
+import { HomeMoviesView } from "./home-movies";
+import { HomeSeriesView } from "./home-series";
+import { MovieTheme } from "../theme";
+import { useWindowDimensions } from "react-native";
+import { useMemo, useState } from "react";
+export type HomeProps = {
   navigateToMovieDetails: (movieId: number) => void;
 };
 
-export function HomeMoviesView(props: HomeMoviesProps) {
-  const { nowPlayingMovies, popularMovies, topRatedMovies, upcomingMovies } =
-    useMovieHome();
+const components = new Map();
+components.set(0, (props) => <HomeMoviesView {...props} />);
+components.set(1, (props) => <HomeSeriesView {...props} />);
+
+export function HomeView(props: HomeProps) {
+  const [componentIndex, setComponentIndex] = useState(0);
+  const { height } = useWindowDimensions();
+  const theme = useTheme<MovieTheme>();
+  const containerHeight = useMemo(
+    () => height - theme.spacing.xxs * 2 - Header.HEIGHT,
+    [height, theme.spacing.xxs]
+  );
+  const CurrentComponent = useMemo(
+    () => components.get(componentIndex),
+    [componentIndex]
+  );
 
   return (
     <Box width={"100%"} height="100%" backgroundColor="surface">
       <Header />
-      <Box as="ScrollView" contentContainerStyle={{ paddingBottom: 40 }}>
-        <HomeTitle icon={{ name: "film", color: "#2980b9" }}>
-          {getText("movie_home_now_playing")}
-        </HomeTitle>
-        <MovieCarousel
-          data={nowPlayingMovies}
-          onPressItem={props.navigateToMovieDetails}
+      <Box alignItems="center" py={theme.spacing.xxs}>
+        <TabsGroup
+          selectedIndex={componentIndex}
+          items={[{ title: "Movies" }, { title: "Series" }]}
+          onPress={(index) => {
+            setComponentIndex(index);
+          }}
         />
-        <HomeTitle icon={{ name: "fire-flame-curved", color: "#d35400" }}>
-          {getText("movie_home_popular")}
-        </HomeTitle>
-        <MovieCarousel
-          data={popularMovies}
-          onPressItem={props.navigateToMovieDetails}
-        />
-        <HomeTitle icon={{ name: "trophy", color: "#f1c40f" }}>
-          {getText("movie_home_top_rated")}
-        </HomeTitle>
-        <MovieCarousel
-          data={topRatedMovies}
-          onPressItem={props.navigateToMovieDetails}
-        />
-        <HomeTitle icon={{ name: "clock", color: "#2980b9" }}>
-          {getText("movie_home_upcoming")}
-        </HomeTitle>
-        <MovieCarousel
-          data={upcomingMovies}
-          onPressItem={props.navigateToMovieDetails}
-        />
+      </Box>
+      <Box width="100%" height={containerHeight}>
+        <Box
+          width="100%"
+          height={containerHeight}
+          Index={999}
+          style={{
+            position: "absolute",
+            top: 0,
+            overflow: "hidden",
+          }}
+        >
+          <CurrentComponent
+            navigateToMovieDetails={props.navigateToMovieDetails}
+          />
+        </Box>
       </Box>
     </Box>
   );
