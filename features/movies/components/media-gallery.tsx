@@ -50,7 +50,11 @@ export function MediaGallery(props: ImageGalleryProps) {
       }
       return (
         <Box as="Pressable" width={100} height={70} onPress={onPress}>
-          <Image source={{ uri: item }} style={{ width: 100, height: 70 }} />
+          <Image
+            source={{ uri: item }}
+            style={{ width: 100, height: 70 }}
+            transition={{ duration: 300, timing: "ease-out" }}
+          />
         </Box>
       );
     },

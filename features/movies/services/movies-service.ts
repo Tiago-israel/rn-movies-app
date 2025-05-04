@@ -13,6 +13,8 @@ import type {
   GenresResponse,
   CreditResponse,
   Cast,
+  GenericItem,
+  PaginatedResult,
 } from "../interfaces";
 import { formatDate } from "../helpers";
 
@@ -45,45 +47,65 @@ export class MoviesService {
     return result;
   }
 
-  async getNowPlayingMovies(): Promise<MovieDetails[]> {
+  getNowPlayingMovies = async (
+    page = 1
+  ): Promise<PaginatedResult<GenericItem>> => {
     const response = await this.httpClient.get<
       PaginatedResultResponse<MovieDetailsResponse>
-    >(`movie/now_playing?language=${this.language}&page=1`, {
+    >(`movie/now_playing?language=${this.language}&page=${page}`, {
       headers: this.headers,
     });
-    const result = response.results.map(this.mapMovieDetails);
-    return result;
-  }
 
-  async getPopularMovies(): Promise<MovieDetails[]> {
-    const response = await this.httpClient.get<
-      PaginatedResultResponse<MovieDetailsResponse>
-    >(`movie/popular?language=${this.language}&page=1`, {
-      headers: this.headers,
-    });
-    const result = response.results.map(this.mapMovieDetails);
-    return result;
-  }
+    return {
+      totalPages: response.total_results,
+      results: response.results.map(this.mapGenericItem),
+    };
+  };
 
-  async getTopRatedMovies(): Promise<MovieDetails[]> {
+  getPopularMovies = async (
+    page = 1
+  ): Promise<PaginatedResult<GenericItem>> => {
     const response = await this.httpClient.get<
       PaginatedResultResponse<MovieDetailsResponse>
-    >(`movie/top_rated?language=${this.language}&page=1`, {
+    >(`movie/popular?language=${this.language}&page=${page}`, {
       headers: this.headers,
     });
-    const result = response.results.map(this.mapMovieDetails);
-    return result;
-  }
 
-  async getUpcomingMovies(): Promise<MovieDetails[]> {
+    return {
+      totalPages: response.total_results,
+      results: response.results.map(this.mapGenericItem),
+    };
+  };
+
+  getTopRatedMovies = async (
+    page = 1
+  ): Promise<PaginatedResult<GenericItem>> => {
     const response = await this.httpClient.get<
       PaginatedResultResponse<MovieDetailsResponse>
-    >(`movie/upcoming?language=${this.language}&page=1`, {
+    >(`movie/top_rated?language=${this.language}&page=${page}`, {
       headers: this.headers,
     });
-    const result = response.results.map(this.mapMovieDetails);
-    return result;
-  }
+
+    return {
+      totalPages: response.total_results,
+      results: response.results.map(this.mapGenericItem),
+    };
+  };
+
+  getUpcomingMovies = async (
+    page = 1
+  ): Promise<PaginatedResult<GenericItem>> => {
+    const response = await this.httpClient.get<
+      PaginatedResultResponse<MovieDetailsResponse>
+    >(`movie/upcoming?language=${this.language}&page=${page}`, {
+      headers: this.headers,
+    });
+
+    return {
+      totalPages: response.total_results,
+      results: response.results.map(this.mapGenericItem),
+    };
+  };
 
   async getMovieReviews(id: number): Promise<MovieReview[]> {
     const { results = [] } = await this.httpClient.get<
@@ -242,6 +264,13 @@ export class MoviesService {
       content: response.content,
       rating: response.author_details.rating,
       createdAt: formatDate(response.created_at),
+    };
+  };
+
+  mapGenericItem = (response: MovieDetailsResponse): GenericItem => {
+    return {
+      id: response.id,
+      posterPath: `${movieDBBaseImageUrl}${response.poster_path}`,
     };
   };
 }

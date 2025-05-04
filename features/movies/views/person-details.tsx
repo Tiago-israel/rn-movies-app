@@ -76,7 +76,6 @@ export function PersonDetailsView(props: PersonDetailsViewProps) {
               return (
                 <IconButton
                   onPress={() => {
-                    console.log(item.path);
                     if (item.path) {
                       Linking.openURL(item.path);
                     }

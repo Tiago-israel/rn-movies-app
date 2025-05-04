@@ -60,15 +60,13 @@ export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
               marginHorizontal={4}
               marginBottom={8}
             >
-              <SelectableCard width={columnWidth} height={200} borderRadius="lg">
                 <ItemPoster
                   width={columnWidth}
                   height={200}
                   posterUrl={info.item.posterPath}
-                  borderRadius="none"
-                  //onPress={() => props.goToDetails(info.item.id)}
+                  borderRadius="lg"
+                  onPress={() => props.goToDetails(info.item.id)}
                 />
-              </SelectableCard>
             </Box>
           )}
         />

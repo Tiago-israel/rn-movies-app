@@ -32,7 +32,6 @@ function useSelectableCard(props: SelectableCardProps) {
   }
 
   function onPress() {
-    console.log("onPress", checked);
     setChecked(!checked);
     animateBorderColor(!checked);
     props.onPress?.();

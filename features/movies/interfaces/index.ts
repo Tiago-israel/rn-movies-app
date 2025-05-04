@@ -8,3 +8,8 @@ export * from "./person-movie-credits";
 export * from "./social-medias";
 export * from "./media-item";
 export * from "./tv-series-list-item";
+export * from "./favorite";
+export * from "./favorite-item";
+export * from "./generic-item";
+export * from "./paginated-result";
+export * from "./service-type";

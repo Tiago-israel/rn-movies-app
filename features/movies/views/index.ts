@@ -6,3 +6,4 @@ export * from "./search";
 export * from "./preferences";
 export * from "./cast";
 export * from "./person-details";
+export * from "./view-more";

@@ -5,8 +5,10 @@ import { HomeSeriesView } from "./home-series";
 import { MovieTheme } from "../theme";
 import { useWindowDimensions } from "react-native";
 import { useMemo, useState } from "react";
+import { ServiceType } from "../interfaces";
 export type HomeProps = {
   navigateToMovieDetails: (movieId: number) => void;
+  navigateToViewMore: (type: ServiceType, title: string) => void;
 };
 
 const components = new Map();
@@ -51,6 +53,7 @@ export function HomeView(props: HomeProps) {
         >
           <CurrentComponent
             navigateToMovieDetails={props.navigateToMovieDetails}
+            navigateToViewMore={props.navigateToViewMore}
           />
         </Box>
       </Box>

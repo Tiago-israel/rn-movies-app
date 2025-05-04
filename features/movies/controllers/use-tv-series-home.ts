@@ -1,32 +1,32 @@
 import { useEffect, useState } from "react";
 import { TVSeriesService } from "../services";
-import { TVSeriesListItem } from "../interfaces";
+import { GenericItem, TVSeriesListItem } from "../interfaces";
 
 export function useTVSeriesHome() {
   const tvSeriesService = new TVSeriesService();
-  const [airingToday, setAiringToday] = useState<TVSeriesListItem[]>([]);
-  const [onTheAir, setOnTheAir] = useState<TVSeriesListItem[]>([]);
-  const [popular, setPopular] = useState<TVSeriesListItem[]>([]);
-  const [topRated, setTopRated] = useState<TVSeriesListItem[]>([]);
+  const [airingToday, setAiringToday] = useState<GenericItem[]>([]);
+  const [onTheAir, setOnTheAir] = useState<GenericItem[]>([]);
+  const [popular, setPopular] = useState<GenericItem[]>([]);
+  const [topRated, setTopRated] = useState<GenericItem[]>([]);
 
   async function getAiringToday() {
-    const result = await tvSeriesService.getAiringToday();
-    setAiringToday(result);
+    const response = await tvSeriesService.getAiringToday();
+    setAiringToday(response.results);
   }
 
   async function getOnTheAir() {
-    const result = await tvSeriesService.getOnTheAir();
-    setOnTheAir(result);
+    const response = await tvSeriesService.getOnTheAir();
+    setOnTheAir(response.results);
   }
 
   async function getPopular() {
-    const result = await tvSeriesService.getPopular();
-    setPopular(result);
+    const response = await tvSeriesService.getPopular();
+    setPopular(response.results);
   }
 
   async function getTopRated() {
-    const result = await tvSeriesService.getTopRated();
-    setTopRated(result);
+    const response = await tvSeriesService.getTopRated();
+    setTopRated(response.results);
   }
 
   useEffect(() => {

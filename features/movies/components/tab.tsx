@@ -37,7 +37,6 @@ export const TabItem = forwardRef((props: TabItemProps, ref) => {
       px="lg"
       zIndex={999}
       onLayout={(event: LayoutChangeEvent) => {
-        console.log(event.nativeEvent.layout);
         props.onLoad?.(props.index, event.nativeEvent.layout);
       }}
       onPress={() => {

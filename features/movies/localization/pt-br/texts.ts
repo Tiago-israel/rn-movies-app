@@ -12,4 +12,5 @@ export const ptBRTexts = {
   tv_series_home_on_the_air: "No ar",
   tv_series_home_popular: "Popular",
   tv_series_home_top_rated: "Sucessos",
+  show_more: "Ver mais",
 };

@@ -1,14 +1,16 @@
 import { Box, List } from "@/components";
 import { ItemPoster } from "./item-poster";
-import type { TVSeriesListItem } from "../interfaces";
+import type { GenericItem } from "../interfaces";
 import { memo, useCallback } from "react";
 import { useWindowDimensions } from "react-native";
+import { MoreOptionsCarousel } from "./more-options-carousel";
 
 type SeriesCarouselProps = {
-  data: TVSeriesListItem[];
+  data: GenericItem[];
   itemWidth?: number;
   itemHeight?: number;
   onPressItem: (movieId: number) => void | Promise<void>;
+  onPressMoreOptions: () => void;
 };
 
 export const SeriesCarousel = memo(({ ...props }: SeriesCarouselProps) => {
@@ -37,6 +39,15 @@ export const SeriesCarousel = memo(({ ...props }: SeriesCarouselProps) => {
       ItemSeparatorComponent={() => <Box width={8} height={8} />}
       data={props.data}
       renderItem={renderItem}
+      ListFooterComponent={() => {
+        return (
+          <MoreOptionsCarousel
+            width={props.itemWidth}
+            height={props.itemHeight}
+            onPress={props?.onPressMoreOptions}
+          />
+        );
+      }}
     />
   );
 });

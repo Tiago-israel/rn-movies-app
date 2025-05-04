@@ -2,6 +2,8 @@ import { token, movieDBBaseUrl, movieDBBaseImageUrl } from "../constants";
 import { HttpClient } from "@/libraries/http";
 import { useUserStore } from "../store";
 import type {
+  GenericItem,
+  PaginatedResult,
   PaginatedResultResponse,
   TVSeriesListItem,
   TVSeriesListItemResponse,
@@ -21,41 +23,57 @@ export class TVSeriesService {
     return useUserStore.getState().language;
   }
 
-  async getAiringToday(): Promise<TVSeriesListItem[]> {
+  getAiringToday = async (page = 1): Promise<PaginatedResult<GenericItem>> => {
     const response = await this.httpClient.get<
       PaginatedResultResponse<TVSeriesListItemResponse>
-    >(`tv/airing_today?language=${this.language}&page=1`, {
+    >(`tv/airing_today?language=${this.language}&page=${page}`, {
       headers: this.headers,
     });
-    return response.results.map(this.mapTVSeriesListItem);
-  }
+    
+    return {
+      totalPages: response.total_results,
+      results: response.results.map(this.mapGenericItem),
+    };
+  };
 
-  async getOnTheAir(): Promise<TVSeriesListItem[]> {
+  getOnTheAir = async (page = 1): Promise<PaginatedResult<GenericItem>> => {
     const response = await this.httpClient.get<
       PaginatedResultResponse<TVSeriesListItemResponse>
-    >(`tv/on_the_air?language=${this.language}&page=1`, {
+    >(`tv/on_the_air?language=${this.language}&page=${page}`, {
       headers: this.headers,
     });
-    return response.results.map(this.mapTVSeriesListItem);
-  }
 
-  async getPopular(): Promise<TVSeriesListItem[]> {
-    const response = await this.httpClient.get<
-      PaginatedResultResponse<TVSeriesListItemResponse>
-    >(`tv/popular?language=${this.language}&page=1`, {
-      headers: this.headers,
-    });
-    return response.results.map(this.mapTVSeriesListItem);
-  }
+    return {
+      totalPages: response.total_results,
+      results: response.results.map(this.mapGenericItem),
+    };
+  };
 
-  async getTopRated(): Promise<TVSeriesListItem[]> {
+  getPopular = async (page = 1): Promise<PaginatedResult<GenericItem>> => {
     const response = await this.httpClient.get<
       PaginatedResultResponse<TVSeriesListItemResponse>
-    >(`tv/top_rated?language=${this.language}&page=1`, {
+    >(`tv/popular?language=${this.language}&page=${page}`, {
       headers: this.headers,
     });
-    return response.results.map(this.mapTVSeriesListItem);
-  }
+
+    return {
+      totalPages: response.total_results,
+      results: response.results.map(this.mapGenericItem),
+    };
+  };
+
+  getTopRated = async (page = 1): Promise<PaginatedResult<GenericItem>> => {
+    const response = await this.httpClient.get<
+      PaginatedResultResponse<TVSeriesListItemResponse>
+    >(`tv/top_rated?language=${this.language}&page=${page}`, {
+      headers: this.headers,
+    });
+
+    return {
+      totalPages: response.total_results,
+      results: response.results.map(this.mapGenericItem),
+    };
+  };
 
   mapTVSeriesListItem = (
     response: TVSeriesListItemResponse
@@ -76,6 +94,13 @@ export class TVSeriesService {
       popularity: response.popularity,
       voteCount: response.vote_count,
       releaseDate: response.first_air_date,
+    };
+  };
+
+  mapGenericItem = (response: TVSeriesListItemResponse): GenericItem => {
+    return {
+      id: response.id,
+      posterPath: `${movieDBBaseImageUrl}${response.poster_path}`,
     };
   };
 }

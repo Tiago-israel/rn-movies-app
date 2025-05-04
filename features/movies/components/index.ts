@@ -19,3 +19,4 @@ export * from "./button";
 export * from "./selectable-card";
 export * from "./tab";
 export * from "./series-carousel";
+export * from './more-options-carousel';

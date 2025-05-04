@@ -3,12 +3,14 @@ import { ItemPoster } from "./item-poster";
 import { MovieDetails } from "../interfaces";
 import { memo, useCallback } from "react";
 import { useWindowDimensions } from "react-native";
+import { MoreOptionsCarousel } from "./more-options-carousel";
 
 type MovieCarouselProps = {
   data: MovieDetails[];
   itemWidth?: number;
   itemHeight?: number;
   onPressItem: (movieId: number) => void | Promise<void>;
+  onPressMoreOptions: () => void;
 };
 
 export const MovieCarousel = memo(({ ...props }: MovieCarouselProps) => {
@@ -37,6 +39,15 @@ export const MovieCarousel = memo(({ ...props }: MovieCarouselProps) => {
       ItemSeparatorComponent={() => <Box width={8} height={8} />}
       data={props.data}
       renderItem={renderItem}
+      ListFooterComponent={() => {
+        return (
+          <MoreOptionsCarousel
+            width={props.itemWidth}
+            height={props.itemHeight}
+            onPress={props?.onPressMoreOptions}
+          />
+        );
+      }}
     />
   );
 });

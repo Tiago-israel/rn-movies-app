@@ -108,6 +108,15 @@ export default function MoviesLayout() {
           tabBarStyle: { display: "none" },
         }}
       />
+
+      <Tabs.Screen
+        name="view-more"
+        options={{
+          ...tabBarStyle,
+          href: null,
+          tabBarStyle: { display: "none" },
+        }}
+      />
     </Tabs>
   );
 }

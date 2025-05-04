@@ -6,7 +6,8 @@ export {
   SearchView,
   PreferencesView,
   CastView,
-  PersonDetailsView
+  PersonDetailsView,
+  ViewMoreView,
 } from "./views";
 export { Layout } from "./components";
 export { initializeLanguage } from "./localization";

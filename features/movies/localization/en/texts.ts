@@ -12,4 +12,5 @@ export const usTexts = {
   tv_series_home_on_the_air: "On the Air",
   tv_series_home_popular: "Popular",
   tv_series_home_top_rated: "Top Rated",
+  show_more: "Show more",
 };

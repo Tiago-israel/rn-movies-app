@@ -1,9 +1,8 @@
 import { Box, Image } from "@/components";
-import { DimensionValue } from "react-native";
 
 export type ItemPosterProps = {
-  width?: DimensionValue | number;
-  height?: DimensionValue | number;
+  width?: number;
+  height?: number;
   posterUrl?: string;
   borderRadius?: "lg" | "none";
   onPress?: () => void | Promise<void>;
@@ -26,6 +25,7 @@ export function ItemPoster({
     >
       <Image
         source={{ uri: props.posterUrl }}
+        transition={0}
         style={{
           width: width,
           height: height,
