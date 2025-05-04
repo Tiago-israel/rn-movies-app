@@ -1,4 +1,4 @@
-import { theme } from "@/theme";
+import { theme } from "./base-theme";
 
 export const movieLightTheme = {
   ...theme,
