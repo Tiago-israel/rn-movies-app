@@ -1,25 +1,23 @@
 import { Box } from "@/components/Box";
 import { ThemeProvider } from "@/lib";
-import { theme } from "@/theme";
-import { router, Tabs } from "expo-router";
+import { router } from "expo-router";
+import { Pressable, Text } from "react-native";
 
 export default function Index() {
   return (
-    <ThemeProvider theme={theme}>
-      <Box
-        as="Pressable"
-        backgroundColor="red"
-        alignItems="center"
-        justifyContent="center"
-        height={200}
-        onPress={() => {
-          router.replace("/movies", { withAnchor: true });
-        }}
-      >
-        <Box as="Text" fontSize={24} color="#000">
-          Movies
-        </Box>
-      </Box>
-    </ThemeProvider>
+    <Pressable
+      style={{
+        width: "100%",
+        height: 48,
+        backgroundColor: "blue",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+      onPress={() => {
+        router.replace("/movies", { withAnchor: true });
+      }}
+    >
+      <Text style={{ color: "#fff" }}>Go To Movies</Text>
+    </Pressable>
   );
 }
