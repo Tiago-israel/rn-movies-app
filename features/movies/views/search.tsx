@@ -1,5 +1,3 @@
-import { useMemo } from "react";
-import { useWindowDimensions, type ScrollViewProps } from "react-native";
 import { SearchField, Box, SearchResults } from "../components";
 import { useSearchMovies } from "../controllers";
 

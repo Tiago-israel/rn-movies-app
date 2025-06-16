@@ -1,10 +1,12 @@
 import { useMemo } from "react";
-import { Platform } from "react-native";
+import { Platform, useWindowDimensions } from "react-native";
 import { Tabs } from "expo-router";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { Layout, useUserStore } from "@/features/movies";
+import { Box } from "@/lib";
 
 export default function MoviesLayout() {
+  const { width } = useWindowDimensions();
   const theme = useUserStore((state) => state.theme);
 
   const tabStyle = useMemo(() => {
@@ -15,24 +17,30 @@ export default function MoviesLayout() {
     };
   }, [theme]);
 
-  const tabBarStyle = useMemo(() => {
+  const tabBarStyle: any = useMemo(() => {
     return {
-      tabBarInactiveTintColor: tabStyle.color,
-      tabBarActiveTintColor: tabStyle.activeColor,
-      tabBarInactiveBackgroundColor: tabStyle.background,
-      tabBarActiveBackgroundColor: tabStyle.background,
+      // tabBarInactiveTintColor: tabStyle.color,
+      // tabBarActiveTintColor: tabStyle.activeColor,
+      // tabBarInactiveBackgroundColor: tabStyle.background,
+      // tabBarActiveBackgroundColor: tabStyle.background,
       tabBarShowLabel: false,
-      tabBarStyle: Platform.select({
-        ios: { marginBottom: 20 },
-        android: {},
-      }),
+      tabBarStyle: {
+        borderRadius: 20,
+        width: width - 40,
+        bottom: 20,
+        backgroundColor: tabStyle.background,
+        borderColor: "#fff",
+        borderWidth: 2,
+        position: "absolute",
+        start: 20
+      },
     };
   }, [tabStyle]);
 
   return (
     <Tabs
       initialRouteName="index"
-      screenOptions={{ headerShown: false }}
+      screenOptions={{ headerShown: false, }}
       backBehavior="history"
       safeAreaInsets={{ bottom: 0 }}
       layout={(props) => {
@@ -41,8 +49,20 @@ export default function MoviesLayout() {
     >
       <Tabs.Screen
         name="index"
+        
         options={{
           ...tabBarStyle,
+
+          // tabBarItemStyle: {
+          //   justifyContent: "center",
+          //   alignItems: "center",
+          //   isolation: "isolate",
+          //   borderRadius: 20,
+          // },
+          
+          tabBarLabelStyle:{
+            display: 'none'
+          },
           tabBarIcon: (props) => (
             <Icon name="home" color={props.color} size={24} />
           ),

@@ -1,4 +1,5 @@
 import { Box, Image } from "@/components";
+import { ImageProps } from "react-native";
 
 export type ItemPosterProps = {
   width?: number;
@@ -25,7 +26,7 @@ export function ItemPoster({
     >
       <Image
         source={{ uri: props.posterUrl }}
-        transition={0}
+        placeholder={require("../assets/placeholder.png")}
         style={{
           width: width,
           height: height,

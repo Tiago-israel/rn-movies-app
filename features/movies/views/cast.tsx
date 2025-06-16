@@ -3,7 +3,7 @@ import { useWindowDimensions } from "react-native";
 import { type ListRenderItemInfo } from "@shopify/flash-list";
 import { Box, NavBar, Text } from "../components";
 import { useMovieCast } from "../controllers";
-import { List } from "@/components";
+import { Image, List } from "@/components";
 import { getText } from "../localization";
 
 export type CastProps = {
@@ -32,17 +32,15 @@ export function CastView(props: CastProps) {
           overflow="hidden"
           onPress={() => props.goToPerson?.(item.id)}
         >
-          <Box
-            as="Image"
-            width={columnWidth}
-            height={200}
-            source={
-              item.profilePath
-                ? { uri: item.profilePath }
-                : require("../assets/user.png")
-            }
-            borderRadius="md"
-            position="absolute"
+          <Image
+            source={{ uri: item.profilePath }}
+            placeholder={require("../assets/user.png")}
+            style={{
+              width: columnWidth,
+              height: 200,
+              borderRadius: 20,
+              position: "absolute",
+            }}
           />
           <Box width="100%" backgroundColor="rgba(0,0,0,0.9)" gap={2}>
             <Text color="onPrimary" textAlign="center">
