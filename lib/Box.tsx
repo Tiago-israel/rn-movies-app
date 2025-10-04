@@ -26,7 +26,7 @@ export type BoxProps<ComponentProps, T extends Record<string, any>> = {
   TextProps &
   ComponentProps;
 
-export function Box<C, T extends Record<string, any>>({
+export function Box<C, T extends Record<string, any> = any>({
   as = "View",
   style = {},
   innerRef,

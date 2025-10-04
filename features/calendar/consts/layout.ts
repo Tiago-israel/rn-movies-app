@@ -1,0 +1,1 @@
+export const GRID_CELLS_SIZE = 42;

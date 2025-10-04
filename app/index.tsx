@@ -20,6 +20,20 @@ export default function Index() {
       >
         <Text style={{ color: "#fff" }}>Go To Movies</Text>
       </Pressable>
+      <Pressable
+        style={{
+          width: "100%",
+          height: 48,
+          backgroundColor: "green",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+        onPress={() => {
+          router.replace("/calendar", { withAnchor: true });
+        }}
+      >
+        <Text style={{ color: "#fff" }}>Go To Calendar</Text>
+      </Pressable>
     </Box>
   );
 }

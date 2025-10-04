@@ -1,9 +1,12 @@
 import { memo, useCallback, useMemo } from "react";
 import { useWindowDimensions, type ScrollViewProps } from "react-native";
 import { List } from "@/components";
-import { ItemPoster, Box, EmptyState } from "../components";
+// import { ItemPoster, Box, EmptyState } from "../components";
 import { type MovieDetails } from "../interfaces";
 import { ListRenderItemInfo } from "@shopify/flash-list";
+import { Box } from "./box";
+import { ItemPoster } from "./item-poster";
+import { EmptyState } from "./empty-state";
 
 export type SearchResultsProps = {
   movies: MovieDetails[];

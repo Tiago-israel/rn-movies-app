@@ -1,6 +1,7 @@
-import { Box } from "../components";
+// import { Box } from "../components";
 import { ReactNode } from "react";
 import Icon from "@expo/vector-icons/FontAwesome6";
+import { Box } from "./box";
 
 export type HomeTitleProps = {
   icon?: {
