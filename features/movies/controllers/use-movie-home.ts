@@ -1,40 +1,40 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { MoviesService } from "../services";
-import type { GenericItem, MovieDetails } from "../interfaces";
 
 export function useMovieHome() {
   const moviesService = new MoviesService();
-  const [nowPlayingMovies, setNowPlayingMovies] = useState<GenericItem[]>([]);
-  const [popularMovies, setPopularMovies] = useState<GenericItem[]>([]);
-  const [topRatedMovies, setTopRatedMovies] = useState<GenericItem[]>([]);
-  const [upcomingMovies, setUpcomingMovies] = useState<GenericItem[]>([]);
 
-  async function getNowPlayingMovies() {
-    const response = await moviesService.getNowPlayingMovies();
-    setNowPlayingMovies(response.results);
-  }
+  const { data: nowPlayingMovies } = useQuery({
+    queryKey: ["nowPlayingMovies"],
+    queryFn: async () => {
+      const { results } = await moviesService.getNowPlayingMovies();
+      return results;
+    },
+  });
 
-  async function getPopularMovies() {
-    const response = await moviesService.getPopularMovies();
-    setPopularMovies(response.results);
-  }
+  const { data: popularMovies } = useQuery({
+    queryKey: ["popularMovies"],
+    queryFn: async () => {
+      const { results } = await moviesService.getPopularMovies();
+      return results;
+    },
+  });
 
-  async function getTopRatedMovies() {
-    const response = await moviesService.getTopRatedMovies();
-    setTopRatedMovies(response.results);
-  }
+  const { data: topRatedMovies } = useQuery({
+    queryKey: ["topRatedMovies"],
+    queryFn: async () => {
+      const { results } = await moviesService.getTopRatedMovies();
+      return results;
+    },
+  });
 
-  async function getUpcomingMovies() {
-    const response = await moviesService.getUpcomingMovies();
-    setUpcomingMovies(response.results);
-  }
-
-  useEffect(() => {
-    getNowPlayingMovies();
-    getPopularMovies();
-    getTopRatedMovies();
-    getUpcomingMovies();
-  }, []);
+  const { data: upcomingMovies } = useQuery({
+    queryKey: ["upcomingMovies"],
+    queryFn: async () => {
+      const { results } = await moviesService.getUpcomingMovies();
+      return results;
+    },
+  });
 
   return { nowPlayingMovies, popularMovies, topRatedMovies, upcomingMovies };
 }
