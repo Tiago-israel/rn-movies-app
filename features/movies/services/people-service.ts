@@ -5,7 +5,6 @@ import {
   ExternalIdsResponse,
   MediaItem,
   Person,
-  PersonMovieCredits,
   PersonMovieCreditsResponse,
   PersonResponse,
   SocialMedia,
@@ -47,7 +46,7 @@ export class PeopleService {
     };
   }
 
-  async getMovieCreditis(
+  async getMovieCredits(
     id: number
   ): Promise<Array<{ id: number; backdropPath: string }>> {
     const { cast = [], crew = [] } =

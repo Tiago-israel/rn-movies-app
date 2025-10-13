@@ -1,4 +1,4 @@
-import { useDeferredValue, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { MoviesService } from "../services";
 import { MovieDetails } from "../interfaces";
 

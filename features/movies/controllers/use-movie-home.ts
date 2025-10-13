@@ -7,7 +7,7 @@ export function useMovieHome() {
   const { data: nowPlayingMovies } = useQuery({
     queryKey: ["nowPlayingMovies"],
     queryFn: async () => {
-      const { results } = await moviesService.getNowPlayingMovies();
+      const { results = [] } = await moviesService.getNowPlayingMovies();
       return results;
     },
   });
@@ -15,7 +15,7 @@ export function useMovieHome() {
   const { data: popularMovies } = useQuery({
     queryKey: ["popularMovies"],
     queryFn: async () => {
-      const { results } = await moviesService.getPopularMovies();
+      const { results = [] } = await moviesService.getPopularMovies();
       return results;
     },
   });
@@ -23,7 +23,7 @@ export function useMovieHome() {
   const { data: topRatedMovies } = useQuery({
     queryKey: ["topRatedMovies"],
     queryFn: async () => {
-      const { results } = await moviesService.getTopRatedMovies();
+      const { results = [] } = await moviesService.getTopRatedMovies();
       return results;
     },
   });
@@ -31,7 +31,7 @@ export function useMovieHome() {
   const { data: upcomingMovies } = useQuery({
     queryKey: ["upcomingMovies"],
     queryFn: async () => {
-      const { results } = await moviesService.getUpcomingMovies();
+      const { results = [] } = await moviesService.getUpcomingMovies();
       return results;
     },
   });

@@ -1,33 +1,35 @@
-import { useEffect, useRef, useState } from "react";
-import { MediaItem, type Person } from "../interfaces";
+import { useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PeopleService } from "../services";
 
 export function usePerson(id: number) {
-  const moviesService = useRef(new PeopleService());
-  const [person, setPerson] = useState<Person>();
-  const [movies, setMovies] = useState<any[]>([]);
-  const [externalMedias, setExternalMedias] = useState<MediaItem[]>([]);
+  const moviesService = useRef(new PeopleService()).current;
 
-  async function getPerson(id: number) {
-    const personDetails = await moviesService.current.getPersonDetails(id);
-    setPerson(personDetails);
-  }
+  const { data: person } = useQuery({
+    queryKey: ["person", id],
+    queryFn: async () => {
+      const result = await moviesService.getPersonDetails(id);
+      return result;
+    },
+  });
 
-  async function getMovieCredits(id: number) {
-    const movieCredits = await moviesService.current.getMovieCreditis(id);
-    setMovies(movieCredits);
-  }
+  const { data: movies } = useQuery({
+    initialData: [],
+    queryKey: ["moviesCredits", id],
+    queryFn: async () => {
+      const result = await moviesService.getMovieCredits(id);
+      return result;
+    },
+  });
 
-  async function getPersonExternalMedias(id: number) {
-    const externalMedias = await moviesService.current.getExternalIds(id);
-    setExternalMedias(externalMedias);
-  }
-
-  useEffect(() => {
-    getPerson(id);
-    getMovieCredits(id);
-    getPersonExternalMedias(id);
-  }, [id]);
+  const { data: externalMedias } = useQuery({
+    initialData: [],
+    queryKey: ["externalMedias", id],
+    queryFn: async () => {
+      const result = await moviesService.getExternalIds(id);
+      return result;
+    },
+  });
 
   return { person, movies, externalMedias };
 }

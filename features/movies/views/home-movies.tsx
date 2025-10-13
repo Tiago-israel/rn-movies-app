@@ -9,7 +9,7 @@ export type HomeMoviesProps = {
 };
 
 export function HomeMoviesView(props: HomeMoviesProps) {
-  const { nowPlayingMovies, popularMovies, topRatedMovies, upcomingMovies } =
+  const { nowPlayingMovies = [], popularMovies = [], topRatedMovies = [], upcomingMovies = [] } =
     useMovieHome();
 
   return (

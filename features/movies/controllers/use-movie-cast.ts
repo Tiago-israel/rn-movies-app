@@ -1,23 +1,18 @@
-import { useEffect, useRef, useState } from "react";
-import { Cast } from "../interfaces";
+import { useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { MoviesService } from "../services";
 
 export function useMovieCast(movieId: number) {
-  const moviesService = useRef(new MoviesService());
-  const [cast, setCast] = useState<Cast[]>([]);
+  const moviesService = useRef(new MoviesService()).current;
 
-  async function getMovieCast(movieId: number) {
-    const cast = await moviesService.current.getMovieCredits(movieId);
-    setCast(cast);
-  }
-
-  useEffect(() => {
-    getMovieCast(movieId);
-
-    return () => {
-      setCast([]);
-    };
-  }, [movieId]);
+  const { data: cast } = useQuery({
+    initialData: [],
+    queryKey: ["movieCredits", movieId],
+    queryFn: async () => {
+      const result = await moviesService.getMovieCredits(movieId);
+      return result;
+    },
+  });
 
   return { cast };
 }

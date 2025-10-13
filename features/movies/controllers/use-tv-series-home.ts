@@ -1,40 +1,46 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { TVSeriesService } from "../services";
-import { GenericItem, TVSeriesListItem } from "../interfaces";
+import { GenericItem } from "../interfaces";
 
 export function useTVSeriesHome() {
-  const tvSeriesService = new TVSeriesService();
-  const [airingToday, setAiringToday] = useState<GenericItem[]>([]);
-  const [onTheAir, setOnTheAir] = useState<GenericItem[]>([]);
-  const [popular, setPopular] = useState<GenericItem[]>([]);
-  const [topRated, setTopRated] = useState<GenericItem[]>([]);
+  const tvSeriesService = useRef(new TVSeriesService()).current;
 
-  async function getAiringToday() {
-    const response = await tvSeriesService.getAiringToday();
-    setAiringToday(response.results);
-  }
+  const { data: airingToday } = useQuery({
+    initialData: [],
+    queryKey: ["airingToday"],
+    queryFn: async () => {
+      const { results = [] } = await tvSeriesService.getAiringToday();
+      return results;
+    },
+  });
 
-  async function getOnTheAir() {
-    const response = await tvSeriesService.getOnTheAir();
-    setOnTheAir(response.results);
-  }
+  const { data: onTheAir } = useQuery({
+    initialData: [],
+    queryKey: ["onTheAir"],
+    queryFn: async () => {
+      const { results = [] } = await tvSeriesService.getOnTheAir();
+      return results
+    }
+  });
 
-  async function getPopular() {
-    const response = await tvSeriesService.getPopular();
-    setPopular(response.results);
-  }
+  const { data: popular } = useQuery({
+    initialData: [],
+    queryKey: ["popular"],
+    queryFn: async () => {
+      const { results = [] } = await tvSeriesService.getPopular();
+      return results;
+    },
+  });
 
-  async function getTopRated() {
-    const response = await tvSeriesService.getTopRated();
-    setTopRated(response.results);
-  }
-
-  useEffect(() => {
-    getAiringToday();
-    getOnTheAir();
-    getPopular();
-    getTopRated();
-  }, []);
+  const { data: topRated } = useQuery({
+    initialData: [],
+    queryKey: ["topRated"],
+    queryFn: async () => {
+      const { results = [] } = await tvSeriesService.getTopRated();
+      return results;
+    },
+  });
 
   return {
     airingToday,
