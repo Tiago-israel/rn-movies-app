@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { type ScrollViewProps } from "react-native";
+import { FlatListProps, type ScrollViewProps } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { Image, StarRating } from "@/components";
 import {
@@ -9,9 +9,10 @@ import {
   Box,
   MediaGallery,
   ViewMoreText,
+  Text,
 } from "../components";
 import { useMovieDetails } from "../controllers";
-import { type MovieDetails } from "../interfaces";
+import { Provider, type MovieDetails } from "../interfaces";
 import { getText } from "../localization";
 
 type MovieDetailsProps = {
@@ -25,12 +26,12 @@ type MovieDetailsProps = {
 
 export function MovieDetails(props: MovieDetailsProps) {
   const scrollViewRef = useRef<any>(null);
-  const { movie, isFavorite, recommendations, images, cast, onFavoriteMovie } =
+  const { movie, isFavorite, recommendations, images, cast, watchProviders, onFavoriteMovie } =
     useMovieDetails(props.movieId);
-    
-    useEffect(() => {
-      scrollViewRef.current?.scrollToOffset?.(0);
-    },[props.movieId]);
+
+  useEffect(() => {
+    scrollViewRef.current?.scrollToOffset?.(0);
+  }, [props.movieId]);
 
   return (
     <Box height={"100%"} backgroundColor="surface">
@@ -57,7 +58,7 @@ export function MovieDetails(props: MovieDetailsProps) {
       >
         <Box
           as="Text"
-          fontSize={48}
+          fontSize={28}
           color="onSurface"
           fontWeight={700}
           p="sm"
@@ -232,6 +233,21 @@ export function MovieDetails(props: MovieDetailsProps) {
             </Box>
           </Box>
         </Box>
+        <Text color="onSurface" paddingHorizontal={"sm"} paddingVertical={"sm"} fontWeight={700} fontSize={24}>Where to Watch</Text>
+        <Box<FlatListProps<Provider>>
+          as="FlatList"
+          horizontal
+          data={watchProviders}
+          contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
+          keyExtractor={(item,index) => `${item.id}-${index}`}
+          showsHorizontalScrollIndicator={false}
+          renderItem={({ item }) => {
+            return (
+              <Box as="Pressable" width={72} height={72} borderRadius="full" overflow="hidden"  borderColor="#ccc" borderWidth={2}>
+                <Box as="Image" width={"100%"} height={"100%"} source={{ uri: item.image }} />
+              </Box>
+            );
+          }} />
         <Box
           as="Text"
           fontSize={24}

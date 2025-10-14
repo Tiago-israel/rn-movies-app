@@ -15,6 +15,10 @@ import type {
   Cast,
   GenericItem,
   PaginatedResult,
+  ProviderResponse,
+  ProviderWrapperResponse,
+  ProviderItem,
+  Provider,
 } from "../interfaces";
 import { formatDate } from "../helpers";
 
@@ -212,6 +216,22 @@ export class MoviesService {
     }));
   }
 
+  async getWatchProviders(movieId: number): Promise<Provider[]> {
+    const languageMap = {
+      'en': 'US',
+      'pt-BR': 'BR',
+    };
+    const language = languageMap[this.language] || 'US';
+    const response = await this.httpClient.get<ProviderWrapperResponse>(
+      `movie/${movieId}/watch/providers`,
+      {
+        headers: this.headers,
+      }
+    );
+    if (!response) return [];
+    return this.mapProvider(response.results[language]);
+  }
+
   private getYear(date: string): string {
     const result = new Date(date);
     return result.getFullYear().toString();
@@ -273,4 +293,15 @@ export class MoviesService {
       posterPath: `${movieDBBaseImageUrl}${response.poster_path}`,
     };
   };
+
+  mapProvider = (response: ProviderResponse): Provider[] => {
+    const { flatrate = [], rent = [], buy = [], } = response;
+    const sort = (a: ProviderItem, b: ProviderItem) => a.display_priority - b.display_priority;
+    const result = flatrate.sort(sort).concat(rent.sort(sort)).concat(buy.sort(sort));
+    return result.map(item => ({
+      id: item.provider_id,
+      link: response.link,
+      image: `${movieDBBaseImageUrl}${item.logo_path}`,
+    }));
+  }
 }

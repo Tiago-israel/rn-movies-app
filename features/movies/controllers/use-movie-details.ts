@@ -48,6 +48,16 @@ export function useMovieDetails(movieId: number) {
     },
   });
 
+  const { data: watchProviders } = useQuery({
+    initialData: [],
+    queryKey: ["watchProviders", movieId],
+    queryFn: async () => {
+      const result = await moviesService.getWatchProviders(movieId);
+      return result;
+    },
+  });
+
+
   const setFavorite = useCallback(
     (id: number) => {
       const favorite = getFavorite(id);
@@ -70,5 +80,5 @@ export function useMovieDetails(movieId: number) {
     setFavorite(movieId);
   }, [movieId]);
 
-  return { movie, isFavorite, recommendations, images, cast, onFavoriteMovie };
+  return { movie, isFavorite, recommendations, images, cast, watchProviders, onFavoriteMovie };
 }
