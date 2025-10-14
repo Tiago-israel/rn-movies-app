@@ -233,7 +233,9 @@ export function MovieDetails(props: MovieDetailsProps) {
             </Box>
           </Box>
         </Box>
-        <Text color="onSurface" paddingHorizontal={"sm"} paddingVertical={"sm"} fontWeight={700} fontSize={24}>Where to Watch</Text>
+        <Text color="onSurface" paddingHorizontal={"sm"} paddingVertical={"sm"} fontWeight={700} fontSize={24}>
+          {getText("movie_details_watch_providers_title")}
+        </Text>
         <Box<FlatListProps<Provider>>
           as="FlatList"
           horizontal

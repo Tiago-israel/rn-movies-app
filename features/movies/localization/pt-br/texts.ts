@@ -8,6 +8,7 @@ export const ptBRTexts = {
   movie_details_cast_title: "Elenco",
   movie_details_companies_galeria_title: "Galeria",
   movie_details_you_also_may_like: "Você também pode gostar",
+   movie_details_watch_providers_title: "Onde assistir",
   tv_series_home_airing_today: "No ar hoje",
   tv_series_home_on_the_air: "No ar",
   tv_series_home_popular: "Popular",
