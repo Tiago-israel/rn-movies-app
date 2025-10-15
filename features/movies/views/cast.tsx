@@ -35,6 +35,8 @@ export function CastView(props: CastProps) {
           <Image
             source={{ uri: item.profilePath }}
             placeholder={require("../assets/user.png")}
+            contentFit="cover"
+            placeholderContentFit="contain"
             style={{
               width: columnWidth,
               height: 200,

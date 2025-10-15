@@ -296,9 +296,21 @@ export class MoviesService {
 
   mapProvider = (response: ProviderResponse): Provider[] => {
     const { flatrate = [], rent = [], buy = [], } = response;
-    const sort = (a: ProviderItem, b: ProviderItem) => a.display_priority - b.display_priority;
-    const result = flatrate.sort(sort).concat(rent.sort(sort)).concat(buy.sort(sort));
-    return result.map(item => ({
+    const sortedProviders = flatrate.concat(rent).concat(buy);
+
+    const list: ProviderItem[] = [];
+    for (const p of sortedProviders) {
+      const existing = list.find(item => {
+        const [first] = item.provider_name.split(' ');
+        return p.provider_name.startsWith(first);
+      });
+
+      if (!existing) {
+        list.push(p);
+      }
+    }
+
+    return list.map(item => ({
       id: item.provider_id,
       link: response.link,
       image: `${movieDBBaseImageUrl}${item.logo_path}`,

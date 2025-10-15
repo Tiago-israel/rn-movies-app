@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { FlatListProps, type ScrollViewProps } from "react-native";
+import { FlatListProps, type ScrollViewProps, Linking } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { Image, StarRating } from "@/components";
 import {
@@ -233,19 +233,23 @@ export function MovieDetails(props: MovieDetailsProps) {
             </Box>
           </Box>
         </Box>
-        <Text color="onSurface" paddingHorizontal={"sm"} paddingVertical={"sm"} fontWeight={700} fontSize={24}>
-          {getText("movie_details_watch_providers_title")}
-        </Text>
+        {watchProviders.length > 0 && (
+          <Text color="onSurface" paddingHorizontal={"sm"} paddingVertical={"sm"} fontWeight={700} fontSize={24}>
+            {getText("movie_details_watch_providers_title")}
+          </Text>
+        )}
         <Box<FlatListProps<Provider>>
           as="FlatList"
           horizontal
           data={watchProviders}
           contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
-          keyExtractor={(item,index) => `${item.id}-${index}`}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
           showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => {
             return (
-              <Box as="Pressable" width={72} height={72} borderRadius="full" overflow="hidden"  borderColor="#ccc" borderWidth={2}>
+              <Box as="Pressable" width={72} height={72} borderRadius="full" overflow="hidden" borderColor="#ccc" borderWidth={2} onPress={() => { 
+                Linking.openURL(item.link)
+              }}>
                 <Box as="Image" width={"100%"} height={"100%"} source={{ uri: item.image }} />
               </Box>
             );

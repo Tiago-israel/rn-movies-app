@@ -47,7 +47,38 @@ export function PersonDetailsView(props: PersonDetailsViewProps) {
           width="100%"
           height={300}
           source={{ uri: person?.profilePath }}
-        ></Box>
+        >
+          <Box<FlatListProps<MediaItem>>
+              as="FlatList"
+              data={externalMedias}
+              horizontal={false}
+              scrollEnabled={false}
+              contentContainerStyle={{
+                gap: 8,
+                position: "absolute",
+                bottom: 50,
+                right: 0,
+                paddingHorizontal: 10,
+              }}
+              renderItem={({ item }) => {
+                return (
+                  <IconButton
+                    onPress={() => {
+                      if (item.path) {
+                        Linking.openURL(item.path);
+                      }
+                    }}
+                  >
+                    <Icon
+                      name={`logo-${item.media}` as any}
+                      size={24}
+                      color={"#fff"}
+                    />
+                  </IconButton>
+                );
+              }}
+            />
+        </Box>
         <Box
           pt="sm"
           borderTopStartRadius="xl"
@@ -56,40 +87,18 @@ export function PersonDetailsView(props: PersonDetailsViewProps) {
           marginTop={-30}
           backgroundColor="surface"
         >
-          <Text color="onSurface" fontSize={28} fontWeight={700} px="sm">
-            {person?.name}
-          </Text>
+          <Box width={"100%"} px="sm" flexDirection="row" alignItems="center" justifyContent="space-between">
+            <Text color="onSurface" flex={1} fontSize={28} fontWeight={700} >
+              {person?.name}
+            </Text>
+            
+          </Box>
+
           <Box flexDirection="row" pt="xs" gap="xxs" px="sm">
             <Pill icon="star">{person?.birthday}</Pill>
             {person?.deathday && <Pill icon="cross">{person?.deathday}</Pill>}
           </Box>
-          <Box<FlatListProps<MediaItem>>
-            as="FlatList"
-            data={externalMedias}
-            horizontal
-            contentContainerStyle={{
-              paddingHorizontal: 20,
-              paddingTop: 20,
-              gap: 8,
-            }}
-            renderItem={({ item }) => {
-              return (
-                <IconButton
-                  onPress={() => {
-                    if (item.path) {
-                      Linking.openURL(item.path);
-                    }
-                  }}
-                >
-                  <Icon
-                    name={`logo-${item.media}` as any}
-                    size={24}
-                    color={"#fff"}
-                  />
-                </IconButton>
-              );
-            }}
-          />
+
           {person?.biography && (
             <ViewMoreText
               ref={viewMoreTextRef}
@@ -115,15 +124,15 @@ export function PersonDetailsView(props: PersonDetailsViewProps) {
                 renderItem={({ item }) => (
                   <Box
                     as="Pressable"
-                    width={150}
-                    height={250}
+                    width={120}
+                    height={200}
                     onPress={() => props.goToMovie?.(item.id)}
                   >
                     <Image
                       source={{ uri: item.backdropPath }}
                       style={{
-                        width: 150,
-                        height: 250,
+                        width: 120,
+                        height: 200,
                         borderRadius: 16,
                       }}
                     />
