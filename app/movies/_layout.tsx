@@ -105,6 +105,38 @@ export default function MoviesLayout() {
         }}
       />
       <Tabs.Screen
+        name="series/[id]/index"
+        options={{
+          ...tabBarStyle,
+          href: null,
+          tabBarStyle: { display: "none" },
+        }}
+      />
+      <Tabs.Screen
+        name="series/[id]/cast/[id]"
+        options={{
+          ...tabBarStyle,
+          href: null,
+          tabBarStyle: { display: "none" },
+        }}
+      />
+      <Tabs.Screen
+        name="series/[id]/people/[personId]"
+        options={{
+          ...tabBarStyle,
+          href: null,
+          tabBarStyle: { display: "none" },
+        }}
+      />
+      <Tabs.Screen
+        name="series/[id]/reviews/[id]"
+        options={{
+          ...tabBarStyle,
+          href: null,
+          tabBarStyle: { display: "none" },
+        }}
+      />
+      <Tabs.Screen
         name="[id]/reviews/[id]"
         options={{
           ...tabBarStyle,

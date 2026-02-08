@@ -7,6 +7,10 @@ export default function MoviesHome() {
     router.push(`/movies/${movieId}`);
   }
 
+  function goToSeriesDetails(seriesId: number) {
+    router.push(`/movies/series/${seriesId}`);
+  }
+
   function goToViewMore(type: ServiceType, title: string) {
     return function () {
       router.push({ pathname: `/movies/view-more`, params: { type, title } });
@@ -16,6 +20,7 @@ export default function MoviesHome() {
   return (
     <HomeView
       navigateToMovieDetails={goToMovieDetails}
+      navigateToSeriesDetails={goToSeriesDetails}
       navigateToViewMore={goToViewMore}
     />
   );

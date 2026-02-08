@@ -2,19 +2,19 @@ import { useCallback, useMemo } from "react";
 import { useWindowDimensions } from "react-native";
 import { type ListRenderItemInfo } from "@shopify/flash-list";
 import { Box, NavBar, Text } from "../components";
-import { useMovieCast } from "../controllers";
+import { useSeriesCast } from "../controllers";
 import { Image, List } from "@/components";
 import { getText } from "../localization";
 
-export type CastProps = {
-  movieId: number;
+export type SeriesCastProps = {
+  seriesId: number;
   goBack: () => void;
   goToPerson: (personId: number) => void;
 };
 
-export function CastView(props: CastProps) {
+export function SeriesCastView(props: SeriesCastProps) {
   const numColumns = 3;
-  const { cast } = useMovieCast(props.movieId);
+  const { cast } = useSeriesCast(props.seriesId);
   const { width } = useWindowDimensions();
   const columnWidth = useMemo(() => (width - 40 - 2 * 8) / numColumns, [width]);
 

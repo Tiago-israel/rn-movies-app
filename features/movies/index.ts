@@ -1,11 +1,13 @@
 export {
   MovieDetails,
+  SeriesDetailsView,
   HomeView,
   MovieReviewsView,
   FavoriteMoviesView,
   SearchView,
   PreferencesView,
   CastView,
+  SeriesCastView,
   PersonDetailsView,
   ViewMoreView,
 } from "./views";

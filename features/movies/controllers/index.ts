@@ -6,4 +6,6 @@ export * from "./use-movie-review";
 export * from "./use-person";
 export * from "./use-search-movies";
 export * from "./use-tv-series-home";
+export * from "./use-series-details";
+export * from "./use-series-cast";
 export * from "./use-view-more";

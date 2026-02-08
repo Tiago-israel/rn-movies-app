@@ -4,7 +4,7 @@ import { ServiceType } from "../interfaces";
 import { getText } from "../localization";
 
 export type HomeSeriesProps = {
-  navigateToMovieDetails: (movieId: number) => void;
+  navigateToSeriesDetails: (seriesId: number) => void;
   navigateToViewMore: (type: ServiceType, title: string) => () => void;
 };
 
@@ -18,7 +18,7 @@ export function HomeSeriesView(props: HomeSeriesProps) {
       </HomeTitle>
       <SeriesCarousel
         data={airingToday}
-        onPressItem={props.navigateToMovieDetails}
+        onPressItem={props.navigateToSeriesDetails}
         onPressMoreOptions={props.navigateToViewMore?.(
           "tv.airing_today",
           getText("tv_series_home_airing_today")
@@ -29,7 +29,7 @@ export function HomeSeriesView(props: HomeSeriesProps) {
       </HomeTitle>
       <SeriesCarousel
         data={onTheAir}
-        onPressItem={props.navigateToMovieDetails}
+        onPressItem={props.navigateToSeriesDetails}
         onPressMoreOptions={props.navigateToViewMore?.(
           "tv.on_the_air",
           getText("tv_series_home_on_the_air")
@@ -40,7 +40,7 @@ export function HomeSeriesView(props: HomeSeriesProps) {
       </HomeTitle>
       <SeriesCarousel
         data={popular}
-        onPressItem={props.navigateToMovieDetails}
+        onPressItem={props.navigateToSeriesDetails}
         onPressMoreOptions={props.navigateToViewMore?.(
           "tv.popular",
           getText("tv_series_home_popular")
@@ -51,7 +51,7 @@ export function HomeSeriesView(props: HomeSeriesProps) {
       </HomeTitle>
       <SeriesCarousel
         data={topRated}
-        onPressItem={props.navigateToMovieDetails}
+        onPressItem={props.navigateToSeriesDetails}
         onPressMoreOptions={props.navigateToViewMore?.(
           "tv.top_rated",
           getText("tv_series_home_top_rated")

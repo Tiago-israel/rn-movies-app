@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 import { ServiceType } from "../interfaces";
 export type HomeProps = {
   navigateToMovieDetails: (movieId: number) => void;
+  navigateToSeriesDetails: (seriesId: number) => void;
   navigateToViewMore: (type: ServiceType, title: string) => void;
 };
 
@@ -53,6 +54,7 @@ export function HomeView(props: HomeProps) {
         >
           <CurrentComponent
             navigateToMovieDetails={props.navigateToMovieDetails}
+            navigateToSeriesDetails={props.navigateToSeriesDetails}
             navigateToViewMore={props.navigateToViewMore}
           />
         </Box>
