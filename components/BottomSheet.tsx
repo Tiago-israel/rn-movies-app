@@ -19,6 +19,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import { IconButton } from "./IconButton";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -125,18 +126,26 @@ export function BottomSheet({
             <GestureDetector gesture={panGesture}>
               <View style={styles.handleArea} collapsable={false}>
                 <View style={styles.handle} />
+                <View style={styles.closeButton} >
+                  <IconButton
+                    size="small"
+                    icon={"close"}
+                    onPress={animateClose}
+                  />
+                </View>
+
               </View>
             </GestureDetector>
-          <View style={styles.sheetInner}>
-            {title != null && (
-              <Text style={styles.title} numberOfLines={1}>
-                {title}
-              </Text>
-            )}
-            <View style={styles.content}>{children}</View>
-          </View>
-        </Animated.View>
-      </View>
+            <View style={styles.sheetInner}>
+              {title != null && (
+                <Text style={styles.title} numberOfLines={1}>
+                  {title}
+                </Text>
+              )}
+              <View style={styles.content}>{children}</View>
+            </View>
+          </Animated.View>
+        </View>
       </GestureHandlerRootView>
     </Modal>
   );
@@ -156,6 +165,12 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     backgroundColor: "#1c1c1e",
     overflow: "hidden",
+  },
+  closeButton:{
+    position: "absolute",
+    top: 20,
+    right: 20,
+    zIndex: 1000,
   },
   sheetInner: {
     flex: 1,
