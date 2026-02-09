@@ -12,5 +12,6 @@ export * from './person-movie-credits.response';
 export * from './person.response';
 export * from './tv-series-list-item.response';
 export * from './tv-series-details.response';
+export * from './tv-season-details.response';
 export * from './provider.response'
 export * from './provider-wraper.response';

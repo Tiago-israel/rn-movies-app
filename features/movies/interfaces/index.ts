@@ -1,6 +1,7 @@
 export * from "./response";
 export * from "./movie-details";
 export * from "./series-details";
+export * from "./episode";
 export * from "./movie-review";
 export * from "./user";
 export * from "./cast";

@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
-import { FlatListProps, type ScrollViewProps, Linking } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { FlatListProps, type ScrollViewProps, Linking, Pressable, ScrollView, StyleSheet, View, FlatList } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
-import { Image, StarRating } from "@/components";
+import { BottomSheet, Image, StarRating } from "@/components";
 import {
   NavBar,
   Pill,
@@ -12,7 +12,7 @@ import {
   SeriesCarousel,
 } from "../components";
 import { useSeriesDetails } from "../controllers";
-import { Provider } from "../interfaces";
+import type { Episode, Provider } from "../interfaces";
 import { getText } from "../localization";
 
 type SeriesDetailsProps = {
@@ -26,6 +26,8 @@ type SeriesDetailsProps = {
 
 export function SeriesDetailsView(props: SeriesDetailsProps) {
   const scrollViewRef = useRef<any>(null);
+  const [selectedSeason, setSelectedSeason] = useState(1);
+  const [episodesSheetVisible, setEpisodesSheetVisible] = useState(false);
   const {
     series,
     isFavorite,
@@ -33,11 +35,19 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
     images,
     cast,
     watchProviders,
+    episodes,
     onFavoriteSeries,
-  } = useSeriesDetails(props.seriesId);
+  } = useSeriesDetails(props.seriesId, selectedSeason);
+
+  const numberOfSeasons = series?.numberOfSeasons ?? 0;
+  const seasonOptions = Array.from({ length: numberOfSeasons }, (_, i) => ({
+    value: i + 1,
+    label: `Temp. ${i + 1}`,
+  }));
 
   useEffect(() => {
     scrollViewRef.current?.scrollToOffset?.(0);
+    setSelectedSeason(1);
   }, [props.seriesId]);
 
   return (
@@ -250,6 +260,120 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
             </Box>
           </Box>
         </Box>
+        {numberOfSeasons > 0 && (
+          <Box pt="md" pb="sm" width={"100%"}>
+            <Box
+              width={"100%"}
+              flexDirection="row"
+              alignItems="center"
+              justifyContent="space-between"
+              px="sm"
+              pb="sm"
+            >
+              <Text
+                color="onSurface"
+                fontSize={24}
+                fontWeight={700}
+                numberOfLines={2}
+              >
+                Episódios
+              </Text>
+              <Box
+                as="Pressable"
+                onPress={() => setEpisodesSheetVisible(true)}
+                backgroundColor="primary"
+                borderRadius="full"
+                px="sm"
+                py="xxs"
+                flexDirection="row"
+                alignItems="center"
+                gap="xs"
+              >
+                <Text color="onPrimary" fontSize={14} fontWeight={600}>
+                  Temp. {selectedSeason}
+                </Text>
+                <Icon
+                  name={episodesSheetVisible ? "chevron-up" : "chevron-down"}
+                  size={18}
+                  color="#fff"
+                />
+              </Box>
+            </Box>
+            <BottomSheet
+              visible={episodesSheetVisible}
+              onClose={() => setEpisodesSheetVisible(false)}
+              title="Escolher temporada"
+              heightRatio={0.6}
+            >
+              <FlatList
+                showsVerticalScrollIndicator={false}
+                data={seasonOptions}  
+                contentContainerStyle={{ paddingBottom: 60}}
+                renderItem={({item}) => {
+                  const isSelected = selectedSeason === item.value;
+                  return ( <Pressable
+                    key={item.value}
+                    style={[
+                      seasonListStyles.row,
+                      isSelected && seasonListStyles.rowSelected,
+                    ]}
+                    onPress={() => {
+                      setSelectedSeason(item.value);
+                      setEpisodesSheetVisible(false);
+                    }}
+                  >
+                    <View style={seasonListStyles.radioOuter}>
+                      {isSelected && <View style={seasonListStyles.radioInner} />}
+                    </View>
+                    <Text style={seasonListStyles.label}>{item.label}</Text>
+                  </Pressable>)
+                }}
+              />
+            </BottomSheet>
+            <Box<FlatListProps<Episode>>
+              as="FlatList"
+              data={episodes}
+              keyExtractor={(item) => String(item.id)}
+              contentContainerStyle={episodeListStyles.listContent}
+              showsVerticalScrollIndicator={false}
+              scrollEnabled={false}
+              renderItem={({ item }) => (
+                <Box
+                  flexDirection="row"
+                  borderRadius="lg"
+                  overflow="hidden"
+                  backgroundColor="surfaceVariant"
+                  mx="sm"
+                  mb="xs"
+                >
+                  <Box
+                    as="Image"
+                    source={{ uri: item.stillPath || series?.posterPath }}
+                    width={120}
+                    height={"100%"}
+                    style={{ backgroundColor: "#333" }}
+                    resizeMode="cover"
+                  />
+                  <Box flex={1} p="xs" justifyContent="center" minWidth={0}>
+                    <Text
+                      color="onSurface"
+                      fontSize={14}
+                      fontWeight={600}
+                      numberOfLines={2}
+                    >
+                      E{item.episodeNumber} · {item.name}
+                    </Text>
+                    {item.airDate ? (
+                      <Text color="onSurfaceVariant" fontSize={12} pt="xxs">
+                        {item.airDate}
+                      </Text>
+                    ) : null}
+                  </Box>
+                </Box>
+              )}
+            />
+          </Box>
+        )}
         {watchProviders.length > 0 && (
           <Text
             color="onSurface"
@@ -326,9 +450,57 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
               animated: true,
             });
           }}
-          onPressMoreOptions={() => {}}
+          onPressMoreOptions={() => { }}
         />
       </Box>
     </Box>
   );
 }
+
+const episodeListStyles = StyleSheet.create({
+  listContent: {
+    paddingHorizontal: 8,
+    paddingBottom: 24,
+    gap: 0,
+  },
+});
+
+const seasonListStyles = StyleSheet.create({
+  scroll: {
+    flexGrow: 1,
+    paddingBottom: 100
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
+  rowSelected: {
+    backgroundColor: "rgba(255,255,255,0.14)",
+  },
+  radioOuter: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.5)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  radioInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: "#fff",
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#fff",
+  },
+});

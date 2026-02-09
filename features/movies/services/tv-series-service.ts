@@ -4,6 +4,7 @@ import { useUserStore } from "../store";
 import type {
   Cast,
   CreditResponse,
+  Episode,
   GenericItem,
   ImageResponse,
   MovieVideoResponse,
@@ -18,6 +19,7 @@ import type {
   TVSeriesListItem,
   TVSeriesListItemResponse,
 } from "../interfaces";
+import type { TVSeasonDetailsResponse, TVSeasonEpisodeResponse } from "../interfaces/response/tv-season-details.response";
 
 export class TVSeriesService {
   private headers = {
@@ -220,6 +222,29 @@ export class TVSeriesService {
       headers: this.headers,
     });
     return (response?.results || []).map(this.mapGenericItem);
+  }
+
+  async getSeasonDetails(seriesId: number, seasonNumber: number): Promise<Episode[]> {
+    const response = await this.httpClient.get<TVSeasonDetailsResponse>(
+      `tv/${seriesId}/season/${seasonNumber}?language=${this.language}`,
+      { headers: this.headers }
+    );
+    if (!response?.episodes?.length) return [];
+    return response.episodes.map((ep) => this.mapEpisode(ep));
+  }
+
+  private mapEpisode(response: TVSeasonEpisodeResponse): Episode {
+    return {
+      id: response.id,
+      name: response.name,
+      overview: response.overview,
+      episodeNumber: response.episode_number,
+      stillPath: response.still_path
+        ? `${movieDBBaseImageUrl}${response.still_path}`
+        : "",
+      voteAverage: response.vote_average,
+      airDate: response.air_date ?? "",
+    };
   }
 
   async getSeriesWatchProviders(seriesId: number): Promise<Provider[]> {

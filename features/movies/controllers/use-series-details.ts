@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { TVSeriesService } from "../services";
+import type { Episode } from "../interfaces";
 
-export function useSeriesDetails(seriesId: number) {
+export function useSeriesDetails(seriesId: number, seasonNumber: number = 1) {
   const tvSeriesService = useRef(new TVSeriesService()).current;
 
   const { data: series } = useQuery({
@@ -50,6 +51,16 @@ export function useSeriesDetails(seriesId: number) {
     },
   });
 
+  const { data: episodes } = useQuery({
+    initialData: [] as Episode[],
+    queryKey: ["seriesSeason", seriesId, seasonNumber],
+    queryFn: async () => {
+      const result = await tvSeriesService.getSeasonDetails(seriesId, seasonNumber);
+      return result;
+    },
+    enabled: !!seriesId && seasonNumber >= 1,
+  });
+
   const isFavorite = false;
   const onFavoriteSeries = () => {};
 
@@ -60,6 +71,7 @@ export function useSeriesDetails(seriesId: number) {
     images,
     cast,
     watchProviders,
+    episodes,
     onFavoriteSeries,
   };
 }

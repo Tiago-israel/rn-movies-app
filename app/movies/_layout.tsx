@@ -19,20 +19,11 @@ export default function MoviesLayout() {
 
   const tabBarStyle: any = useMemo(() => {
     return {
-      // tabBarInactiveTintColor: tabStyle.color,
-      // tabBarActiveTintColor: tabStyle.activeColor,
-      // tabBarInactiveBackgroundColor: tabStyle.background,
-      // tabBarActiveBackgroundColor: tabStyle.background,
       tabBarShowLabel: false,
+      tabBarActiveTintColor: "#fff",
       tabBarStyle: {
-        borderRadius: 20,
-        width: width - 40,
-        bottom: 20,
         backgroundColor: tabStyle.background,
-        borderColor: "#fff",
-        borderWidth: 2,
-        position: "absolute",
-        start: 20
+        paddingTop: 12,
       },
     };
   }, [tabStyle]);
@@ -40,28 +31,19 @@ export default function MoviesLayout() {
   return (
     <Tabs
       initialRouteName="index"
-      screenOptions={{ headerShown: false, }}
+      screenOptions={{ headerShown: false }}
       backBehavior="history"
-      safeAreaInsets={{ bottom: 0 }}
       layout={(props) => {
         return <Layout>{props.children}</Layout>;
       }}
     >
       <Tabs.Screen
         name="index"
-        
+
         options={{
           ...tabBarStyle,
-
-          // tabBarItemStyle: {
-          //   justifyContent: "center",
-          //   alignItems: "center",
-          //   isolation: "isolate",
-          //   borderRadius: 20,
-          // },
-          
-          tabBarLabelStyle:{
-            display: 'none'
+          tabBarLabelStyle: {
+            display: 'none',
           },
           tabBarIcon: (props) => (
             <Icon name="home" color={props.color} size={24} />
