@@ -3,11 +3,13 @@ module.exports = function (api) {
   return {
     presets: [
       [
-        'babel-preset-expo',
+        "babel-preset-expo",
         {
           unstable_transformImportMeta: true,
+          jsxImportSource: "nativewind",
         },
       ],
+      "nativewind/babel",
     ],
   };
 };

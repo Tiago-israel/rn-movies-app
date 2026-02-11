@@ -111,10 +111,10 @@ export function BottomSheet({
       statusBarTranslucent
       onRequestClose={animateClose}
     >
-      <GestureHandlerRootView style={StyleSheet.absoluteFill}>
-        <View style={StyleSheet.absoluteFill}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={animateClose}>
-            <Animated.View style={[styles.backdrop, backdropAnimatedStyle]} />
+      <GestureHandlerRootView className="absolute inset-0">
+        <View className="absolute inset-0">
+          <Pressable className="absolute inset-0" onPress={animateClose}>
+            <Animated.View className="absolute inset-0 bg-black" style={[backdropAnimatedStyle]} />
           </Pressable>
           <Animated.View
             style={[
@@ -133,7 +133,6 @@ export function BottomSheet({
                     onPress={animateClose}
                   />
                 </View>
-
               </View>
             </GestureDetector>
             <View style={styles.sheetInner}>
@@ -142,7 +141,7 @@ export function BottomSheet({
                   {title}
                 </Text>
               )}
-              <View style={styles.content}>{children}</View>
+              <View className="flex-1">{children}</View>
             </View>
           </Animated.View>
         </View>
@@ -152,10 +151,6 @@ export function BottomSheet({
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "#000",
-  },
   sheet: {
     position: "absolute",
     left: 0,
@@ -193,8 +188,5 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#fff",
     paddingVertical: 20,
-  },
-  content: {
-    flex: 1,
   },
 });
