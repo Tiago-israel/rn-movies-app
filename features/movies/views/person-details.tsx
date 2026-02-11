@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { FlatListProps, ImageBackgroundProps, Linking } from "react-native";
+import { FlatListProps, Linking } from "react-native";
 import Icon from "@expo/vector-icons/Ionicons";
 import { Image, List } from "@/components";
 import {

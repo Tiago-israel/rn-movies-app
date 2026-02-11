@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import { Box } from "./box";
 import { IconButton } from "./Icon-button";
-// import { Box, IconButton } from "../components";
 
 const NAVBAR_HEIGHT = 72;
 

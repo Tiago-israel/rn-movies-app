@@ -1,6 +1,5 @@
 export * from "./Box";
 export * from "./BottomSheet";
-export * from "./SelectButton";
 export * from "./StarRating";
 export * from "./TapState";
 export * from "./IconButton";

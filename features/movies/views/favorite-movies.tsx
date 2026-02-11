@@ -6,7 +6,6 @@ import {
   ItemPoster,
   Box,
   NavBar,
-  DrawerRef,
   Drawer,
   Text,
   Input,

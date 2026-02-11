@@ -17,7 +17,6 @@ import { Text, TextProps } from "./text";
 import { Box } from "./box";
 import { BoxProps } from "@/lib";
 import { MovieTheme } from "../theme";
-import { hide } from "expo-splash-screen";
 
 export type ViewMoreTextProps = TextProps & {
   seeMoreText?: string;

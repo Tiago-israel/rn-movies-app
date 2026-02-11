@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { FlatListProps, type ScrollViewProps, Linking, Pressable, ScrollView, StyleSheet, View, FlatList } from "react-native";
+import { FlatListProps, type ScrollViewProps, Linking, Pressable, StyleSheet, View, FlatList } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { BottomSheet, Image, StarRating } from "@/components";
 import {
