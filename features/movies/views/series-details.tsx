@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   ScrollView,
   View,
@@ -61,10 +62,26 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
     label: `Temp. ${i + 1}`,
   }));
 
+  const scrollToTop = React.useCallback(() => {
+    requestAnimationFrame(() => {
+      scrollViewRef.current?.scrollTo?.({ y: 0, animated: false });
+    });
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      scrollToTop();
+    }, [scrollToTop])
+  );
+
   useEffect(() => {
-    scrollViewRef.current?.scrollToOffset?.(0);
     setSelectedSeason(1);
-  }, [props.seriesId]);
+    scrollToTop();
+  }, [props.seriesId, scrollToTop]);
+
+  useEffect(() => {
+    if (!isLoading) scrollToTop();
+  }, [isLoading, scrollToTop]);
 
   if (isLoading) {
     return (

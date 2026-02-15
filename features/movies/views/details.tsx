@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   ScrollView,
   View,
@@ -45,9 +46,25 @@ export function MovieDetails(props: MovieDetailsProps) {
     isLoading,
   } = useMovieDetails(props.movieId);
 
+  const scrollToTop = useCallback(() => {
+    requestAnimationFrame(() => {
+      scrollViewRef.current?.scrollTo?.({ y: 0, animated: false });
+    });
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      scrollToTop();
+    }, [scrollToTop])
+  );
+
   useEffect(() => {
-    scrollViewRef.current?.scrollToOffset?.(0);
-  }, [props.movieId]);
+    scrollToTop();
+  }, [props.movieId, scrollToTop]);
+
+  useEffect(() => {
+    if (!isLoading) scrollToTop();
+  }, [isLoading, scrollToTop]);
 
   if (isLoading) {
     return (
