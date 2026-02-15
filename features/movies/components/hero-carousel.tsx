@@ -3,6 +3,7 @@ import {
   FlatList,
   Image,
   Pressable,
+  Text,
   View,
   useWindowDimensions,
   type ViewToken,
@@ -92,20 +93,34 @@ export function HeroCarousel({ data, onPressItem }: HeroCarouselProps) {
         viewabilityConfig={viewabilityConfig}
         getItemLayout={getItemLayout}
       />
-      <View className="absolute bottom-4 left-0 right-0 flex-row justify-center gap-2">
-        {data.map((_, index) => (
-          <Pressable
-            key={index}
-            onPress={() => handleBulletPress(index)}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <View
-              className={`h-2 rounded-full ${
-                index === activeIndex ? "w-6 bg-white" : "w-2 bg-white/50"
-              }`}
-            />
-          </Pressable>
-        ))}
+      {data[activeIndex]?.title ? (
+        <View className="absolute left-0 right-0 top-0 w-full">
+          <View className="self-start w-full bg-black/50 px-3 py-2">
+            <Text
+              className="text-lg font-semibold text-white"
+              numberOfLines={2}
+            >
+              {data[activeIndex].title}
+            </Text>
+          </View>
+        </View>
+      ) : null}
+      <View className="absolute bottom-4 left-0 right-0 flex-row justify-center">
+        <View className="flex-row items-center gap-2 rounded-full bg-black/40 px-3 py-2">
+          {data.map((_, index) => (
+            <Pressable
+              key={index}
+              onPress={() => handleBulletPress(index)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <View
+                className={`h-2 rounded-full ${
+                  index === activeIndex ? "w-6 bg-white" : "w-2 bg-white/50"
+                }`}
+              />
+            </Pressable>
+          ))}
+        </View>
       </View>
     </View>
   );

@@ -290,6 +290,7 @@ export class MoviesService {
   mapGenericItem = (response: MovieDetailsResponse): GenericItem => {
     return {
       id: response.id,
+      title: response.title,
       posterPath: `${movieDBBaseImageUrl}${response.poster_path}`,
       backdropPath: response.backdrop_path
         ? `${movieDBBaseImageUrl}${response.backdrop_path}`

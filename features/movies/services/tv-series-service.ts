@@ -112,6 +112,7 @@ export class TVSeriesService {
   mapGenericItem = (response: TVSeriesListItemResponse): GenericItem => {
     return {
       id: response.id,
+      title: response.name,
       posterPath: `${movieDBBaseImageUrl}${response.poster_path}`,
       backdropPath: response.backdrop_path
         ? `${movieDBBaseImageUrl}${response.backdrop_path}`
