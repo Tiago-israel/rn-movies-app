@@ -170,7 +170,7 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
                       <ExpoImage
                         source={{ uri: member.profilePath }}
                         style={{ width: 36, height: 36 }}
-                        contentFit="contain"
+                        contentFit="cover"
                       />
                     </View>
                   ))}
@@ -197,7 +197,7 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
                 onPress={() => setEpisodesSheetVisible(true)}
                 className="bg-primary rounded-full px-sm py-xxs flex-row items-center gap-xs"
               >
-                <Text color="primary-foreground" fontSize={14} fontWeight={600}>
+                <Text className="text-foreground text-sm font-bold">
                   Temp. {selectedSeason}
                 </Text>
                 <Icon
@@ -249,30 +249,28 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
               showsVerticalScrollIndicator={false}
               scrollEnabled={false}
               renderItem={({ item }) => (
-                <View className="flex-row rounded-lg overflow-hidden bg-card mx-sm mb-xs">
-                  <ExpoImage
-                    source={{ uri: item.stillPath || series?.posterPath }}
-                    style={{
-                      width: 120,
-                      height: 80,
-                      backgroundColor: "#333",
-                    }}
-                    contentFit="cover"
-                  />
-                  <View className="flex-1 p-xs justify-center min-w-0">
+                <View className="flex-row rounded-lg overflow-hidden bg-card mx-sm mb-xs min-h-[100px]">
+                  <View style={{ width: 120, alignSelf: "stretch" }}>
+                    <ExpoImage
+                      source={{ uri: item.stillPath || series?.posterPath }}
+                      style={{
+                        width: 120,
+                        flex: 1,
+                        backgroundColor: "#333",
+                      }}
+                      contentFit="cover"
+                    />
+                  </View>
+                  <View className="flex-1 p-xs justify-between min-w-0 gap-2">
                     <Text
-                      color="foreground"
-                      fontSize={14}
-                      fontWeight={600}
                       numberOfLines={2}
+                      className="text-foreground text-sm font-bold"
                     >
                       E{item.episodeNumber} · {item.name}
                     </Text>
                     {item.airDate ? (
                       <Text
-                        color="card-foreground"
-                        fontSize={12}
-                        className="pt-xxs"
+                        className="text-card-foreground text-xs"
                       >
                         {item.airDate}
                       </Text>
@@ -332,7 +330,7 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
               animated: true,
             });
           }}
-          onPressMoreOptions={() => {}}
+          onPressMoreOptions={() => { }}
         />
       </ScrollView>
     </View>
