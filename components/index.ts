@@ -1,5 +1,6 @@
 export * from "./Box";
 export * from "./BottomSheet";
+export * from "./SkeletonPlaceholder";
 export * from "./StarRating";
 export * from "./TapState";
 export * from "./IconButton";
