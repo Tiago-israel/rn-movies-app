@@ -1,7 +1,7 @@
 import { useRef } from "react";
 
 export function useDebounce<T>(cb: (props: T) => void, delay = 0) {
-  const timeoutId = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutId = useRef<ReturnType<typeof setTimeout>>(null);
 
   return function (props: T) {
     if (timeoutId.current) {

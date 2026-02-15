@@ -1,7 +1,12 @@
 import { useCallback, useMemo } from "react";
-import { useWindowDimensions } from "react-native";
+import {
+  useWindowDimensions,
+  Pressable,
+  View,
+  Text as RNText,
+} from "react-native";
 import { type ListRenderItemInfo } from "@shopify/flash-list";
-import { Box, NavBar, Text } from "../components";
+import { NavBar, Text } from "../components";
 import { useSeriesCast } from "../controllers";
 import { Image, List } from "@/components";
 import { getText } from "../localization";
@@ -19,47 +24,46 @@ export function SeriesCastView(props: SeriesCastProps) {
   const columnWidth = useMemo(() => (width - 40 - 2 * 8) / numColumns, [width]);
 
   const renderItem = useCallback(
-    ({ item }: ListRenderItemInfo<(typeof cast)[0]>) => {
-      return (
-        <Box
-          as="Pressable"
-          width={columnWidth}
-          height={200}
-          marginBottom={8}
-          flexDirection="column"
-          justifyContent="flex-end"
-          borderRadius="md"
-          overflow="hidden"
-          onPress={() => props.goToPerson?.(item.id)}
+    ({ item }: ListRenderItemInfo<(typeof cast)[0]>) => (
+      <Pressable
+        style={{ width: columnWidth, height: 200, marginBottom: 8 }}
+        className="flex-col justify-end rounded-md overflow-hidden"
+        onPress={() => props.goToPerson?.(item.id)}
+      >
+        <Image
+          source={{ uri: item.profilePath }}
+          placeholder={require("../assets/user.png")}
+          contentFit="cover"
+          placeholderContentFit="contain"
+          style={{
+            width: columnWidth,
+            height: 200,
+            borderRadius: 20,
+            position: "absolute",
+          }}
+        />
+        <View
+          className="w-full gap-0.5 flex-col"
+          style={{ backgroundColor: "rgba(0,0,0,0.9)" }}
         >
-          <Image
-            source={{ uri: item.profilePath }}
-            placeholder={require("../assets/user.png")}
-            contentFit="cover"
-            placeholderContentFit="contain"
-            style={{
-              width: columnWidth,
-              height: 200,
-              borderRadius: 20,
-              position: "absolute",
-            }}
-          />
-          <Box width="100%" backgroundColor="rgba(0,0,0,0.9)" gap={2}>
-            <Text color="onPrimary" textAlign="center">
-              {item.name}
-            </Text>
-            <Text color="#c2c2c2" textAlign="center" numberOfLines={1}>
-              {item.character}
-            </Text>
-          </Box>
-        </Box>
-      );
-    },
-    []
+          <Text color="primary-foreground" style={{ textAlign: "center" }}>
+            {item.name}
+          </Text>
+          <RNText
+            className="text-base"
+            style={{ color: "#c2c2c2", textAlign: "center" }}
+            numberOfLines={1}
+          >
+            {item.character}
+          </RNText>
+        </View>
+      </Pressable>
+    ),
+    [columnWidth, props.goToPerson]
   );
 
   return (
-    <Box width="100%" height="100%" backgroundColor="surface">
+    <View className="w-full h-full bg-background">
       <NavBar
         onPressLeading={props.goBack}
         onPressTrailing={props.goBack}
@@ -73,6 +77,6 @@ export function SeriesCastView(props: SeriesCastProps) {
         keyExtractor={(item) => `${item.id}`}
         renderItem={renderItem}
       />
-    </Box>
+    </View>
   );
 }

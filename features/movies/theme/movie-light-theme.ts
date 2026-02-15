@@ -1,54 +1,61 @@
 import { theme } from "./base-theme";
 
+/**
+ * Light theme - Semantic color palette following Tailwind/shadcn conventions.
+ * @see https://ui.shadcn.com/docs/theming
+ */
 export const movieLightTheme = {
   ...theme,
   colors: {
+    // Surface & typography
+    background: "#ecf0f1",
+    foreground: "#141414",
+    card: "#ffffff",
+    "card-foreground": "#95a5a6",
+
+    // Primary actions (buttons, CTAs)
     primary: "#000000",
-    onPrimary: "#ffffff",
+    "primary-foreground": "#ffffff",
+
+    // Secondary elements (chips, badges, icon buttons)
     secondary: "#dfe6e9",
-    onSecondary: "#2c3e50",
-    surface: "#ecf0f1",
-    surfaceVariant: "#ffffff",
-    onSurface: "#141414",
-    onSurfaceVariant: "#95a5a6",
-    "surface-overlay": "rgba(236, 240, 241, 0.9)",
-    onSurfaceBorder: "#ccc",
-    onSurfaceVariantBorder: "#95a5a6",
-    alternates: {
-      primary: "#061C2F",
-    },
-    components: {
-      "icon-button": {
-        primary: {
-          container: {
-            color: "#ffffff",
-          },
-          "on-container": {
-            color: "#000000",
-          },
-        },
+    "secondary-foreground": "#2c3e50",
+
+    // Muted/low-emphasis (inputs, cards variant)
+    muted: "#ffffff",
+    "muted-foreground": "#95a5a6",
+
+    // Accent (links, highlights, alternates)
+    accent: "#061C2F",
+    "accent-foreground": "#ffffff",
+
+    // Borders & input
+    border: "#ccc",
+    input: "#95a5a6",
+    overlay: "rgba(236, 240, 241, 0.9)",
+
+    // Component aliases (derived from semantic tokens)
+    button: {
+      primary: {
+        color: "#ffffff",
+        backgroundColor: "#000000",
       },
-      "nav-bar": {
-        container: {
-          color: "#ffffff",
-        },
+      secondary: {
+        color: "#000000",
+        backgroundColor: "#ffffff",
       },
-      button: {
-        primary: {
-          color: "#ffffff",
-          backgroundColor: "#000000",
-        },
-        secondary: {
-          color: "#000000",
-          backgroundColor: "#ffffff",
-        },
-        disabled: {
-          color: "#7f8c8d",
-          backgroundColor: "#bdc3c7",
-        },
+      disabled: {
+        color: "#7f8c8d",
+        backgroundColor: "#bdc3c7",
       },
     },
-    alternatives: {
+    "icon-button": {
+      container: "#ffffff",
+      "on-container": "#000000",
+    },
+
+    // Palette - decorative colors (avatars, badges, charts)
+    palette: {
       turquoise: "#1abc9c",
       emerald: "#2ecc71",
       peterRiver: "#3498db",

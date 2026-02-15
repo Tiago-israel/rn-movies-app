@@ -1,6 +1,6 @@
 import { useRef, type ReactNode } from "react";
+import { Pressable } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
-import { Box } from "./box";
 import { TapState, TapStateRef } from "@/components";
 import { useTheme } from "@/lib/theme-provider";
 import { MovieTheme } from "../theme";
@@ -14,22 +14,13 @@ export type IconButtonProps = {
 
 export function IconButton(props: IconButtonProps) {
   const TapStateRef = useRef<TapStateRef>(null);
-  const {
-    colors: { components },
-  } = useTheme<MovieTheme>();
+  const { colors } = useTheme<MovieTheme>();
   return (
-    <Box
-      as="Pressable"
-      width={48}
-      height={48}
-      alignItems="center"
-      justifyContent="center"
-      overflow="hidden"
-      borderRadius="full"
+    <Pressable
+      className="w-12 h-12 items-center justify-center overflow-hidden rounded-full bg-secondary"
       onPress={props.onPress}
       onPressIn={() => TapStateRef.current?.setPressed(true)}
       onPressOut={() => TapStateRef.current?.setPressed(false)}
-      backgroundColor="components.icon-button.primary.container.color"
     >
       <TapState ref={TapStateRef} variant="dark" />
       {props.children ? (
@@ -37,13 +28,10 @@ export function IconButton(props: IconButtonProps) {
       ) : (
         <Icon
           name={props.icon}
-          color={
-            props.color ??
-            components["icon-button"].primary["on-container"].color
-          }
+          color={props.color ?? colors["icon-button"]["on-container"]}
           size={24}
         />
       )}
-    </Box>
+    </Pressable>
   );
 }

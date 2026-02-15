@@ -1,13 +1,19 @@
 import { useEffect, useRef } from "react";
-import { FlatListProps, Linking } from "react-native";
+import {
+  ScrollView,
+  View,
+  Text,
+  Pressable,
+  FlatList,
+  ImageBackground,
+  Linking,
+} from "react-native";
 import Icon from "@expo/vector-icons/Ionicons";
 import { Image, List } from "@/components";
 import {
-  Box,
   IconButton,
   NavBar,
   Pill,
-  Text,
   ViewMoreText,
 } from "../components";
 import { usePerson } from "../controllers";
@@ -30,79 +36,71 @@ export function PersonDetailsView(props: PersonDetailsViewProps) {
 
   useEffect(() => {
     return () => {
-      moviesListRef.current?.scrollToOffset(0);
+      moviesListRef.current?.scrollToOffset?.(0);
     };
   });
 
   return (
-    <Box width="100%" height="100%" backgroundColor="surface">
-      <NavBar onPressLeading={props.goBack} onPressTrailing={props.goBack} />
-      <Box
-        as="ScrollView"
-        flex={1}
+    <View className="w-full h-full bg-background">
+      <NavBar
+        onPressLeading={props.goBack}
+        onPressTrailing={props.goBack}
+      />
+      <ScrollView
+        className="flex-1"
         contentContainerStyle={{ paddingBottom: 20 }}
+        showsVerticalScrollIndicator={false}
       >
-        <Box
-          as="ImageBackground"
-          width="100%"
-          height={300}
+        <ImageBackground
           source={{ uri: person?.profilePath }}
+          style={{ width: "100%", height: 300 }}
         >
-          <Box<FlatListProps<MediaItem>>
-              as="FlatList"
-              data={externalMedias}
-              horizontal={false}
-              scrollEnabled={false}
-              contentContainerStyle={{
-                gap: 8,
-                position: "absolute",
-                bottom: 50,
-                right: 0,
-                paddingHorizontal: 10,
-              }}
-              renderItem={({ item }) => {
-                return (
-                  <IconButton
-                    onPress={() => {
-                      if (item.path) {
-                        Linking.openURL(item.path);
-                      }
-                    }}
-                  >
-                    <Icon
-                      name={`logo-${item.media}` as any}
-                      size={24}
-                      color={"#fff"}
-                    />
-                  </IconButton>
-                );
-              }}
-            />
-        </Box>
-        <Box
-          pt="sm"
-          borderTopStartRadius="xl"
-          borderTopEndRadius="xl"
-          width="100%"
-          marginTop={-30}
-          backgroundColor="surface"
+          <FlatList
+            data={externalMedias}
+            horizontal
+            scrollEnabled={false}
+            contentContainerStyle={{
+              gap: 8,
+              position: "absolute",
+              bottom: 50,
+              right: 0,
+              paddingHorizontal: 10,
+            }}
+            renderItem={({ item }) => (
+              <IconButton
+                onPress={() => {
+                  if (item.path) {
+                    Linking.openURL(item.path);
+                  }
+                }}
+              >
+                <Icon
+                  name={`logo-${item.media}` as any}
+                  size={24}
+                  color="#fff"
+                />
+              </IconButton>
+            )}
+          />
+        </ImageBackground>
+        <View
+          className="pt-sm w-full bg-background rounded-tl-xl rounded-tr-xl -mt-[30px]"
         >
-          <Box width={"100%"} px="sm" flexDirection="row" alignItems="center" justifyContent="space-between">
-            <Text color="onSurface" flex={1} fontSize={28} fontWeight={700} >
+          <View className="w-full px-sm flex-row items-center justify-between">
+            <Text className="text-foreground flex-1 text-3xl font-bold">
               {person?.name}
             </Text>
-            
-          </Box>
-
-          <Box flexDirection="row" pt="xs" gap="xxs" px="sm">
+          </View>
+          <View className="flex-row pt-xs gap-xxs px-sm">
             <Pill icon="star">{person?.birthday}</Pill>
-            {person?.deathday && <Pill icon="cross">{person?.deathday}</Pill>}
-          </Box>
-
+            {person?.deathday && (
+              <Pill icon="cross">{person?.deathday}</Pill>
+            )}
+          </View>
           {person?.biography && (
             <ViewMoreText
               ref={viewMoreTextRef}
-              color="#7f8c8d"
+              className="text-palette-asbestos"
               fontSize={16}
               fontWeight={700}
               numberOfLines={4}
@@ -111,8 +109,7 @@ export function PersonDetailsView(props: PersonDetailsViewProps) {
               {person?.biography}
             </ViewMoreText>
           )}
-
-          <Box width={"100%"} height={250}>
+          <View className="w-full h-[250]">
             {movies.length > 0 && (
               <List
                 innerRef={moviesListRef}
@@ -122,10 +119,8 @@ export function PersonDetailsView(props: PersonDetailsViewProps) {
                 contentContainerStyle={{ paddingHorizontal: 20 }}
                 showsHorizontalScrollIndicator={false}
                 renderItem={({ item }) => (
-                  <Box
-                    as="Pressable"
-                    width={120}
-                    height={200}
+                  <Pressable
+                    className="w-[120] h-[200]"
                     onPress={() => props.goToMovie?.(item.id)}
                   >
                     <Image
@@ -136,14 +131,16 @@ export function PersonDetailsView(props: PersonDetailsViewProps) {
                         borderRadius: 16,
                       }}
                     />
-                  </Box>
+                  </Pressable>
                 )}
-                ItemSeparatorComponent={() => <Box width={8} height={8} />}
+                ItemSeparatorComponent={() => (
+                  <View className="w-2 h-2" />
+                )}
               />
             )}
-          </Box>
-        </Box>
-      </Box>
-    </Box>
+          </View>
+        </View>
+      </ScrollView>
+    </View>
   );
 }

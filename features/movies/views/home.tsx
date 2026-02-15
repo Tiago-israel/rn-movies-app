@@ -1,18 +1,23 @@
 import { useTheme } from "@/lib/theme-provider";
-import { Box, Header, TabsGroup } from "../components";
+import { View } from "react-native";
+import { Header, TabsGroup } from "../components";
 import { HomeMoviesView } from "./home-movies";
 import { HomeSeriesView } from "./home-series";
 import { MovieTheme } from "../theme";
 import { useWindowDimensions } from "react-native";
 import { useMemo, useState } from "react";
 import { ServiceType } from "../interfaces";
+
 export type HomeProps = {
   navigateToMovieDetails: (movieId: number) => void;
   navigateToSeriesDetails: (seriesId: number) => void;
   navigateToViewMore: (type: ServiceType, title: string) => void;
 };
 
-const components = new Map();
+const components = new Map<
+  number,
+  (props: HomeProps) => React.ReactElement
+>();
 components.set(0, (props) => <HomeMoviesView {...props} />);
 components.set(1, (props) => <HomeSeriesView {...props} />);
 
@@ -30,9 +35,9 @@ export function HomeView(props: HomeProps) {
   );
 
   return (
-    <Box width={"100%"} height="100%" backgroundColor="surface">
+    <View className="w-full h-full bg-background">
       <Header />
-      <Box alignItems="center" py={theme.spacing.xxs}>
+      <View className="items-center py-xxs">
         <TabsGroup
           selectedIndex={componentIndex}
           items={[{ title: "Movies" }, { title: "Series" }]}
@@ -40,25 +45,19 @@ export function HomeView(props: HomeProps) {
             setComponentIndex(index);
           }}
         />
-      </Box>
-      <Box width="100%" height={containerHeight}>
-        <Box
-          width="100%"
-          height={containerHeight}
-          Index={999}
-          style={{
-            position: "absolute",
-            top: 0,
-            overflow: "hidden",
-          }}
+      </View>
+      <View className="w-full" style={{ height: containerHeight }}>
+        <View
+          className="w-full z-[999] absolute top-0 overflow-hidden"
+          style={{ height: containerHeight }}
         >
-          <CurrentComponent
+          {CurrentComponent && <CurrentComponent
             navigateToMovieDetails={props.navigateToMovieDetails}
             navigateToSeriesDetails={props.navigateToSeriesDetails}
             navigateToViewMore={props.navigateToViewMore}
-          />
-        </Box>
-      </Box>
-    </Box>
+          />}
+        </View>
+      </View>
+    </View>
   );
 }

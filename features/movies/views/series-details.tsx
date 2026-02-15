@@ -1,14 +1,20 @@
 import { useEffect, useRef, useState } from "react";
-import { FlatListProps, type ScrollViewProps, Linking, Pressable, StyleSheet, View, FlatList } from "react-native";
+import {
+  ScrollView,
+  View,
+  Text,
+  Pressable,
+  FlatList,
+  StyleSheet,
+  Linking,
+} from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
-import { BottomSheet, Image, StarRating } from "@/components";
+import { BottomSheet, Image as ExpoImage, StarRating } from "@/components";
 import {
   NavBar,
   Pill,
-  Box,
   MediaGallery,
   ViewMoreText,
-  Text,
   SeriesCarousel,
 } from "../components";
 import { useSeriesDetails } from "../controllers";
@@ -51,7 +57,7 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
   }, [props.seriesId]);
 
   return (
-    <Box height={"100%"} backgroundColor="surface">
+    <View className="h-full bg-background">
       <NavBar
         trainlingIcon={[
           {
@@ -68,228 +74,130 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
         ]}
         onPressLeading={props.goBack}
       />
-      <Box<ScrollViewProps>
-        innerRef={scrollViewRef}
-        as="ScrollView"
+      <ScrollView
+        ref={scrollViewRef}
         contentContainerStyle={{ paddingBottom: 80 }}
+        showsVerticalScrollIndicator={false}
       >
-        <Box
-          as="Text"
-          fontSize={28}
-          color="onSurface"
-          fontWeight={700}
-          p="sm"
+        <Text
+          className="text-foreground text-3xl font-bold p-sm"
           numberOfLines={2}
         >
           {series?.name}
-        </Box>
-        <Box<ScrollViewProps>
-          as="ScrollView"
+        </Text>
+        <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{
-            gap: 8,
-            paddingHorizontal: 20,
-          }}
-          flexDirection="row"
-          pb={24}
-          gap={8}
+          contentContainerStyle={{ gap: 8, paddingHorizontal: 20 }}
+          className="pb-6 flex-row gap-2"
         >
-          <Pill children={`${series?.genre}`} />
-          <Pill children={`${series?.firstAirDate}`} />
+          <Pill>{`${series?.genre}`}</Pill>
+          <Pill>{`${series?.firstAirDate}`}</Pill>
           {series?.numberOfSeasons != null && (
             <Pill
               icon="television"
-              children={`${series.numberOfSeasons} ${series.numberOfSeasons === 1 ? "Season" : "Seasons"}`}
-            />
+            >{`${series.numberOfSeasons} ${series.numberOfSeasons === 1 ? "Season" : "Seasons"}`}</Pill>
           )}
           {series?.numberOfEpisodes != null && (
-            <Pill icon="film" children={`${series.numberOfEpisodes} Episodes`} />
+            <Pill icon="film">{`${series.numberOfEpisodes} Episodes`}</Pill>
           )}
-          <Pill icon="thumbs-up" children={series?.voteCount} />
-        </Box>
-        <Box px={"sm"}>
-          <Box
-            borderColor="onSurfaceBorder"
-            borderWidth={1}
-            borderTopRightRadius={"xl"}
-            borderTopLeftRadius="xl"
-            borderBottomEndRadius="lg"
-            borderBottomStartRadius="lg"
-            position="relative"
-          >
-            <Box
-              width={48}
-              height={48}
-              position="absolute"
-              borderRadius="full"
-              top={-24}
-              right={48}
-              backgroundColor="surface"
-              alignItems="center"
-              justifyContent="center"
-              zIndex={999}
-            >
-              <Box
-                width={24}
-                height={4}
-                backgroundColor="alternates.primary"
-                borderRadius="full"
-              />
-            </Box>
-
-            <Image
-              source={{
-                uri: series?.backdropPath,
-              }}
+          <Pill icon="thumbs-up">{series?.voteCount}</Pill>
+        </ScrollView>
+        <View className="px-sm">
+          <View className="border border-border rounded-t-xl rounded-bl-lg rounded-br-lg relative">
+            <View className="w-12 h-12 absolute rounded-full -top-6 right-12 bg-background items-center justify-center z-[999]">
+              <View className="w-6 h-1 bg-accent rounded-full" />
+            </View>
+            <ExpoImage
+              source={{ uri: series?.backdropPath }}
               style={{ width: "100%", height: 200, borderRadius: 32 }}
             />
             <ViewMoreText
               fontSize={16}
-              color="onSurface"
+              color="foreground"
               numberOfLines={5}
               containerStyle={{ p: "sm" }}
             >
               {series?.overview}
             </ViewMoreText>
-          </Box>
-          <Box gap={"xs"} flexDirection="row" pt={"sm"}>
-            <Box
-              as="Pressable"
-              flex={1}
-              height={100}
-              borderRadius="lg"
-              p="xs"
-              backgroundColor="surfaceVariant"
-              justifyContent="space-between"
-              overflow="hidden"
+          </View>
+          <View className="gap-xs flex-row pt-sm">
+            <Pressable
+              className="flex-1 h-[100] rounded-lg p-xs bg-card justify-between overflow-hidden"
               onPress={props.onPressReview}
             >
-              <Box flexDirection="row" justifyContent="space-between">
-                <Box as="Text" color="onSurfaceVariant" fontSize={14}>
+              <View className="flex-row justify-between">
+                <Text className="text-card-foreground text-sm">
                   {getText("movie_details_reviews_title")}
-                </Box>
-                <Box
-                  width={24}
-                  height={24}
-                  borderRadius="full"
-                  backgroundColor="primary"
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <Icon size={16} name="arrow-top-right" color={"#fff"} />
-                </Box>
-              </Box>
-
-              <Box
-                flexDirection="row"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Box as="Text" color="onSurface" fontSize={24}>
+                </Text>
+                <View className="w-6 h-6 rounded-full bg-primary items-center justify-center">
+                  <Icon size={16} name="arrow-top-right" color="#fff" />
+                </View>
+              </View>
+              <View className="flex-row justify-between items-center">
+                <Text className="text-foreground text-2xl">
                   {series?.voteAverageStr}
-                </Box>
+                </Text>
                 <StarRating
                   rating={series?.voteAverage}
                   color="#f1c40f"
                   size={16}
                 />
-              </Box>
-            </Box>
-
-            <Box
-              as="Pressable"
-              flex={1}
-              height={100}
-              backgroundColor="surfaceVariant"
-              borderRadius="lg"
-              p="xs"
-              justifyContent="space-between"
+              </View>
+            </Pressable>
+            <Pressable
+              className="flex-1 h-[100] bg-card rounded-lg p-xs justify-between"
               onPress={props.onPressCast}
             >
-              <Box flexDirection="row" justifyContent="space-between">
-                <Box as="Text" color="onSurfaceVariant" fontSize={14}>
+              <View className="flex-row justify-between">
+                <Text className="text-card-foreground text-sm">
                   {getText("movie_details_cast_title")}
-                </Box>
-                <Box
-                  width={24}
-                  height={24}
-                  borderRadius="full"
-                  backgroundColor="primary"
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <Icon size={16} name="arrow-top-right" color={"#fff"} />
-                </Box>
-              </Box>
-
-              <Box flexDirection="row" gap={"xxs"} alignItems="center">
-                <Box flexDirection="row">
+                </Text>
+                <View className="w-6 h-6 rounded-full bg-primary items-center justify-center">
+                  <Icon size={16} name="arrow-top-right" color="#fff" />
+                </View>
+              </View>
+              <View className="flex-row gap-xxs items-center">
+                <View className="flex-row">
                   {cast.slice(0, 4).map((member, index) => (
-                    <Box
-                      width={36}
-                      height={36}
-                      borderRadius="full"
-                      borderColor="#34495e"
-                      borderWidth={1}
+                    <View
                       key={member.id}
-                      marginLeft={index !== 0 ? -10 : 0}
-                      zIndex={999}
-                      backgroundColor="white"
-                      overflow="hidden"
+                      className="w-9 h-9 rounded-full border border-palette-wet-asphalt overflow-hidden z-[999] bg-white"
+                      style={{
+                        marginLeft: index !== 0 ? -10 : 0,
+                      }}
                     >
-                      <Box
-                        as="Image"
-                        source={{
-                          uri: member.profilePath,
-                        }}
-                        width={36}
-                        height={36}
-                        borderRadius="full"
-                        resizeMode="contain"
+                      <ExpoImage
+                        source={{ uri: member.profilePath }}
+                        style={{ width: 36, height: 36 }}
+                        contentFit="contain"
                       />
-                    </Box>
+                    </View>
                   ))}
-                </Box>
+                </View>
                 {cast.length > 4 && (
-                  <Box as="Text" fontSize={14} color="onSurface">
+                  <Text className="text-sm text-foreground">
                     +{cast.length - 4}
-                  </Box>
+                  </Text>
                 )}
-              </Box>
-            </Box>
-          </Box>
-        </Box>
+              </View>
+            </Pressable>
+          </View>
+        </View>
         {numberOfSeasons > 0 && (
-          <Box pt="md" pb="sm" width={"100%"}>
-            <Box
-              width={"100%"}
-              flexDirection="row"
-              alignItems="center"
-              justifyContent="space-between"
-              px="sm"
-              pb="sm"
-            >
+          <View className="pt-md pb-sm w-full">
+            <View className="w-full flex-row items-center justify-between px-sm pb-sm">
               <Text
-                color="onSurface"
-                fontSize={24}
-                fontWeight={700}
+                className="text-foreground text-2xl font-bold"
                 numberOfLines={2}
               >
                 Episódios
               </Text>
-              <Box
-                as="Pressable"
+              <Pressable
                 onPress={() => setEpisodesSheetVisible(true)}
-                backgroundColor="primary"
-                borderRadius="full"
-                px="sm"
-                py="xxs"
-                flexDirection="row"
-                alignItems="center"
-                gap="xs"
+                className="bg-primary rounded-full px-sm py-xxs flex-row items-center gap-xs"
               >
-                <Text color="onPrimary" fontSize={14} fontWeight={600}>
+                <Text color="primary-foreground" fontSize={14} fontWeight={600}>
                   Temp. {selectedSeason}
                 </Text>
                 <Icon
@@ -297,8 +205,8 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
                   size={18}
                   color="#fff"
                 />
-              </Box>
-            </Box>
+              </Pressable>
+            </View>
             <BottomSheet
               visible={episodesSheetVisible}
               onClose={() => setEpisodesSheetVisible(false)}
@@ -307,56 +215,53 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
             >
               <FlatList
                 showsVerticalScrollIndicator={false}
-                data={seasonOptions}  
-                contentContainerStyle={{ paddingBottom: 60}}
-                renderItem={({item}) => {
+                data={seasonOptions}
+                contentContainerStyle={{ paddingBottom: 60 }}
+                renderItem={({ item }) => {
                   const isSelected = selectedSeason === item.value;
-                  return ( <Pressable
-                    key={item.value}
-                    style={[
-                      seasonListStyles.row,
-                      isSelected && seasonListStyles.rowSelected,
-                    ]}
-                    onPress={() => {
-                      setSelectedSeason(item.value);
-                      setEpisodesSheetVisible(false);
-                    }}
-                  >
-                    <View style={seasonListStyles.radioOuter}>
-                      {isSelected && <View style={seasonListStyles.radioInner} />}
-                    </View>
-                    <Text style={seasonListStyles.label}>{item.label}</Text>
-                  </Pressable>)
+                  return (
+                    <Pressable
+                      key={item.value}
+                      style={[
+                        seasonListStyles.row,
+                        isSelected && seasonListStyles.rowSelected,
+                      ]}
+                      onPress={() => {
+                        setSelectedSeason(item.value);
+                        setEpisodesSheetVisible(false);
+                      }}
+                    >
+                      <View style={seasonListStyles.radioOuter}>
+                        {isSelected && (
+                          <View style={seasonListStyles.radioInner} />
+                        )}
+                      </View>
+                      <Text style={seasonListStyles.label}>{item.label}</Text>
+                    </Pressable>
+                  );
                 }}
               />
             </BottomSheet>
-            <Box<FlatListProps<Episode>>
-              as="FlatList"
+            <FlatList
               data={episodes}
               keyExtractor={(item) => String(item.id)}
               contentContainerStyle={episodeListStyles.listContent}
               showsVerticalScrollIndicator={false}
               scrollEnabled={false}
               renderItem={({ item }) => (
-                <Box
-                  flexDirection="row"
-                  borderRadius="lg"
-                  overflow="hidden"
-                  backgroundColor="surfaceVariant"
-                  mx="sm"
-                  mb="xs"
-                >
-                  <Box
-                    as="Image"
+                <View className="flex-row rounded-lg overflow-hidden bg-card mx-sm mb-xs">
+                  <ExpoImage
                     source={{ uri: item.stillPath || series?.posterPath }}
-                    width={120}
-                    height={"100%"}
-                    style={{ backgroundColor: "#333" }}
-                    resizeMode="cover"
+                    style={{
+                      width: 120,
+                      height: 80,
+                      backgroundColor: "#333",
+                    }}
+                    contentFit="cover"
                   />
-                  <Box flex={1} p="xs" justifyContent="center" minWidth={0}>
+                  <View className="flex-1 p-xs justify-center min-w-0">
                     <Text
-                      color="onSurface"
+                      color="foreground"
                       fontSize={14}
                       fontWeight={600}
                       numberOfLines={2}
@@ -364,81 +269,58 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
                       E{item.episodeNumber} · {item.name}
                     </Text>
                     {item.airDate ? (
-                      <Text color="onSurfaceVariant" fontSize={12} pt="xxs">
+                      <Text
+                        color="card-foreground"
+                        fontSize={12}
+                        className="pt-xxs"
+                      >
                         {item.airDate}
                       </Text>
                     ) : null}
-                  </Box>
-                </Box>
+                  </View>
+                </View>
               )}
             />
-          </Box>
+          </View>
         )}
         {watchProviders.length > 0 && (
           <Text
-            color="onSurface"
-            paddingHorizontal={"sm"}
-            paddingVertical={"sm"}
-            fontWeight={700}
-            fontSize={24}
+            className="text-foreground font-bold text-2xl px-sm py-sm"
           >
             {getText("movie_details_watch_providers_title")}
           </Text>
         )}
-        <Box<FlatListProps<Provider>>
-          as="FlatList"
+        <FlatList
           horizontal
           data={watchProviders}
           contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
           keyExtractor={(item, index) => `${item.id}-${index}`}
           showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => {
-            return (
-              <Box
-                as="Pressable"
-                width={72}
-                height={72}
-                borderRadius="full"
-                overflow="hidden"
-                borderColor="#ccc"
-                borderWidth={2}
-                onPress={() => {
-                  Linking.openURL(item.link);
-                }}
-              >
-                <Box
-                  as="Image"
-                  width={"100%"}
-                  height={"100%"}
-                  source={{ uri: item.image }}
-                />
-              </Box>
-            );
-          }}
+          renderItem={({ item }) => (
+            <Pressable
+              className="w-[72] h-[72] rounded-full overflow-hidden border-2 border-border"
+              onPress={() => Linking.openURL(item.link)}
+            >
+              <ExpoImage
+                source={{ uri: item.image }}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </Pressable>
+          )}
         />
-        <Box
-          as="Text"
-          fontSize={24}
-          color="onSurface"
-          fontWeight={700}
-          pt={40}
-          px="sm"
-          pb="sm"
+        <Text
+          className="text-foreground font-bold text-2xl pt-10 px-sm pb-sm"
           numberOfLines={2}
         >
           {getText("movie_details_companies_galeria_title")}
-        </Box>
+        </Text>
         <MediaGallery images={images} videoKey={series?.videoKey} />
-        <Box
-          as="Text"
-          fontSize={24}
-          color="onSurface"
-          fontWeight={700}
-          p="sm"
+        <Text
+          className="text-foreground font-bold text-2xl p-sm"
           numberOfLines={2}
         >
           {getText("movie_details_you_also_may_like")}
-        </Box>
+        </Text>
         <SeriesCarousel
           itemWidth={100}
           itemHeight={150}
@@ -450,10 +332,10 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
               animated: true,
             });
           }}
-          onPressMoreOptions={() => { }}
+          onPressMoreOptions={() => {}}
         />
-      </Box>
-    </Box>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -466,10 +348,6 @@ const episodeListStyles = StyleSheet.create({
 });
 
 const seasonListStyles = StyleSheet.create({
-  scroll: {
-    flexGrow: 1,
-    paddingBottom: 100
-  },
   row: {
     flexDirection: "row",
     alignItems: "center",

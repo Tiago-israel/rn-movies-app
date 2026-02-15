@@ -1,9 +1,9 @@
-import { ScrollViewProps } from "react-native";
 import * as Updates from "expo-updates";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
+import { View, Text, Pressable, ScrollView } from "react-native";
 import { List, Toggle } from "@/components";
 import { useUserStore } from "../store";
-import { Box, NavBar } from "../components";
+import { NavBar } from "../components";
 
 export type PreferencesProps = {
   theme?: "light" | "dark";
@@ -19,66 +19,41 @@ export function usePreferences() {
 export function PreferencesView(props: PreferencesProps) {
   const { userTheme, setTheme, setLanguage } = usePreferences();
   return (
-    <Box width="100%" height="100%" backgroundColor="surface">
+    <View className="w-full h-full bg-background">
       <NavBar hideButtons title="Settings" />
-      <Box<ScrollViewProps>
-        as="ScrollView"
+      <ScrollView
         contentContainerStyle={{ paddingTop: 20, gap: 8 }}
+        showsVerticalScrollIndicator={false}
       >
-        <Box
-          px="sm"
-          flexDirection="row"
-          alignItems="center"
-          justifyContent="space-between"
-        >
-          <Box as="Text" color="onSurface" fontSize={24} fontWeight={700}>
-            Appearance
-          </Box>
-          <Box gap="xs" flexDirection="row">
-            <Box
-              as="Pressable"
-              p="xxs"
-              borderWidth={2}
-              borderColor="onSurfaceBorder"
-              borderRadius="sm"
-              onPress={() => {
-                setTheme("light");
-              }}
+        <View className="px-sm flex-row items-center justify-between">
+          <Text className="text-foreground text-2xl font-bold">Appearance</Text>
+          <View className="gap-xs flex-row">
+            <Pressable
+              className="p-xxs border-2 border-border rounded-sm"
+              onPress={() => setTheme("light")}
             >
               <Icon
                 name="white-balance-sunny"
                 color={userTheme === "light" ? "#f1c40f" : "#fff"}
                 size={24}
               />
-            </Box>
-            <Box
-              as="Pressable"
-              p="xxs"
-              borderWidth={2}
-              borderColor="onSurfaceBorder"
-              borderRadius="sm"
-              onPress={() => {
-                setTheme("dark");
-              }}
+            </Pressable>
+            <Pressable
+              className="p-xxs border-2 border-border rounded-sm"
+              onPress={() => setTheme("dark")}
             >
               <Icon
                 name="moon-waxing-crescent"
                 color={userTheme === "dark" ? "#f1c40f" : "#fff"}
                 size={24}
               />
-            </Box>
-          </Box>
-        </Box>
-        <Box px="sm">
-          <Box
-            as="Text"
-            color="onSurface"
-            fontSize={24}
-            fontWeight={700}
-            pb="sm"
-          >
+            </Pressable>
+          </View>
+        </View>
+        <View className="px-sm">
+          <Text className="text-foreground text-2xl font-bold pb-sm">
             Languages
-          </Box>
+          </Text>
           <List
             scrollEnabled={false}
             horizontal={false}
@@ -88,32 +63,25 @@ export function PreferencesView(props: PreferencesProps) {
               { label: "Brazilian Portuguese", id: "pt-BR" },
             ]}
             ItemSeparatorComponent={() => (
-              <Box width="100%" height={2} backgroundColor="onSurfaceBorder" />
+              <View className="w-full h-0.5 bg-border" />
             )}
-            renderItem={({ item }) => {
-              return (
-                <Box
-                  as="Pressable"
-                  width="100%"
-                  height={48}
-                  flexDirection="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  onPress={() => {
-                    setLanguage(item.id);
-                    Updates.reloadAsync();
-                  }}
-                >
-                  <Box as="Text" color="onSurface" flex={1} fontSize={16}>
-                    {item.label}
-                  </Box>
-                  <Toggle />
-                </Box>
-              );
-            }}
+            renderItem={({ item }) => (
+              <Pressable
+                className="w-full h-12 flex-row items-center justify-between"
+                onPress={() => {
+                  setLanguage(item.id as "en" | "pt-BR");
+                  Updates.reloadAsync();
+                }}
+              >
+                <Text className="text-foreground flex-1 text-base">
+                  {item.label}
+                </Text>
+                <Toggle />
+              </Pressable>
+            )}
           />
-        </Box>
-      </Box>
-    </Box>
+        </View>
+      </ScrollView>
+    </View>
   );
 }

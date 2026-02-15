@@ -3,7 +3,6 @@ import { Platform, useWindowDimensions } from "react-native";
 import { Tabs } from "expo-router";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { Layout, useUserStore } from "@/features/movies";
-import { Box } from "@/lib";
 
 export default function MoviesLayout() {
   const { width } = useWindowDimensions();

@@ -1,7 +1,6 @@
-// import { Box } from "../components";
 import { ReactNode } from "react";
+import { View, Text } from "react-native";
 import Icon from "@expo/vector-icons/FontAwesome6";
-import { Box } from "./box";
 
 export type HomeTitleProps = {
   icon?: {
@@ -13,13 +12,11 @@ export type HomeTitleProps = {
 
 export function HomeTitle(props: HomeTitleProps) {
   return (
-    <Box flexDirection="row" alignItems="center" gap={8} px="sm" py="xs">
-      <Box as="Text" color="onSurface" fontSize={24} fontWeight={700}>
-        {props.children}
-      </Box>
+    <View className="flex-row items-center gap-2 px-sm py-xs">
+      <Text className="text-foreground text-2xl font-bold">{props.children}</Text>
       {props.icon && (
         <Icon name={props.icon.name} size={24} color={props.icon.color} />
       )}
-    </Box>
+    </View>
   );
 }

@@ -1,9 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Animated, useAnimatedValue, useWindowDimensions } from "react-native";
+import {
+  Animated,
+  useAnimatedValue,
+  useWindowDimensions,
+  View,
+  Pressable,
+  ImageBackground,
+} from "react-native";
 import YoutubePlayer from "react-native-youtube-iframe";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { type ListRenderItemInfo } from "@shopify/flash-list";
-import { Image, Box, List } from "@/components";
+import { Image, List } from "@/components";
 
 export type ImageGalleryProps = {
   images: string[];
@@ -36,55 +43,47 @@ function useAnimatedGallery() {
 }
 
 export function MediaGallery(props: ImageGalleryProps) {
-  const imageRef = useRef();
+  const imageRef = useRef<any>(null);
   const { width } = useWindowDimensions();
   const [selectedImage, setSelectedImage] = useState<string>();
   const { imageOpacity, videoOpacity, animateTransition } =
     useAnimatedGallery();
 
   const renderItem = useCallback(
-    ({ item, index }: ListRenderItemInfo<string>) => {
+    ({ item }: ListRenderItemInfo<string>) => {
       function onPress() {
         setSelectedImage(item);
         animateTransition(true);
       }
       return (
-        <Box as="Pressable" width={100} height={70} onPress={onPress}>
+        <Pressable
+          className="w-[100] h-[70]"
+          onPress={onPress}
+        >
           <Image
             source={{ uri: item }}
             style={{ width: 100, height: 70 }}
             transition={{ duration: 300, timing: "ease-out" }}
           />
-        </Box>
+        </Pressable>
       );
     },
     [animateTransition]
   );
 
-  const videoPlayButton = useCallback(() => {
-    return (
-      <Box
-        as="ImageBackground"
-        width={100}
-        height={70}
-        source={{ uri: props.images[0] }}
-        opacity={0.5}
+  const videoPlayButton = useCallback(() => (
+    <ImageBackground
+      source={{ uri: props.images[0] }}
+      style={{ width: 100, height: 70, opacity: 0.5 }}
+    >
+      <Pressable
+        className="w-full h-full items-center justify-center"
+        onPress={() => animateTransition(false)}
       >
-        <Box
-          as="Pressable"
-          width={"100%"}
-          height={"100%"}
-          alignItems="center"
-          justifyContent="center"
-          onPress={() => {
-            animateTransition(false);
-          }}
-        >
-          <Icon name="play" size={24} color={"#fff"} />
-        </Box>
-      </Box>
-    );
-  }, [props.images]);
+        <Icon name="play" size={24} color="#fff" />
+      </Pressable>
+    </ImageBackground>
+  ), [props.images, animateTransition]);
 
   useEffect(() => {
     setSelectedImage(props.images[0]);
@@ -94,29 +93,25 @@ export function MediaGallery(props: ImageGalleryProps) {
   }, [props.images]);
 
   return (
-    <Box width="100%" height={330} flexDirection="column">
-      <Box width={"100%"} height={247}>
-        <Box
-          as="AnimatedView"
-          position="absolute"
-          bottom={0}
-          left={0}
+    <View className="w-full h-[330] flex-col">
+      <View className="w-full h-[247]">
+        <Animated.View
+          className="absolute bottom-0 left-0"
           style={[{ opacity: imageOpacity }]}
         >
           <Image
             ref={imageRef}
             source={{ uri: selectedImage }}
-            style={{ width: width, height: 247, marginBottom: 2 }}
+            style={{ width, height: 247, marginBottom: 2 }}
           />
-        </Box>
+        </Animated.View>
         {props.videoKey && (
-          <Box
-            as="AnimatedView"
-            position="absolute"
-            bottom={-50}
-            left={0}
-            backgroundColor="#000"
-            style={[{ opacity: videoOpacity }]}
+          <Animated.View
+            className="absolute left-0 bg-black"
+            style={[
+              { opacity: videoOpacity },
+              { bottom: -50 },
+            ]}
           >
             <YoutubePlayer
               forceAndroidAutoplay={false}
@@ -127,19 +122,18 @@ export function MediaGallery(props: ImageGalleryProps) {
                 controls: false,
               }}
             />
-          </Box>
+          </Animated.View>
         )}
-      </Box>
+      </View>
       <List
         horizontal
         estimatedItemSize={70}
-        estimatedListSize={{ width, height: 70 }}
         data={props.images}
         keyExtractor={(item) => `${item}`}
         ListHeaderComponent={props.videoKey ? videoPlayButton : undefined}
-        ItemSeparatorComponent={() => <Box width={2} height={2} />}
+        ItemSeparatorComponent={() => <View className="w-0.5 h-0.5" />}
         renderItem={renderItem}
       />
-    </Box>
+    </View>
   );
 }

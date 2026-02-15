@@ -1,7 +1,11 @@
 import { useRef, useState } from "react";
-import { type TextInput, type TextInputProps } from "react-native";
+import {
+  View,
+  TextInput,
+  Pressable,
+  type TextInputProps,
+} from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
-import { Box } from "@/components";
 import { useDebounce } from "@/hooks";
 
 export type SearchFieldProps = TextInputProps & {
@@ -24,21 +28,10 @@ export function SearchField({
   }
 
   return (
-    <Box
-      width="100%"
-      height={48}
-      flexDirection="row"
-      backgroundColor="#fff"
-      borderRadius="lg"
-      alignItems="center"
-    >
-      <Box<TextInputProps>
-        as="TextInput"
-        py={0}
-        px={20}
-        flex={1}
-        height="100%"
-        color="#141414"
+    <View className="w-full h-12 flex-row bg-white rounded-lg items-center">
+      <TextInput
+        className="flex-1 h-full px-5 text-black"
+        style={{ paddingVertical: 0 }}
         placeholderTextColor="#000"
         placeholder={placeholder}
         value={text}
@@ -49,10 +42,10 @@ export function SearchField({
         {...props}
       />
       {text && (
-        <Box as="Pressable" pr="xs" onPress={clearText}>
+        <Pressable className="pr-xs" onPress={clearText}>
           <Icon name="close-circle" size={24} />
-        </Box>
+        </Pressable>
       )}
-    </Box>
+    </View>
   );
 }

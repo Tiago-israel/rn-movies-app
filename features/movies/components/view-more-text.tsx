@@ -1,7 +1,6 @@
 import {
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useRef,
   useState,
@@ -9,19 +8,17 @@ import {
 import {
   Platform,
   type NativeSyntheticEvent,
-  type Text as RNText,
   type TextLayoutEventData,
   type ViewProps,
 } from "react-native";
+import { View } from "react-native";
 import { Text, TextProps } from "./text";
-import { Box } from "./box";
-import { BoxProps } from "@/lib";
 import { MovieTheme } from "../theme";
 
 export type ViewMoreTextProps = TextProps & {
   seeMoreText?: string;
   seeLessText?: string;
-  containerStyle?: BoxProps<ViewProps, MovieTheme>;
+  containerStyle?: { p?: string; px?: string; py?: string; className?: string };
 };
 
 export const ViewMoreText = forwardRef(
@@ -62,19 +59,31 @@ export const ViewMoreText = forwardRef(
       []
     );
 
+    const containerClass =
+      containerStyle?.className ??
+      [
+        containerStyle?.p && `p-${containerStyle.p}`,
+        containerStyle?.px && `px-${containerStyle.px}`,
+        containerStyle?.py && `py-${containerStyle.py}`,
+      ]
+        .filter(Boolean)
+        .join(" ");
     return (
-      <Box {...containerStyle}>
+      <View className={containerClass || undefined}>
         <Text
           {...props}
           numberOfLines={textShow ? undefined : numberOfLines}
           onTextLayout={onTextLayout}
         />
         {lengthMore ? (
-          <Text color="#3498db" onPress={toggleNumberOfLines}>
+          <Text
+            className="text-palette-peter-river"
+            onPress={toggleNumberOfLines}
+          >
             {textShow ? seeLessText : seeMoreText}
           </Text>
         ) : null}
-      </Box>
+      </View>
     );
   }
 );

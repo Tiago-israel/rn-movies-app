@@ -1,5 +1,6 @@
+import { ScrollView } from "react-native";
 import { useMovieHome } from "../controllers";
-import { HomeTitle, MovieCarousel, Box } from "../components";
+import { HomeTitle, MovieCarousel } from "../components";
 import { getText } from "../localization";
 import { ServiceType } from "../interfaces";
 
@@ -9,11 +10,18 @@ export type HomeMoviesProps = {
 };
 
 export function HomeMoviesView(props: HomeMoviesProps) {
-  const { nowPlayingMovies = [], popularMovies = [], topRatedMovies = [], upcomingMovies = [] } =
-    useMovieHome();
+  const {
+    nowPlayingMovies = [],
+    popularMovies = [],
+    topRatedMovies = [],
+    upcomingMovies = [],
+  } = useMovieHome();
 
   return (
-    <Box as="ScrollView" contentContainerStyle={{ paddingBottom: 200 }}>
+    <ScrollView
+      contentContainerStyle={{ paddingBottom: 200 }}
+      showsVerticalScrollIndicator={false}
+    >
       <HomeTitle icon={{ name: "film", color: "#2980b9" }}>
         {getText("movie_home_now_playing")}
       </HomeTitle>
@@ -25,7 +33,6 @@ export function HomeMoviesView(props: HomeMoviesProps) {
           getText("movie_home_now_playing")
         )}
       />
-
       <HomeTitle icon={{ name: "trophy", color: "#f1c40f" }}>
         {getText("movie_home_top_rated")}
       </HomeTitle>
@@ -59,6 +66,6 @@ export function HomeMoviesView(props: HomeMoviesProps) {
           getText("movie_home_upcoming")
         )}
       />
-    </Box>
+    </ScrollView>
   );
 }

@@ -1,5 +1,4 @@
-import { Box, Image } from "@/components";
-import { ImageProps } from "react-native";
+import { View, Pressable, Image } from "react-native";
 
 export type ItemPosterProps = {
   width?: number;
@@ -15,23 +14,19 @@ export function ItemPoster({
   borderRadius = "lg",
   ...props
 }: ItemPosterProps) {
+  const radiusClass = borderRadius === "none" ? "" : "rounded-lg";
+  const Component = props.onPress ? Pressable : View;
+
   return (
-    <Box
-      as={props.onPress ? "Pressable" : "View"}
-      width={width}
-      height={height}
+    <Component
+      className={`overflow-hidden ${radiusClass}`}
+      style={{ width, height }}
       onPress={props.onPress}
-      overflow="hidden"
-      borderRadius={borderRadius}
     >
       <Image
         source={{ uri: props.posterUrl }}
-        placeholder={require("../assets/placeholder.png")}
-        style={{
-          width: width,
-          height: height,
-        }}
+        style={{ width, height }}
       />
-    </Box>
+    </Component>
   );
 }

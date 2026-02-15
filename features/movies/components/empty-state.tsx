@@ -1,5 +1,5 @@
-import { Box } from "./box";
+import { View } from "react-native";
 
 export function EmptyState() {
-  return <Box width="100%" flex={1} alignItems="center"></Box>;
+  return <View className="w-full flex-1 items-center" />;
 }

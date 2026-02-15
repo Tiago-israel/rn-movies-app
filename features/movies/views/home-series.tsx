@@ -1,4 +1,5 @@
-import { Box, HomeTitle, SeriesCarousel, Text } from "../components";
+import { ScrollView } from "react-native";
+import { HomeTitle, SeriesCarousel } from "../components";
 import { useTVSeriesHome } from "../controllers";
 import { ServiceType } from "../interfaces";
 import { getText } from "../localization";
@@ -12,7 +13,10 @@ export function HomeSeriesView(props: HomeSeriesProps) {
   const { airingToday, onTheAir, popular, topRated } = useTVSeriesHome();
 
   return (
-    <Box as="ScrollView" contentContainerStyle={{ paddingBottom: 200 }}>
+    <ScrollView
+      contentContainerStyle={{ paddingBottom: 200 }}
+      showsVerticalScrollIndicator={false}
+    >
       <HomeTitle icon={{ name: "tv", color: "#2980b9" }}>
         {getText("tv_series_home_airing_today")}
       </HomeTitle>
@@ -57,6 +61,6 @@ export function HomeSeriesView(props: HomeSeriesProps) {
           getText("tv_series_home_top_rated")
         )}
       />
-    </Box>
+    </ScrollView>
   );
 }

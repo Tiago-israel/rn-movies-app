@@ -3,9 +3,10 @@ import {
   Animated,
   LayoutChangeEvent,
   LayoutRectangle,
+  Pressable,
   useAnimatedValue,
+  View,
 } from "react-native";
-import { Box } from "./box";
 import { Text } from "./text";
 
 const TABSGROUP_HEIGHT = 32;
@@ -28,14 +29,8 @@ export type TabItemProps = {
 
 export const TabItem = forwardRef((props: TabItemProps, ref) => {
   return (
-    <Box
-      as="Pressable"
-      height={TABSGROUP_HEIGHT}
-      alignItems="center"
-      justifyContent="center"
-      borderRadius="full"
-      px="lg"
-      zIndex={999}
+    <Pressable
+      className="h-8 items-center justify-center rounded-full px-lg z-[999]"
       onLayout={(event: LayoutChangeEvent) => {
         props.onLoad?.(props.index, event.nativeEvent.layout);
       }}
@@ -43,8 +38,8 @@ export const TabItem = forwardRef((props: TabItemProps, ref) => {
         props.onPress?.(props.index);
       }}
     >
-      <Text color="#fff">{props.children}</Text>
-    </Box>
+      <Text color="primary-foreground">{props.children}</Text>
+    </Pressable>
   );
 });
 
@@ -95,19 +90,9 @@ export function TabsGroup({
   }, [measurements, selectedIndex]);
 
   return (
-    <Box
-      flexDirection="row"
-      borderWidth={2}
-      borderColor="onSurfaceBorder"
-      borderRadius="full"
-    >
-      <Box
-        as="AnimatedView"
-        borderRadius="full"
-        height={TABSGROUP_HEIGHT}
-        backgroundColor="red"
-        position="absolute"
-        top={0}
+    <View className="flex-row border-2 border-border rounded-full">
+      <Animated.View
+        className="rounded-full h-8 absolute top-0 bg-primary"
         style={[{ width: selectedWidth, left }]}
       />
       {items?.map((item, index) => {
@@ -126,7 +111,7 @@ export function TabsGroup({
           </TabItem>
         );
       })}
-    </Box>
+    </View>
   );
 }
 

@@ -1,6 +1,6 @@
 import { useRef } from "react";
+import { View, Pressable } from "react-native";
 import { TapState, type TapStateRef } from "@/components";
-import { Box } from "./box";
 import { Text } from "./text";
 import { getText } from "../localization";
 import { IconButton } from "./Icon-button";
@@ -19,18 +19,15 @@ export function MoreOptionsCarousel({
   ...props
 }: MoreOptionsCarouselProps) {
   const ref = useRef<TapStateRef>(null);
+  const radiusClass = borderRadius === "none" ? "" : "rounded-lg";
   return (
-    <Box
-      as="Pressable"
-      alignItems="center"
-      justifyContent="center"
-      width={width}
-      height={height}
-      backgroundColor="rgba(0, 0, 0, 0.5)"
-      marginLeft={8}
-      borderRadius={borderRadius}
-      overflow="hidden"
-      gap={8}
+    <Pressable
+      className={`items-center justify-center overflow-hidden gap-2 ml-2 ${radiusClass}`}
+      style={{
+        width,
+        height,
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+      }}
       onPressIn={() => {
         ref.current?.setPressed(true);
       }}
@@ -39,11 +36,11 @@ export function MoreOptionsCarousel({
       }}
       onPress={props.onPress}
     >
-      <TapState ref={ref} variant="light"/>
-      <IconButton icon={'plus'}/>
-      <Text color="onSurface" fontSize={14} fontWeight={700}>
+      <TapState ref={ref} variant="light" />
+      <IconButton icon="plus" />
+      <Text color="foreground" fontSize={14} fontWeight={700}>
         {getText("show_more")}
       </Text>
-    </Box>
+    </Pressable>
   );
 }

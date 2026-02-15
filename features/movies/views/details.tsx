@@ -1,15 +1,20 @@
 import { useEffect, useRef } from "react";
-import { FlatListProps, type ScrollViewProps, Linking } from "react-native";
+import {
+  ScrollView,
+  View,
+  Text,
+  Pressable,
+  FlatList,
+  Linking,
+} from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { Image, StarRating } from "@/components";
 import {
   NavBar,
   Pill,
   MovieCarousel,
-  Box,
   MediaGallery,
   ViewMoreText,
-  Text,
 } from "../components";
 import { useMovieDetails } from "../controllers";
 import { Provider, type MovieDetails } from "../interfaces";
@@ -26,15 +31,22 @@ type MovieDetailsProps = {
 
 export function MovieDetails(props: MovieDetailsProps) {
   const scrollViewRef = useRef<any>(null);
-  const { movie, isFavorite, recommendations, images, cast, watchProviders, onFavoriteMovie } =
-    useMovieDetails(props.movieId);
+  const {
+    movie,
+    isFavorite,
+    recommendations,
+    images,
+    cast,
+    watchProviders,
+    onFavoriteMovie,
+  } = useMovieDetails(props.movieId);
 
   useEffect(() => {
     scrollViewRef.current?.scrollToOffset?.(0);
   }, [props.movieId]);
 
   return (
-    <Box height={"100%"} backgroundColor="surface">
+    <View className="h-full bg-background">
       <NavBar
         trainlingIcon={[
           {
@@ -51,232 +63,143 @@ export function MovieDetails(props: MovieDetailsProps) {
         ]}
         onPressLeading={props.goBack}
       />
-      <Box<ScrollViewProps>
-        innerRef={scrollViewRef}
-        as="ScrollView"
+      <ScrollView
+        ref={scrollViewRef}
         contentContainerStyle={{ paddingBottom: 80 }}
+        showsVerticalScrollIndicator={false}
       >
-        <Box
-          as="Text"
-          fontSize={28}
-          color="onSurface"
-          fontWeight={700}
-          p="sm"
+        <Text
+          className="text-foreground text-3xl font-bold p-sm"
           numberOfLines={2}
         >
           {movie?.title}
-        </Box>
-        <Box<ScrollViewProps>
-          as="ScrollView"
+        </Text>
+        <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{
-            gap: 8,
-            paddingHorizontal: 20,
-          }}
-          flexDirection="row"
-          pb={24}
-          gap={8}
+          contentContainerStyle={{ gap: 8, paddingHorizontal: 20 }}
+          className="pb-6 flex-row gap-2"
         >
-          <Pill children={`${movie?.genre}`} />
-          <Pill children={`${movie?.releaseDate}`} />
-          <Pill icon="clock" children={movie?.runtime} />
-          <Pill icon="thumbs-up" children={movie?.voteCount} />
-        </Box>
-        <Box px={"sm"}>
-          <Box
-            borderColor="onSurfaceBorder"
-            borderWidth={1}
-            borderTopRightRadius={"xl"}
-            borderTopLeftRadius="xl"
-            borderBottomEndRadius="lg"
-            borderBottomStartRadius="lg"
-            position="relative"
-          >
-            <Box
-              width={48}
-              height={48}
-              position="absolute"
-              borderRadius="full"
-              top={-24}
-              right={48}
-              backgroundColor="surface"
-              alignItems="center"
-              justifyContent="center"
-              zIndex={999}
-            >
-              <Box
-                width={24}
-                height={4}
-                backgroundColor="alternates.primary"
-                borderRadius="full"
-              />
-            </Box>
-
+          <Pill>{`${movie?.genre}`}</Pill>
+          <Pill>{`${movie?.releaseDate}`}</Pill>
+          <Pill icon="clock">{movie?.runtime}</Pill>
+          <Pill icon="thumbs-up">{movie?.voteCount}</Pill>
+        </ScrollView>
+        <View className="px-sm">
+          <View className="border border-border rounded-t-xl rounded-bl-lg rounded-br-lg relative">
+            <View className="w-12 h-12 absolute rounded-full -top-6 right-12 bg-background items-center justify-center z-[999]">
+              <View className="w-6 h-1 bg-accent rounded-full" />
+            </View>
             <Image
-              source={{
-                uri: movie?.backdropPath,
-              }}
+              source={{ uri: movie?.backdropPath }}
               style={{ width: "100%", height: 200, borderRadius: 32 }}
             />
             <ViewMoreText
               fontSize={16}
-              color="onSurface"
+              color="foreground"
               numberOfLines={5}
               containerStyle={{ p: "sm" }}
             >
               {movie?.overview}
             </ViewMoreText>
-          </Box>
-          <Box gap={"xs"} flexDirection="row" pt={"sm"}>
-            <Box
-              as="Pressable"
-              flex={1}
-              height={100}
-              borderRadius="lg"
-              p="xs"
-              backgroundColor="surfaceVariant"
-              justifyContent="space-between"
-              overflow="hidden"
-              onPress={props.onPressReview}
+          </View>
+          <View className="gap-xs flex-row pt-sm">
+            <Pressable
+              className="flex-1 h-[100] rounded-lg p-xs bg-card justify-between overflow-hidden"
+              onPress={() => props.onPressReview?.()}
             >
-              <Box flexDirection="row" justifyContent="space-between">
-                <Box as="Text" color="onSurfaceVariant" fontSize={14}>
+              <View className="flex-row justify-between">
+                <Text className="text-card-foreground text-sm">
                   {getText("movie_details_reviews_title")}
-                </Box>
-                <Box
-                  width={24}
-                  height={24}
-                  borderRadius="full"
-                  backgroundColor="primary"
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <Icon size={16} name="arrow-top-right" color={"#fff"} />
-                </Box>
-              </Box>
-
-              <Box
-                flexDirection="row"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Box as="Text" color="onSurface" fontSize={24}>
+                </Text>
+                <View className="w-6 h-6 rounded-full bg-primary items-center justify-center">
+                  <Icon size={16} name="arrow-top-right" color="#fff" />
+                </View>
+              </View>
+              <View className="flex-row justify-between items-center">
+                <Text className="text-foreground text-2xl">
                   {movie?.voteAverageStr}
-                </Box>
+                </Text>
                 <StarRating
                   rating={movie?.voteAverage}
                   color="#f1c40f"
                   size={16}
                 />
-              </Box>
-            </Box>
-
-            <Box
-              as="Pressable"
-              flex={1}
-              height={100}
-              backgroundColor="surfaceVariant"
-              borderRadius="lg"
-              p="xs"
-              justifyContent="space-between"
-              onPress={props.onPressCast}
+              </View>
+            </Pressable>
+            <Pressable
+              className="flex-1 h-[100] bg-card rounded-lg p-xs justify-between"
+              onPress={() => props.onPressCast?.()}
             >
-              <Box flexDirection="row" justifyContent="space-between">
-                <Box as="Text" color="onSurfaceVariant" fontSize={14}>
+              <View className="flex-row justify-between">
+                <Text className="text-card-foreground text-sm">
                   {getText("movie_details_cast_title")}
-                </Box>
-                <Box
-                  width={24}
-                  height={24}
-                  borderRadius="full"
-                  backgroundColor="primary"
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <Icon size={16} name="arrow-top-right" color={"#fff"} />
-                </Box>
-              </Box>
-
-              <Box flexDirection="row" gap={"xxs"} alignItems="center">
-                <Box flexDirection="row">
-                  {cast.slice(0, 4).map((cast, index) => (
-                    <Box
-                      width={36}
-                      height={36}
-                      borderRadius="full"
-                      borderColor="#34495e"
-                      borderWidth={1}
+                </Text>
+                <View className="w-6 h-6 rounded-full bg-primary items-center justify-center">
+                  <Icon size={16} name="arrow-top-right" color="#fff" />
+                </View>
+              </View>
+              <View className="flex-row gap-xxs items-center">
+                <View className="flex-row">
+                  {cast.slice(0, 4).map((c, index) => (
+                    <View
                       key={index}
-                      marginLeft={index !== 0 ? -10 : 0}
-                      zIndex={999}
-                      backgroundColor="white"
-                      overflow="hidden"
+                      className="w-9 h-9 rounded-full border border-palette-wet-asphalt overflow-hidden z-[999] bg-white"
+                      style={{ marginLeft: index !== 0 ? -10 : 0 }}
                     >
-                      <Box
-                        as="Image"
-                        source={{
-                          uri: cast.profilePath,
-                        }}
-                        width={36}
-                        height={36}
-                        borderRadius="full"
-                        resizeMode="contain"
+                      <Image
+                        source={{ uri: c.profilePath }}
+                        style={{ width: 36, height: 36 }}
+                        contentFit="contain"
                       />
-                    </Box>
+                    </View>
                   ))}
-                </Box>
-                <Box as="Text" fontSize={14} color="onSurface">
+                </View>
+                <Text className="text-sm text-foreground">
                   +{cast.length - 4}
-                </Box>
-              </Box>
-            </Box>
-          </Box>
-        </Box>
+                </Text>
+              </View>
+            </Pressable>
+          </View>
+        </View>
         {watchProviders.length > 0 && (
-          <Text color="onSurface" paddingHorizontal={"sm"} paddingVertical={"sm"} fontWeight={700} fontSize={24}>
+          <Text
+            className="text-foreground font-bold text-2xl px-sm py-sm"
+          >
             {getText("movie_details_watch_providers_title")}
           </Text>
         )}
-        <Box<FlatListProps<Provider>>
-          as="FlatList"
+        <FlatList
           horizontal
           data={watchProviders}
           contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
           keyExtractor={(item, index) => `${item.id}-${index}`}
           showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => {
-            return (
-              <Box as="Pressable" width={72} height={72} borderRadius="full" overflow="hidden" borderColor="#ccc" borderWidth={2} onPress={() => { 
-                Linking.openURL(item.link)
-              }}>
-                <Box as="Image" width={"100%"} height={"100%"} source={{ uri: item.image }} />
-              </Box>
-            );
-          }} />
-        <Box
-          as="Text"
-          fontSize={24}
-          color="onSurface"
-          fontWeight={700}
-          pt={40}
-          px="sm"
-          pb="sm"
+          renderItem={({ item }) => (
+            <Pressable
+              className="w-[72] h-[72] rounded-full overflow-hidden border-2 border-border"
+              onPress={() => Linking.openURL(item.link)}
+            >
+              <Image
+                source={{ uri: item.image }}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </Pressable>
+          )}
+        />
+        <Text
+          className="text-foreground font-bold text-2xl pt-10 px-sm pb-sm"
           numberOfLines={2}
         >
           {getText("movie_details_companies_galeria_title")}
-        </Box>
+        </Text>
         <MediaGallery images={images} videoKey={movie.videoKey} />
-        <Box
-          as="Text"
-          fontSize={24}
-          color="onSurface"
-          fontWeight={700}
-          p="sm"
+        <Text
+          className="text-foreground font-bold text-2xl p-sm"
           numberOfLines={2}
         >
           {getText("movie_details_you_also_may_like")}
-        </Box>
+        </Text>
         <MovieCarousel
           itemWidth={100}
           itemHeight={150}
@@ -288,8 +211,9 @@ export function MovieDetails(props: MovieDetailsProps) {
               animated: true,
             });
           }}
+          onPressMoreOptions={() => {}}
         />
-      </Box>
-    </Box>
+      </ScrollView>
+    </View>
   );
 }

@@ -1,5 +1,4 @@
 export * from "./Icon-button";
-export * from "./box";
 export * from "./empty-state";
 export * from "./home-title";
 export * from "./layout";

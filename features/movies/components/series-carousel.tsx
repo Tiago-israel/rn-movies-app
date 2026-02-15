@@ -1,8 +1,8 @@
-import { Box, List } from "@/components";
+import { List } from "@/components";
 import { ItemPoster } from "./item-poster";
 import type { GenericItem } from "../interfaces";
 import { memo, useCallback } from "react";
-import { useWindowDimensions } from "react-native";
+import { useWindowDimensions, View } from "react-native";
 import { MoreOptionsCarousel } from "./more-options-carousel";
 
 type SeriesCarouselProps = {
@@ -36,7 +36,7 @@ export const SeriesCarousel = memo(({ ...props }: SeriesCarouselProps) => {
       estimatedItemSize={props.itemHeight ?? 200}
       estimatedListSize={{ width, height: props.itemHeight ?? 200 }}
       contentContainerStyle={{ paddingHorizontal: 20 }}
-      ItemSeparatorComponent={() => <Box width={8} height={8} />}
+      ItemSeparatorComponent={() => <View className="w-2 h-2" />}
       data={props.data}
       renderItem={renderItem}
       ListFooterComponent={() => {

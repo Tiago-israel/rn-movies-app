@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Box } from "./box";
+import { View, Text } from "react-native";
 import { IconButton } from "./Icon-button";
 
 const NAVBAR_HEIGHT = 72;
@@ -34,15 +34,12 @@ export function NavBar({
   ...props
 }: NavBarProps) {
   return (
-    <Box
-      width="100%"
-      height={NAVBAR_HEIGHT}
-      flexDirection="row"
-      alignItems="center"
-      justifyContent={props.hideButtons ? "center" : "space-between"}
-      px={"sm"}
-      borderBottomColor="onSurfaceBorder"
-      borderBottomWidth={1}
+    <View
+      className="w-full flex-row items-center px-sm border-b border-border"
+      style={{
+        height: NAVBAR_HEIGHT,
+        justifyContent: props.hideButtons ? "center" : "space-between",
+      }}
     >
       {!props.hideButtons && leadingIcon && (
         <IconButton
@@ -52,13 +49,11 @@ export function NavBar({
         />
       )}
       {props.title && (
-        <Box as="Text" fontSize={20} color="onSurface">
-          {props.title}
-        </Box>
+        <Text className="text-xl text-foreground">{props.title}</Text>
       )}
-      <Box flexDirection="row" gap="xs">
-        {!props.hideButtons && trainlingIcon &&
-          trainlingIcon.map((item, index) => (
+      <View className="flex-row gap-xs">
+        {!props.hideButtons &&
+          trainlingIcon?.map((item, index) => (
             <IconButton
               key={index}
               icon={item.name}
@@ -67,8 +62,8 @@ export function NavBar({
               onPress={item.onPress || props.onPressTrailing}
             />
           ))}
-      </Box>
-    </Box>
+      </View>
+    </View>
   );
 }
 
