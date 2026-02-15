@@ -36,7 +36,7 @@ export function HomeView(props: HomeProps) {
 
   return (
     <View className="w-full h-full bg-background">
-      <Header />
+      {/* <Header /> */}
       <View className="items-center py-xxs">
         <TabsGroup
           selectedIndex={componentIndex}
