@@ -5,13 +5,15 @@ import { PeopleService } from "../services";
 export function usePerson(id: number) {
   const moviesService = useRef(new PeopleService()).current;
 
-  const { data: person } = useQuery({
+  const { data: person, isFetching: isPersonFetching } = useQuery({
     queryKey: ["person", id],
     queryFn: async () => {
       const result = await moviesService.getPersonDetails(id);
       return result;
     },
   });
+
+  const isLoading = isPersonFetching && !person?.id;
 
   const { data: movies } = useQuery({
     initialData: [],
@@ -31,5 +33,5 @@ export function usePerson(id: number) {
     },
   });
 
-  return { person, movies, externalMedias };
+  return { person, movies, externalMedias, isLoading };
 }

@@ -1,7 +1,11 @@
 import { useCallback, useMemo } from "react";
-import { useWindowDimensions, View } from "react-native";
+import {
+  useWindowDimensions,
+  View,
+  ScrollView,
+} from "react-native";
 import { type ListRenderItemInfo } from "@shopify/flash-list";
-import { List } from "@/components";
+import { List, SkeletonPlaceholder } from "@/components";
 import { ItemPoster, NavBar } from "../components";
 import { useViewMore } from "../controllers";
 import { GenericItem, ServiceType } from "../interfaces";
@@ -13,10 +17,42 @@ export type ViewMoreProps = {
 };
 
 export function ViewMoreView(props: ViewMoreProps) {
-  const { items, getPaginatedItems } = useViewMore(props.type);
+  const { items, getPaginatedItems, isLoading } = useViewMore(props.type);
   const { width } = useWindowDimensions();
   const numColumns = 3;
   const columnWidth = useMemo(() => (width - 40 - 2 * 8) / numColumns, [width]);
+
+  if (isLoading) {
+    const skeletonItems = Array.from({ length: 12 }, (_, i) => i);
+    return (
+      <View className="w-full h-full bg-background">
+        <NavBar
+          title={props.title}
+          onPressLeading={props.goBack}
+          onPressTrailing={props.goBack}
+        />
+        <ScrollView
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingTop: 20,
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: 8,
+          }}
+        >
+          {skeletonItems.map((i) => (
+            <SkeletonPlaceholder
+              key={i}
+              width={columnWidth}
+              height={200}
+              borderRadius={16}
+              style={{ marginBottom: 8 }}
+            />
+          ))}
+        </ScrollView>
+      </View>
+    );
+  }
 
   const renderItem = useCallback(
     (info: ListRenderItemInfo<GenericItem>) => (

@@ -7,9 +7,10 @@ import {
   FlatList,
   ImageBackground,
   Linking,
+  Dimensions,
 } from "react-native";
 import Icon from "@expo/vector-icons/Ionicons";
-import { Image, List } from "@/components";
+import { Image, List, SkeletonPlaceholder } from "@/components";
 import {
   IconButton,
   NavBar,
@@ -25,10 +26,15 @@ export type PersonDetailsViewProps = {
   goToMovie: (movieId: number) => void;
 };
 
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const CONTENT_WIDTH = SCREEN_WIDTH - 40;
+
 export function PersonDetailsView(props: PersonDetailsViewProps) {
-  const moviesListRef = useRef<any>();
+  const moviesListRef = useRef<any>(null);
   const viewMoreTextRef = useRef<any>(null);
-  const { person, movies, externalMedias } = usePerson(props.personId);
+  const { person, movies, externalMedias, isLoading } = usePerson(
+    props.personId
+  );
 
   useEffect(() => {
     viewMoreTextRef.current?.hideText?.();
@@ -39,6 +45,60 @@ export function PersonDetailsView(props: PersonDetailsViewProps) {
       moviesListRef.current?.scrollToOffset?.(0);
     };
   });
+
+  if (isLoading) {
+    return (
+      <View className="w-full h-full bg-background">
+        <NavBar
+          onPressLeading={props.goBack}
+          trainlingIcon={[]}
+        />
+        <ScrollView
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <SkeletonPlaceholder
+            width={CONTENT_WIDTH}
+            height={300}
+            borderRadius={0}
+            style={{ marginBottom: 0 }}
+          />
+          <View style={{ paddingTop: 16 }}>
+            <SkeletonPlaceholder
+              width={CONTENT_WIDTH * 0.7}
+              height={36}
+              style={{ marginBottom: 16 }}
+            />
+            <SkeletonPlaceholder
+              width={CONTENT_WIDTH * 0.4}
+              height={28}
+              style={{ marginBottom: 24 }}
+            />
+            <SkeletonPlaceholder
+              width={CONTENT_WIDTH}
+              height={80}
+              style={{ marginBottom: 8 }}
+            />
+            <SkeletonPlaceholder
+              width={CONTENT_WIDTH * 0.9}
+              height={16}
+              style={{ marginBottom: 8 }}
+            />
+            <SkeletonPlaceholder
+              width={CONTENT_WIDTH * 0.6}
+              height={16}
+              style={{ marginBottom: 32 }}
+            />
+            <SkeletonPlaceholder
+              width={CONTENT_WIDTH}
+              height={200}
+              style={{ marginTop: 24 }}
+            />
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
 
   return (
     <View className="w-full h-full bg-background">

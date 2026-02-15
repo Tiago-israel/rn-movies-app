@@ -1,6 +1,10 @@
-import { ScrollView } from "react-native";
+import { ScrollView, View, Dimensions } from "react-native";
 import { HomeTitle, HeroCarousel, SeriesCarousel } from "../components";
 import { useTVSeriesHome } from "../controllers";
+import { SkeletonPlaceholder } from "@/components";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const CONTENT_WIDTH = SCREEN_WIDTH - 40;
 import { ServiceType } from "../interfaces";
 import { getText } from "../localization";
 
@@ -10,7 +14,55 @@ export type HomeSeriesProps = {
 };
 
 export function HomeSeriesView(props: HomeSeriesProps) {
-  const { airingToday, onTheAir, popular, topRated } = useTVSeriesHome();
+  const { airingToday, onTheAir, popular, topRated, isLoading } =
+    useTVSeriesHome();
+
+  if (isLoading) {
+    return (
+      <ScrollView
+        bounces={false}
+        contentContainerStyle={{ paddingBottom: 200 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <SkeletonPlaceholder
+          width={CONTENT_WIDTH}
+          height={200}
+          borderRadius={16}
+          style={{ marginHorizontal: 20, marginBottom: 24 }}
+        />
+        <SkeletonPlaceholder
+          width={120}
+          height={24}
+          style={{ marginHorizontal: 20, marginBottom: 16 }}
+        />
+        <View style={{ flexDirection: "row", paddingHorizontal: 20, gap: 12 }}>
+          {[1, 2, 3].map((i) => (
+            <SkeletonPlaceholder
+              key={i}
+              width={100}
+              height={150}
+              borderRadius={12}
+            />
+          ))}
+        </View>
+        <SkeletonPlaceholder
+          width={120}
+          height={24}
+          style={{ marginHorizontal: 20, marginTop: 24, marginBottom: 16 }}
+        />
+        <View style={{ flexDirection: "row", paddingHorizontal: 20, gap: 12 }}>
+          {[1, 2, 3].map((i) => (
+            <SkeletonPlaceholder
+              key={i}
+              width={100}
+              height={150}
+              borderRadius={12}
+            />
+          ))}
+        </View>
+      </ScrollView>
+    );
+  }
 
   return (
     <ScrollView

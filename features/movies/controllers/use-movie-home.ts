@@ -4,13 +4,16 @@ import { MoviesService } from "../services";
 export function useMovieHome() {
   const moviesService = new MoviesService();
 
-  const { data: nowPlayingMovies } = useQuery({
+  const { data: nowPlayingMovies, isFetching: isNowPlayingFetching } = useQuery({
     queryKey: ["nowPlayingMovies"],
     queryFn: async () => {
       const { results = [] } = await moviesService.getNowPlayingMovies();
       return results;
     },
   });
+
+  const isLoading =
+    isNowPlayingFetching && (!nowPlayingMovies || nowPlayingMovies.length === 0);
 
   const { data: popularMovies } = useQuery({
     queryKey: ["popularMovies"],
@@ -36,5 +39,11 @@ export function useMovieHome() {
     },
   });
 
-  return { nowPlayingMovies, popularMovies, topRatedMovies, upcomingMovies };
+  return {
+    nowPlayingMovies,
+    popularMovies,
+    topRatedMovies,
+    upcomingMovies,
+    isLoading,
+  };
 }

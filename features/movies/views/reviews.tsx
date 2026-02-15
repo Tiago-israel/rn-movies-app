@@ -1,11 +1,11 @@
-import { Image, List, StarRating } from "@/components";
+import { Image, List, StarRating, SkeletonPlaceholder } from "@/components";
 import { useMovieReview } from "../controllers";
 import { MovieReview } from "../interfaces";
 import { NavBar, Text, ViewMoreText } from "../components";
 import { useTheme } from "@/lib/theme-provider";
 import { MovieTheme } from "../theme";
 import { useMemo } from "react";
-import { View } from "react-native";
+import { View, ScrollView } from "react-native";
 
 export type MovieReviewsViewProps = {
   movieId: number;
@@ -73,7 +73,45 @@ function CommentItem(info: { item: MovieReview; index: number }) {
 }
 
 export function MovieReviewsView(props: MovieReviewsViewProps) {
-  const { movieReviews } = useMovieReview(props.movieId);
+  const { movieReviews, isLoading } = useMovieReview(props.movieId);
+
+  if (isLoading) {
+    return (
+      <View className="w-full h-full bg-background">
+        <NavBar
+          onPressLeading={props.goBack}
+          onPressTrailing={props.goBack}
+          title="comments"
+        />
+        <ScrollView
+          contentContainerStyle={{ padding: 20 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {[1, 2, 3, 4, 5].map((i) => (
+            <View key={i} style={{ marginBottom: 24 }}>
+              <View style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}>
+                <SkeletonPlaceholder width={32} height={32} borderRadius={999} />
+                <View style={{ flex: 1 }}>
+                  <SkeletonPlaceholder
+                    width="80%"
+                    height={16}
+                    style={{ marginBottom: 8 }}
+                  />
+                  <SkeletonPlaceholder width={120} height={14} />
+                </View>
+              </View>
+              <SkeletonPlaceholder
+                width="100%"
+                height={40}
+                style={{ marginBottom: 8 }}
+              />
+              <SkeletonPlaceholder width="70%" height={16} />
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  }
 
   return (
     <View className="w-full h-full bg-background">

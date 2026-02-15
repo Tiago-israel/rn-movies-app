@@ -5,7 +5,7 @@ import { TVSeriesService } from "../services";
 export function useSeriesCast(seriesId: number) {
   const tvSeriesService = useRef(new TVSeriesService()).current;
 
-  const { data: cast } = useQuery({
+  const { data: cast, isFetching: isCastFetching } = useQuery({
     initialData: [],
     queryKey: ["seriesCast", seriesId],
     queryFn: async () => {
@@ -14,5 +14,6 @@ export function useSeriesCast(seriesId: number) {
     },
   });
 
-  return { cast };
+  const isLoading = isCastFetching && cast.length === 0;
+  return { cast, isLoading };
 }

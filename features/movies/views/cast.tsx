@@ -4,11 +4,12 @@ import {
   Pressable,
   View,
   Text as RNText,
+  ScrollView,
 } from "react-native";
 import { type ListRenderItemInfo } from "@shopify/flash-list";
 import { NavBar, Text } from "../components";
 import { useMovieCast } from "../controllers";
-import { Image, List } from "@/components";
+import { Image, List, SkeletonPlaceholder } from "@/components";
 import { getText } from "../localization";
 
 export type CastProps = {
@@ -19,7 +20,7 @@ export type CastProps = {
 
 export function CastView(props: CastProps) {
   const numColumns = 3;
-  const { cast } = useMovieCast(props.movieId);
+  const { cast, isLoading } = useMovieCast(props.movieId);
   const { width } = useWindowDimensions();
   const columnWidth = useMemo(() => (width - 40 - 2 * 8) / numColumns, [width]);
 
@@ -61,6 +62,37 @@ export function CastView(props: CastProps) {
     ),
     [columnWidth, props.goToPerson]
   );
+
+  if (isLoading) {
+    const skeletonItems = Array.from({ length: 9 }, (_, i) => i);
+    return (
+      <View className="w-full h-full bg-background">
+        <NavBar
+          onPressLeading={props.goBack}
+          onPressTrailing={props.goBack}
+          title={getText("movie_details_cast_title")}
+        />
+        <ScrollView
+          contentContainerStyle={{
+            padding: 20,
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: 8,
+          }}
+        >
+          {skeletonItems.map((i) => (
+            <SkeletonPlaceholder
+              key={i}
+              width={columnWidth}
+              height={200}
+              borderRadius={20}
+              style={{ marginBottom: 8 }}
+            />
+          ))}
+        </ScrollView>
+      </View>
+    );
+  }
 
   return (
     <View className="w-full h-full bg-background">

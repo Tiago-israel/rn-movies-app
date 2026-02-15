@@ -7,9 +7,15 @@ import {
   FlatList,
   StyleSheet,
   Linking,
+  Dimensions,
 } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
-import { BottomSheet, Image as ExpoImage, StarRating } from "@/components";
+import {
+  BottomSheet,
+  Image as ExpoImage,
+  StarRating,
+  SkeletonPlaceholder,
+} from "@/components";
 import {
   NavBar,
   Pill,
@@ -30,6 +36,9 @@ type SeriesDetailsProps = {
   onShareSeries: (seriesName?: string) => void;
 };
 
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const CONTENT_WIDTH = SCREEN_WIDTH - 40;
+
 export function SeriesDetailsView(props: SeriesDetailsProps) {
   const scrollViewRef = useRef<any>(null);
   const [selectedSeason, setSelectedSeason] = useState(1);
@@ -43,6 +52,7 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
     watchProviders,
     episodes,
     onFavoriteSeries,
+    isLoading,
   } = useSeriesDetails(props.seriesId, selectedSeason);
 
   const numberOfSeasons = series?.numberOfSeasons ?? 0;
@@ -55,6 +65,86 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
     scrollViewRef.current?.scrollToOffset?.(0);
     setSelectedSeason(1);
   }, [props.seriesId]);
+
+  if (isLoading) {
+    return (
+      <View className="h-full bg-background">
+        <NavBar
+          onPressLeading={props.goBack}
+          trainlingIcon={[]}
+        />
+        <ScrollView
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 80 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={{ paddingTop: 8 }}>
+            <SkeletonPlaceholder
+              width={CONTENT_WIDTH * 0.85}
+              height={36}
+              style={{ marginBottom: 16 }}
+            />
+            <SkeletonPlaceholder
+              width={CONTENT_WIDTH * 0.6}
+              height={28}
+              style={{ marginBottom: 24 }}
+            />
+            <SkeletonPlaceholder
+              width={CONTENT_WIDTH}
+              height={200}
+              borderRadius={16}
+              style={{ marginBottom: 16 }}
+            />
+            <SkeletonPlaceholder
+              width={CONTENT_WIDTH}
+              height={16}
+              style={{ marginBottom: 8 }}
+            />
+            <SkeletonPlaceholder
+              width={CONTENT_WIDTH * 0.95}
+              height={16}
+              style={{ marginBottom: 8 }}
+            />
+            <SkeletonPlaceholder
+              width={CONTENT_WIDTH * 0.7}
+              height={16}
+              style={{ marginBottom: 24 }}
+            />
+            <SkeletonPlaceholder
+              width={CONTENT_WIDTH}
+              height={100}
+              style={{ marginBottom: 32 }}
+            />
+            <SkeletonPlaceholder
+              width={120}
+              height={28}
+              style={{ marginBottom: 16 }}
+            />
+            <SkeletonPlaceholder
+              width={CONTENT_WIDTH}
+              height={72}
+              style={{ marginBottom: 24 }}
+            />
+            <SkeletonPlaceholder
+              width={180}
+              height={28}
+              style={{ marginBottom: 16 }}
+            />
+            <SkeletonPlaceholder
+              width={CONTENT_WIDTH}
+              height={120}
+              style={{ marginBottom: 24 }}
+            />
+            <SkeletonPlaceholder
+              width={200}
+              height={28}
+              style={{ marginBottom: 16 }}
+            />
+            <SkeletonPlaceholder width={CONTENT_WIDTH} height={150} />
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
 
   return (
     <View className="h-full bg-background">

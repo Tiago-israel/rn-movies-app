@@ -6,7 +6,7 @@ import type { Episode } from "../interfaces";
 export function useSeriesDetails(seriesId: number, seasonNumber: number = 1) {
   const tvSeriesService = useRef(new TVSeriesService()).current;
 
-  const { data: series } = useQuery({
+  const { data: series, isFetching: isSeriesFetching } = useQuery({
     initialData: {},
     queryKey: ["series", seriesId],
     queryFn: async () => {
@@ -14,6 +14,9 @@ export function useSeriesDetails(seriesId: number, seasonNumber: number = 1) {
       return result;
     },
   });
+
+  const isLoading =
+    isSeriesFetching && !(series as { id?: number })?.id;
 
   const { data: images } = useQuery({
     initialData: [],
@@ -73,5 +76,6 @@ export function useSeriesDetails(seriesId: number, seasonNumber: number = 1) {
     watchProviders,
     episodes,
     onFavoriteSeries,
+    isLoading,
   };
 }

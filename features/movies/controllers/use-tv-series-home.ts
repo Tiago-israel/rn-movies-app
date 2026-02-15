@@ -6,7 +6,7 @@ import { GenericItem } from "../interfaces";
 export function useTVSeriesHome() {
   const tvSeriesService = useRef(new TVSeriesService()).current;
 
-  const { data: airingToday } = useQuery({
+  const { data: airingToday, isFetching: isAiringTodayFetching } = useQuery({
     initialData: [],
     queryKey: ["airingToday"],
     queryFn: async () => {
@@ -14,6 +14,8 @@ export function useTVSeriesHome() {
       return results;
     },
   });
+
+  const isLoading = isAiringTodayFetching && airingToday.length === 0;
 
   const { data: onTheAir } = useQuery({
     initialData: [],
@@ -47,5 +49,6 @@ export function useTVSeriesHome() {
     onTheAir,
     popular,
     topRated,
+    isLoading,
   };
 }

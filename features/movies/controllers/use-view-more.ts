@@ -6,22 +6,31 @@ export function useViewMore(type: ServiceType) {
   const page = useRef(1);
   const service = useRef(new ViewMoreService(type));
   const [items, setItems] = useState<GenericItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   async function getPaginatedItems() {
-    const { results = [], totalPages } = await service.current.getPaginatedItems(
-      page.current
-    );
-    setItems((prevItems) => [...prevItems, ...results]);
+    if (page.current === 1) {
+      setIsLoading(true);
+    }
+    try {
+      const { results = [], totalPages } =
+        await service.current.getPaginatedItems(page.current);
+      setItems((prevItems) => [...prevItems, ...results]);
 
-    if (page.current <= totalPages) {
-      page.current += 1;
+      if (page.current <= totalPages) {
+        page.current += 1;
+      }
+    } finally {
+      setIsLoading(false);
     }
   }
 
   useEffect(() => {
     if (type) {
       service.current = new ViewMoreService(type);
+      page.current = 1;
       setItems([]);
+      setIsLoading(true);
       getPaginatedItems();
     }
 
@@ -31,5 +40,5 @@ export function useViewMore(type: ServiceType) {
     };
   }, [type]);
 
-  return { items, getPaginatedItems };
+  return { items, getPaginatedItems, isLoading };
 }
