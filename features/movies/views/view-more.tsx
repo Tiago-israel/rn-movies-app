@@ -14,6 +14,7 @@ export type ViewMoreProps = {
   type: ServiceType;
   title: string;
   goBack: () => void;
+  onPressItem: (item: GenericItem) => void;
 };
 
 export function ViewMoreView(props: ViewMoreProps) {
@@ -36,10 +37,11 @@ export function ViewMoreView(props: ViewMoreProps) {
           width={columnWidth}
           height={200}
           posterUrl={info.item.posterPath}
+          onPress={() => props.onPressItem(info.item)}
         />
       </View>
     ),
-    [columnWidth]
+    [columnWidth, props.onPressItem]
   );
 
   const keyExtractor = useCallback((item: any, i: number) => `${i}-${item.id}`, []);

@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ViewMoreView } from "@/features";
-import { ServiceType } from "@/features/movies/interfaces";
+import { GenericItem, ServiceType } from "@/features/movies/interfaces";
 
 export default function ViewMore() {
   const router = useRouter();
@@ -10,11 +10,21 @@ export default function ViewMore() {
     router.back();
   }
 
+  function onPressItem(item: GenericItem) {
+    const isMovie = (type as string)?.startsWith("movies.");
+    if (isMovie) {
+      router.push(`/movies/${item.id}`);
+    } else {
+      router.push(`/movies/series/${item.id}`);
+    }
+  }
+
   return (
     <ViewMoreView
       type={type as ServiceType}
       title={title as string}
       goBack={goBack}
+      onPressItem={onPressItem}
     />
   );
 }
