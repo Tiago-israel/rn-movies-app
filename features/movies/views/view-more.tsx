@@ -22,6 +22,28 @@ export function ViewMoreView(props: ViewMoreProps) {
   const numColumns = 3;
   const columnWidth = useMemo(() => (width - 40 - 2 * 8) / numColumns, [width]);
 
+  const renderItem = useCallback(
+    (info: ListRenderItemInfo<GenericItem>) => (
+      <View
+        className="mb-2"
+        style={{
+          width: columnWidth,
+          height: 200,
+          marginHorizontal: 4,
+        }}
+      >
+        <ItemPoster
+          width={columnWidth}
+          height={200}
+          posterUrl={info.item.posterPath}
+        />
+      </View>
+    ),
+    [columnWidth]
+  );
+
+  const keyExtractor = useCallback((item: any, i: number) => `${i}-${item.id}`, []);
+
   if (isLoading) {
     const skeletonItems = Array.from({ length: 12 }, (_, i) => i);
     return (
@@ -53,28 +75,6 @@ export function ViewMoreView(props: ViewMoreProps) {
       </View>
     );
   }
-
-  const renderItem = useCallback(
-    (info: ListRenderItemInfo<GenericItem>) => (
-      <View
-        className="mb-2"
-        style={{
-          width: columnWidth,
-          height: 200,
-          marginHorizontal: 4,
-        }}
-      >
-        <ItemPoster
-          width={columnWidth}
-          height={200}
-          posterUrl={info.item.posterPath}
-        />
-      </View>
-    ),
-    [columnWidth]
-  );
-
-  const keyExtractor = useCallback((item: any, i: number) => `${i}-${item.id}`, []);
 
   return (
     <View className="w-full h-full bg-background">
