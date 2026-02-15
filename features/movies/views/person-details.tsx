@@ -47,6 +47,7 @@ export function PersonDetailsView(props: PersonDetailsViewProps) {
         onPressTrailing={props.goBack}
       />
       <ScrollView
+        bounces={false}
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}
@@ -97,6 +98,7 @@ export function PersonDetailsView(props: PersonDetailsViewProps) {
               <Pill icon="cross">{person?.deathday}</Pill>
             )}
           </View>
+          <View className="py-5">
           {person?.biography && (
             <ViewMoreText
               ref={viewMoreTextRef}
@@ -109,6 +111,8 @@ export function PersonDetailsView(props: PersonDetailsViewProps) {
               {person?.biography}
             </ViewMoreText>
           )}
+          </View>
+         
           <View className="w-full h-[250]">
             {movies.length > 0 && (
               <List

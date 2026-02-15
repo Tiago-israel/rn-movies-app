@@ -92,7 +92,7 @@ export function TabsGroup({
   return (
     <View className="flex-row border-2 border-border rounded-full">
       <Animated.View
-        className="rounded-full h-8 absolute top-0 bg-primary"
+        className="rounded-full h-8 absolute top-0 bg-red-600"
         style={[{ width: selectedWidth, left }]}
       />
       {items?.map((item, index) => {

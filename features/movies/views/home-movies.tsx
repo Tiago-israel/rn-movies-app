@@ -19,23 +19,13 @@ export function HomeMoviesView(props: HomeMoviesProps) {
 
   return (
     <ScrollView
+      bounces={false}
       contentContainerStyle={{ paddingBottom: 200 }}
       showsVerticalScrollIndicator={false}
     >
       <HeroCarousel
         data={nowPlayingMovies}
         onPressItem={props.navigateToMovieDetails}
-      />
-      <HomeTitle icon={{ name: "film", color: "#2980b9" }}>
-        {getText("movie_home_now_playing")}
-      </HomeTitle>
-      <MovieCarousel
-        data={nowPlayingMovies}
-        onPressItem={props.navigateToMovieDetails}
-        onPressMoreOptions={props.navigateToViewMore?.(
-          "movies.now_playing",
-          getText("movie_home_now_playing")
-        )}
       />
       <HomeTitle icon={{ name: "trophy", color: "#f1c40f" }}>
         {getText("movie_home_top_rated")}

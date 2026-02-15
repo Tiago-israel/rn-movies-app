@@ -14,23 +14,13 @@ export function HomeSeriesView(props: HomeSeriesProps) {
 
   return (
     <ScrollView
+      bounces={false}
       contentContainerStyle={{ paddingBottom: 200 }}
       showsVerticalScrollIndicator={false}
     >
       <HeroCarousel
         data={airingToday}
         onPressItem={props.navigateToSeriesDetails}
-      />
-      <HomeTitle icon={{ name: "tv", color: "#2980b9" }}>
-        {getText("tv_series_home_airing_today")}
-      </HomeTitle>
-      <SeriesCarousel
-        data={airingToday}
-        onPressItem={props.navigateToSeriesDetails}
-        onPressMoreOptions={props.navigateToViewMore?.(
-          "tv.airing_today",
-          getText("tv_series_home_airing_today")
-        )}
       />
       <HomeTitle icon={{ name: "tv", color: "#2980b9" }}>
         {getText("tv_series_home_on_the_air")}
