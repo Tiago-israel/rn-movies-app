@@ -291,6 +291,9 @@ export class MoviesService {
     return {
       id: response.id,
       posterPath: `${movieDBBaseImageUrl}${response.poster_path}`,
+      backdropPath: response.backdrop_path
+        ? `${movieDBBaseImageUrl}${response.backdrop_path}`
+        : undefined,
     };
   };
 

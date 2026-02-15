@@ -19,3 +19,4 @@ export * from "./selectable-card";
 export * from "./tab";
 export * from "./series-carousel";
 export * from './more-options-carousel';
+export * from './hero-carousel';
