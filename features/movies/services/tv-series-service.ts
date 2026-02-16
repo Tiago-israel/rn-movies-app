@@ -216,7 +216,7 @@ export class TVSeriesService {
       profilePath: item.profile_path
         ? `${movieDBBaseImageUrl}${item.profile_path}`
         : "",
-    }));
+    }))
   }
 
   async getSeriesRecommendations(id: number): Promise<GenericItem[]> {

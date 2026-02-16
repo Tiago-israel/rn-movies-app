@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { TVSeriesService } from "../services";
 import type { Episode } from "../interfaces";
@@ -64,6 +64,10 @@ export function useSeriesDetails(seriesId: number, seasonNumber: number = 1) {
     enabled: !!seriesId && seasonNumber >= 1,
   });
 
+  const restCast = useMemo(() => {
+    return cast.length > 4 ? `+${cast.length -4}`: "";
+  }, [cast]);
+
   const isFavorite = false;
   const onFavoriteSeries = () => {};
 
@@ -72,7 +76,8 @@ export function useSeriesDetails(seriesId: number, seasonNumber: number = 1) {
     isFavorite,
     recommendations,
     images,
-    cast,
+    cast: cast.slice(0, 4),
+    restCast,
     watchProviders,
     episodes,
     onFavoriteSeries,

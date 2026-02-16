@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   ScrollView,
@@ -6,7 +6,6 @@ import {
   Text,
   Pressable,
   FlatList,
-  StyleSheet,
   Linking,
   Dimensions,
 } from "react-native";
@@ -16,6 +15,7 @@ import {
   Image as ExpoImage,
   StarRating,
   SkeletonPlaceholder,
+  List
 } from "@/components";
 import {
   NavBar,
@@ -25,8 +25,9 @@ import {
   SeriesCarousel,
 } from "../components";
 import { useSeriesDetails } from "../controllers";
-import type { Episode, Provider } from "../interfaces";
 import { getText } from "../localization";
+import { Cast, Episode, TVSeriesListItem } from "../interfaces";
+import { ListRenderItemInfo } from "@shopify/flash-list";
 
 type SeriesDetailsProps = {
   seriesId: number;
@@ -50,6 +51,7 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
     recommendations,
     images,
     cast,
+    restCast,
     watchProviders,
     episodes,
     onFavoriteSeries,
@@ -62,11 +64,62 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
     label: `Temp. ${i + 1}`,
   }));
 
-  const scrollToTop = React.useCallback(() => {
+  const scrollToTop = useCallback(() => {
     requestAnimationFrame(() => {
       scrollViewRef.current?.scrollTo?.({ y: 0, animated: false });
     });
   }, []);
+
+  const renderEpisodeItem = useCallback(({ item }: ListRenderItemInfo<Episode>) => {
+    return (
+      <View className="flex-row rounded-lg overflow-hidden bg-card mx-sm mb-xs min-h-[100px]">
+        <View style={{ width: 120, alignSelf: "stretch" }}>
+          <ExpoImage
+            source={{ uri: item.stillPath || series?.posterPath }}
+            style={{
+              width: 120,
+              flex: 1,
+              backgroundColor: "#333",
+            }}
+            contentFit="cover"
+          />
+        </View>
+        <View className="flex-1 p-xs justify-between min-w-0 gap-2">
+          <Text
+            numberOfLines={2}
+            className="text-foreground text-sm font-bold"
+          >
+            E{item.episodeNumber} · {item.name}
+          </Text>
+          {item.airDate ? (
+            <Text
+              className="text-card-foreground text-xs"
+            >
+              {item.airDate}
+            </Text>
+          ) : null}
+        </View>
+      </View>
+    );
+  }, [series?.posterPath]);
+
+  const renderCastItem = useCallback(({ item, index }: ListRenderItemInfo<Cast>) => {
+    return (
+      <View
+        key={item.id}
+        className="w-9 h-9 rounded-full border border-palette-wet-asphalt overflow-hidden z-[999] bg-white"
+        style={{
+          marginLeft: index !== 0 ? -10 : 0,
+        }}
+      >
+        <ExpoImage
+          source={{ uri: item.profilePath }}
+          style={{ width: 36, height: 36 }}
+          contentFit="cover"
+        />
+      </View>
+    )
+  }, [])
 
   useFocusEffect(
     React.useCallback(() => {
@@ -264,29 +317,11 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
                   <Icon size={16} name="arrow-top-right" color="#fff" />
                 </View>
               </View>
-              <View className="flex-row gap-xxs items-center">
-                <View className="flex-row">
-                  {cast.slice(0, 4).map((member, index) => (
-                    <View
-                      key={member.id}
-                      className="w-9 h-9 rounded-full border border-palette-wet-asphalt overflow-hidden z-[999] bg-white"
-                      style={{
-                        marginLeft: index !== 0 ? -10 : 0,
-                      }}
-                    >
-                      <ExpoImage
-                        source={{ uri: member.profilePath }}
-                        style={{ width: 36, height: 36 }}
-                        contentFit="cover"
-                      />
-                    </View>
-                  ))}
-                </View>
-                {cast.length > 4 && (
-                  <Text className="text-sm text-foreground">
-                    +{cast.length - 4}
-                  </Text>
-                )}
+              <View className="h-[36] flex-row gap-xxs items-center">
+                <List scrollEnabled={false} horizontal data={cast} renderItem={renderCastItem} />
+                <Text className="text-sm text-foreground">
+                  {restCast}
+                </Text>
               </View>
             </Pressable>
           </View>
@@ -329,62 +364,32 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
                   return (
                     <Pressable
                       key={item.value}
-                      style={[
-                        seasonListStyles.row,
-                        isSelected && seasonListStyles.rowSelected,
-                      ]}
+                      className={`flex-row items-center gap-3 py-3.5 px-3 mb-2 rounded-xl bg-white/[0.08] ${isSelected ? "bg-white/[0.14]" : ""}`}
                       onPress={() => {
                         setSelectedSeason(item.value);
                         setEpisodesSheetVisible(false);
                       }}
                     >
-                      <View style={seasonListStyles.radioOuter}>
+                      <View className="w-[22px] h-[22px] rounded-[11px] border-2 border-white/50 items-center justify-center">
                         {isSelected && (
-                          <View style={seasonListStyles.radioInner} />
+                          <View className="w-3 h-3 rounded-full bg-white" />
                         )}
                       </View>
-                      <Text style={seasonListStyles.label}>{item.label}</Text>
+                      <Text className="text-base font-semibold text-foreground">
+                        {item.label}
+                      </Text>
                     </Pressable>
                   );
                 }}
               />
             </BottomSheet>
-            <FlatList
+            <List
               data={episodes}
               keyExtractor={(item) => String(item.id)}
-              contentContainerStyle={episodeListStyles.listContent}
               showsVerticalScrollIndicator={false}
               scrollEnabled={false}
-              renderItem={({ item }) => (
-                <View className="flex-row rounded-lg overflow-hidden bg-card mx-sm mb-xs min-h-[100px]">
-                  <View style={{ width: 120, alignSelf: "stretch" }}>
-                    <ExpoImage
-                      source={{ uri: item.stillPath || series?.posterPath }}
-                      style={{
-                        width: 120,
-                        flex: 1,
-                        backgroundColor: "#333",
-                      }}
-                      contentFit="cover"
-                    />
-                  </View>
-                  <View className="flex-1 p-xs justify-between min-w-0 gap-2">
-                    <Text
-                      numberOfLines={2}
-                      className="text-foreground text-sm font-bold"
-                    >
-                      E{item.episodeNumber} · {item.name}
-                    </Text>
-                    {item.airDate ? (
-                      <Text
-                        className="text-card-foreground text-xs"
-                      >
-                        {item.airDate}
-                      </Text>
-                    ) : null}
-                  </View>
-                </View>
-              )}
+              className="gap-xs"
+              renderItem={renderEpisodeItem}
             />
           </View>
         )}
@@ -395,7 +400,7 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
             {getText("movie_details_watch_providers_title")}
           </Text>
         )}
-        <FlatList
+        <List
           horizontal
           data={watchProviders}
           contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
@@ -443,47 +448,3 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
     </View>
   );
 }
-
-const episodeListStyles = StyleSheet.create({
-  listContent: {
-    paddingHorizontal: 8,
-    paddingBottom: 24,
-    gap: 0,
-  },
-});
-
-const seasonListStyles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    marginBottom: 8,
-    borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.08)",
-  },
-  rowSelected: {
-    backgroundColor: "rgba(255,255,255,0.14)",
-  },
-  radioOuter: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: "rgba(255,255,255,0.5)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  radioInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: "#fff",
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#fff",
-  },
-});
