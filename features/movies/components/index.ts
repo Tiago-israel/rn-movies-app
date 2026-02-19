@@ -20,3 +20,7 @@ export * from "./tab";
 export * from "./series-carousel";
 export * from './more-options-carousel';
 export * from './hero-carousel';
+export * from './modal';
+export * from './stat-card';
+export * from './animated-hero';
+export * from './cast-list';

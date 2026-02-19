@@ -30,7 +30,7 @@ export type TabItemProps = {
 export const TabItem = forwardRef((props: TabItemProps, ref) => {
   return (
     <Pressable
-      className="h-8 items-center justify-center rounded-full px-lg z-[999]"
+      className="flex-1 h-8 items-center justify-center rounded-full px-3 z-[999]"
       onLayout={(event: LayoutChangeEvent) => {
         props.onLoad?.(props.index, event.nativeEvent.layout);
       }}
@@ -38,7 +38,7 @@ export const TabItem = forwardRef((props: TabItemProps, ref) => {
         props.onPress?.(props.index);
       }}
     >
-      <Text color="primary-foreground">{props.children}</Text>
+      <Text color="primary-foreground text-center" numberOfLines={1}>{props.children}</Text>
     </Pressable>
   );
 });
@@ -92,6 +92,7 @@ export function TabsGroup({
   return (
     <View className="flex-row border-2 border-border rounded-full">
       <Animated.View
+        pointerEvents="none"
         className="rounded-full h-8 absolute top-0 bg-red-600"
         style={[{ width: selectedWidth, left }]}
       />

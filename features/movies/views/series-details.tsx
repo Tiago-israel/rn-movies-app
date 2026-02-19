@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   ScrollView,
@@ -8,6 +8,7 @@ import {
   FlatList,
   Linking,
   Dimensions,
+  ListRenderItemInfo as ReactListRenderItemInfo
 } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import {
@@ -26,7 +27,7 @@ import {
 } from "../components";
 import { useSeriesDetails } from "../controllers";
 import { getText } from "../localization";
-import { Cast, Episode, TVSeriesListItem } from "../interfaces";
+import { Cast, Episode, Provider, TVSeriesListItem } from "../interfaces";
 import { ListRenderItemInfo } from "@shopify/flash-list";
 
 type SeriesDetailsProps = {
@@ -40,6 +41,61 @@ type SeriesDetailsProps = {
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTENT_WIDTH = SCREEN_WIDTH - 40;
+
+// Episode item styles
+const EPISODE_IMAGE_CONTAINER_STYLE = { width: 120, alignSelf: "stretch" as const };
+const EPISODE_STILL_IMAGE_STYLE = {
+  width: 120,
+  flex: 1,
+  backgroundColor: "#333",
+};
+
+// Cast item styles
+const CAST_AVATAR_STYLE = { width: 36, height: 36 };
+const CAST_AVATAR_MARGIN = (index: number) => ({ marginLeft: index !== 0 ? -10 : 0 });
+
+// Watch provider styles
+const WATCH_PROVIDER_IMAGE_STYLE = { width: "100%" as const, height: "100%" as const };
+
+// Loading skeleton styles
+const LOADING_SCROLL_CONTENT_STYLE = { paddingHorizontal: 20, paddingBottom: 80 };
+const LOADING_CONTENT_STYLE = { paddingTop: 8 };
+const SKELETON_MB_16 = { marginBottom: 16 };
+const SKELETON_MB_24 = { marginBottom: 24 };
+const SKELETON_MB_8 = { marginBottom: 8 };
+const SKELETON_MB_32 = { marginBottom: 32 };
+
+// Scroll options
+const SCROLL_TO_TOP_OPTIONS = { y: 0, animated: false as const };
+const SCROLL_TO_TOP_ANIMATED_OPTIONS = { y: 0, animated: true as const };
+
+// Content container styles
+const SCROLL_CONTENT_STYLE = { paddingBottom: 80 };
+const PILLS_CONTENT_STYLE = { gap: 8, paddingHorizontal: 20 };
+const SEASON_LIST_CONTENT_STYLE = { paddingBottom: 60 };
+
+// Backdrop image style
+const BACKDROP_IMAGE_STYLE = {
+  width: "100%" as const,
+  height: 200,
+  borderRadius: 32,
+};
+
+// ViewMoreText container
+const VIEW_MORE_CONTAINER_STYLE = { p: "sm" as const };
+
+// Icon colors
+const ICON_WHITE = "#fff";
+const ICON_RATING_COLOR = "#f1c40f";
+const ICON_FAVORITE_COLOR = "#e74c3c";
+
+// Key extractors
+const episodeKeyExtractor = (item: Episode) => String(item.id);
+const watchProviderKeyExtractor = (item: Provider, index: number) => `${item.id}-${index}`;
+
+// Handler factories
+const createOpenProviderHandler = (link: string) => () => Linking.openURL(link);
+const noop = () => { };
 
 export function SeriesDetailsView(props: SeriesDetailsProps) {
   const scrollViewRef = useRef<any>(null);
@@ -66,21 +122,17 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
 
   const scrollToTop = useCallback(() => {
     requestAnimationFrame(() => {
-      scrollViewRef.current?.scrollTo?.({ y: 0, animated: false });
+      scrollViewRef.current?.scrollTo?.(SCROLL_TO_TOP_OPTIONS);
     });
   }, []);
 
-  const renderEpisodeItem = useCallback(({ item }: ListRenderItemInfo<Episode>) => {
+  const renderEpisodeItem = useCallback(({ item }: any) => {
     return (
       <View className="flex-row rounded-lg overflow-hidden bg-card mx-sm mb-xs min-h-[100px]">
-        <View style={{ width: 120, alignSelf: "stretch" }}>
+        <View style={EPISODE_IMAGE_CONTAINER_STYLE}>
           <ExpoImage
             source={{ uri: item.stillPath || series?.posterPath }}
-            style={{
-              width: 120,
-              flex: 1,
-              backgroundColor: "#333",
-            }}
+            style={EPISODE_STILL_IMAGE_STYLE}
             contentFit="cover"
           />
         </View>
@@ -108,18 +160,77 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
       <View
         key={item.id}
         className="w-9 h-9 rounded-full border border-palette-wet-asphalt overflow-hidden z-[999] bg-white"
-        style={{
-          marginLeft: index !== 0 ? -10 : 0,
-        }}
+        style={CAST_AVATAR_MARGIN(index)}
       >
         <ExpoImage
           source={{ uri: item.profilePath }}
-          style={{ width: 36, height: 36 }}
+          style={CAST_AVATAR_STYLE}
           contentFit="cover"
         />
       </View>
     )
   }, [])
+
+  const renderWatchProviderItem = useCallback(({ item }: ReactListRenderItemInfo<Provider>) => {
+    return (
+      <Pressable
+        className="w-[72] h-[72] rounded-full overflow-hidden border-2 border-border"
+        onPress={createOpenProviderHandler(item.link)}
+      >
+        <ExpoImage
+          source={{ uri: item.image }}
+          style={WATCH_PROVIDER_IMAGE_STYLE}
+        />
+      </Pressable>
+    )
+  }, [])
+
+  const handlePressReview = useCallback(() => props.onPressReview(), [props.onPressReview]);
+  const handlePressCast = useCallback(() => props.onPressCast(), [props.onPressCast]);
+  const handleOpenEpisodesSheet = useCallback(() => setEpisodesSheetVisible(true), []);
+  const handleCloseEpisodesSheet = useCallback(() => setEpisodesSheetVisible(false), []);
+  const handlePressMoreOptions = useCallback(noop, []);
+  const handleShareSeries = useCallback(() => props.onShareSeries(series?.videoUrl), [props.onShareSeries, series?.videoUrl]);
+
+  const handleSelectSeason = useCallback((seasonValue: number) => {
+    setSelectedSeason(seasonValue);
+    setEpisodesSheetVisible(false);
+  }, []);
+
+  const createSelectSeasonHandler = useCallback((seasonValue: number) => () => {
+    handleSelectSeason(seasonValue);
+  }, [handleSelectSeason]);
+
+  const handlePressRecommendation = useCallback((recommendationSeriesId?: number) => {
+    props.onPressRecommendation?.(recommendationSeriesId);
+    scrollViewRef.current?.scrollTo?.(SCROLL_TO_TOP_ANIMATED_OPTIONS);
+  }, [props.onPressRecommendation]);
+
+  const renderSeasonOptionItem = useCallback(({ item }: ListRenderItemInfo<{ value: number; label: string }>) => {
+    const isSelected = selectedSeason === item.value;
+    return (
+      <Pressable
+        key={item.value}
+        className={`flex-row items-center gap-3 py-3.5 px-3 mb-2 rounded-sm bg-white/[0.08] ${isSelected ? "bg-white/[0.14]" : ""}`}
+        onPress={createSelectSeasonHandler(item.value)}
+      >
+        <View className="w-[22px] h-[22px] rounded-[11px] border-2 border-white/50 items-center justify-center">
+          {isSelected && (
+            <View className="w-3 h-3 rounded-full bg-white" />
+          )}
+        </View>
+        <Text className="text-base font-semibold text-foreground">
+          {item.label}
+        </Text>
+      </Pressable>
+    );
+  }, [selectedSeason, createSelectSeasonHandler]);
+
+  const getEpisodeItemLayout = (_: any, index: number) => ({
+    length: 100,
+    offset: 100 * index,
+    index
+  })
 
   useFocusEffect(
     React.useCallback(() => {
@@ -144,70 +255,70 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
           trainlingIcon={[]}
         />
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 80 }}
+          contentContainerStyle={LOADING_SCROLL_CONTENT_STYLE}
           showsVerticalScrollIndicator={false}
         >
-          <View style={{ paddingTop: 8 }}>
+          <View style={LOADING_CONTENT_STYLE}>
             <SkeletonPlaceholder
               width={CONTENT_WIDTH * 0.85}
               height={36}
-              style={{ marginBottom: 16 }}
+              style={SKELETON_MB_16}
             />
             <SkeletonPlaceholder
               width={CONTENT_WIDTH * 0.6}
               height={28}
-              style={{ marginBottom: 24 }}
+              style={SKELETON_MB_24}
             />
             <SkeletonPlaceholder
               width={CONTENT_WIDTH}
               height={200}
               borderRadius={16}
-              style={{ marginBottom: 16 }}
+              style={SKELETON_MB_16}
             />
             <SkeletonPlaceholder
               width={CONTENT_WIDTH}
               height={16}
-              style={{ marginBottom: 8 }}
+              style={SKELETON_MB_8}
             />
             <SkeletonPlaceholder
               width={CONTENT_WIDTH * 0.95}
               height={16}
-              style={{ marginBottom: 8 }}
+              style={SKELETON_MB_8}
             />
             <SkeletonPlaceholder
               width={CONTENT_WIDTH * 0.7}
               height={16}
-              style={{ marginBottom: 24 }}
+              style={SKELETON_MB_24}
             />
             <SkeletonPlaceholder
               width={CONTENT_WIDTH}
               height={100}
-              style={{ marginBottom: 32 }}
+              style={SKELETON_MB_32}
             />
             <SkeletonPlaceholder
               width={120}
               height={28}
-              style={{ marginBottom: 16 }}
+              style={SKELETON_MB_16}
             />
             <SkeletonPlaceholder
               width={CONTENT_WIDTH}
               height={72}
-              style={{ marginBottom: 24 }}
+              style={SKELETON_MB_24}
             />
             <SkeletonPlaceholder
               width={180}
               height={28}
-              style={{ marginBottom: 16 }}
+              style={SKELETON_MB_16}
             />
             <SkeletonPlaceholder
               width={CONTENT_WIDTH}
               height={120}
-              style={{ marginBottom: 24 }}
+              style={SKELETON_MB_24}
             />
             <SkeletonPlaceholder
               width={200}
               height={28}
-              style={{ marginBottom: 16 }}
+              style={SKELETON_MB_16}
             />
             <SkeletonPlaceholder width={CONTENT_WIDTH} height={150} />
           </View>
@@ -216,27 +327,27 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
     );
   }
 
+  const navBarTrailingIcons = [
+    {
+      name: "share-variant" as const,
+      onPress: handleShareSeries,
+    },
+    {
+      name: isFavorite ? "heart" : "heart-outline",
+      color: ICON_FAVORITE_COLOR,
+      onPress: onFavoriteSeries,
+    },
+  ];
+
   return (
     <View className="h-full bg-background">
       <NavBar
-        trainlingIcon={[
-          {
-            name: "share-variant",
-            onPress() {
-              props.onShareSeries(series?.videoUrl);
-            },
-          },
-          {
-            name: isFavorite ? "heart" : "heart-outline",
-            color: "#e74c3c",
-            onPress: onFavoriteSeries,
-          },
-        ]}
+        trainlingIcon={navBarTrailingIcons}
         onPressLeading={props.goBack}
       />
       <ScrollView
         ref={scrollViewRef}
-        contentContainerStyle={{ paddingBottom: 80 }}
+        contentContainerStyle={SCROLL_CONTENT_STYLE}
         showsVerticalScrollIndicator={false}
       >
         <Text
@@ -248,7 +359,7 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8, paddingHorizontal: 20 }}
+          contentContainerStyle={PILLS_CONTENT_STYLE}
           className="pb-6 flex-row gap-2"
         >
           <Pill>{`${series?.genre}`}</Pill>
@@ -270,13 +381,13 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
             </View>
             <ExpoImage
               source={{ uri: series?.backdropPath }}
-              style={{ width: "100%", height: 200, borderRadius: 32 }}
+              style={BACKDROP_IMAGE_STYLE}
             />
             <ViewMoreText
               fontSize={16}
               color="foreground"
               numberOfLines={5}
-              containerStyle={{ p: "sm" }}
+              containerStyle={VIEW_MORE_CONTAINER_STYLE}
             >
               {series?.overview}
             </ViewMoreText>
@@ -284,14 +395,14 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
           <View className="gap-xs flex-row pt-sm">
             <Pressable
               className="flex-1 h-[100] rounded-lg p-xs bg-card justify-between overflow-hidden"
-              onPress={props.onPressReview}
+              onPress={handlePressReview}
             >
               <View className="flex-row justify-between">
                 <Text className="text-card-foreground text-sm">
                   {getText("movie_details_reviews_title")}
                 </Text>
                 <View className="w-6 h-6 rounded-full bg-primary items-center justify-center">
-                  <Icon size={16} name="arrow-top-right" color="#fff" />
+                  <Icon size={16} name="arrow-top-right" color={ICON_WHITE} />
                 </View>
               </View>
               <View className="flex-row justify-between items-center">
@@ -300,21 +411,21 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
                 </Text>
                 <StarRating
                   rating={series?.voteAverage}
-                  color="#f1c40f"
+                  color={ICON_RATING_COLOR}
                   size={16}
                 />
               </View>
             </Pressable>
             <Pressable
               className="flex-1 h-[100] bg-card rounded-lg p-xs justify-between"
-              onPress={props.onPressCast}
+              onPress={handlePressCast}
             >
               <View className="flex-row justify-between">
                 <Text className="text-card-foreground text-sm">
                   {getText("movie_details_cast_title")}
                 </Text>
                 <View className="w-6 h-6 rounded-full bg-primary items-center justify-center">
-                  <Icon size={16} name="arrow-top-right" color="#fff" />
+                  <Icon size={16} name="arrow-top-right" color={ICON_WHITE} />
                 </View>
               </View>
               <View className="h-[36] flex-row gap-xxs items-center">
@@ -336,7 +447,7 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
                 Episódios
               </Text>
               <Pressable
-                onPress={() => setEpisodesSheetVisible(true)}
+                onPress={handleOpenEpisodesSheet}
                 className="bg-primary rounded-full px-sm py-xxs flex-row items-center gap-xs"
               >
                 <Text className="text-foreground text-sm font-bold">
@@ -345,49 +456,31 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
                 <Icon
                   name={episodesSheetVisible ? "chevron-up" : "chevron-down"}
                   size={18}
-                  color="#fff"
+                  color={ICON_WHITE}
                 />
               </Pressable>
             </View>
             <BottomSheet
               visible={episodesSheetVisible}
-              onClose={() => setEpisodesSheetVisible(false)}
+              onClose={handleCloseEpisodesSheet}
               title="Escolher temporada"
               heightRatio={0.6}
             >
-              <FlatList
+              <List
                 showsVerticalScrollIndicator={false}
                 data={seasonOptions}
-                contentContainerStyle={{ paddingBottom: 60 }}
-                renderItem={({ item }) => {
-                  const isSelected = selectedSeason === item.value;
-                  return (
-                    <Pressable
-                      key={item.value}
-                      className={`flex-row items-center gap-3 py-3.5 px-3 mb-2 rounded-xl bg-white/[0.08] ${isSelected ? "bg-white/[0.14]" : ""}`}
-                      onPress={() => {
-                        setSelectedSeason(item.value);
-                        setEpisodesSheetVisible(false);
-                      }}
-                    >
-                      <View className="w-[22px] h-[22px] rounded-[11px] border-2 border-white/50 items-center justify-center">
-                        {isSelected && (
-                          <View className="w-3 h-3 rounded-full bg-white" />
-                        )}
-                      </View>
-                      <Text className="text-base font-semibold text-foreground">
-                        {item.label}
-                      </Text>
-                    </Pressable>
-                  );
-                }}
+                contentContainerStyle={SEASON_LIST_CONTENT_STYLE}
+                renderItem={renderSeasonOptionItem}
               />
             </BottomSheet>
-            <List
+            <FlatList
               data={episodes}
-              keyExtractor={(item) => String(item.id)}
-              showsVerticalScrollIndicator={false}
               scrollEnabled={false}
+              removeClippedSubviews
+              getItemLayout={getEpisodeItemLayout}
+              keyExtractor={episodeKeyExtractor}
+              initialNumToRender={20}
+              showsVerticalScrollIndicator={false}
               className="gap-xs"
               renderItem={renderEpisodeItem}
             />
@@ -400,23 +493,14 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
             {getText("movie_details_watch_providers_title")}
           </Text>
         )}
-        <List
+        <FlatList
           horizontal
           data={watchProviders}
-          contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
-          keyExtractor={(item, index) => `${item.id}-${index}`}
+          className="px-sm"
+          contentContainerClassName="gap-3"
+          keyExtractor={watchProviderKeyExtractor}
           showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <Pressable
-              className="w-[72] h-[72] rounded-full overflow-hidden border-2 border-border"
-              onPress={() => Linking.openURL(item.link)}
-            >
-              <ExpoImage
-                source={{ uri: item.image }}
-                style={{ width: "100%", height: "100%" }}
-              />
-            </Pressable>
-          )}
+          renderItem={renderWatchProviderItem}
         />
         <Text
           className="text-foreground font-bold text-2xl pt-10 px-sm pb-sm"
@@ -435,14 +519,8 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
           itemWidth={100}
           itemHeight={150}
           data={recommendations}
-          onPressItem={(recommendationSeriesId) => {
-            props.onPressRecommendation?.(recommendationSeriesId);
-            scrollViewRef.current?.scrollTo?.({
-              y: 0,
-              animated: true,
-            });
-          }}
-          onPressMoreOptions={() => { }}
+          onPressItem={handlePressRecommendation}
+          onPressMoreOptions={handlePressMoreOptions}
         />
       </ScrollView>
     </View>

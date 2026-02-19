@@ -1,8 +1,8 @@
-import { List } from "@/components";
-import { ItemPoster } from "./item-poster";
-import { MovieDetails } from "../interfaces";
 import { memo, useCallback } from "react";
-import { useWindowDimensions, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { List } from "@/components";
+import { type MovieDetails } from "../interfaces";
+import { ItemPoster } from "./item-poster";
 import { MoreOptionsCarousel } from "./more-options-carousel";
 
 type MovieCarouselProps = {
@@ -14,7 +14,6 @@ type MovieCarouselProps = {
 };
 
 export const MovieCarousel = memo(({ ...props }: MovieCarouselProps) => {
-  const { width } = useWindowDimensions();
   const renderItem = useCallback(
     ({ item }: any) => (
       <ItemPoster
@@ -28,24 +27,36 @@ export const MovieCarousel = memo(({ ...props }: MovieCarouselProps) => {
     [props.onPressItem, props.itemWidth, props.itemHeight]
   );
 
+  const keyExtractor = useCallback((item: MovieDetails) => `${item.id}`, []);
+
+  const renderFooter = useCallback(() => (
+    <MoreOptionsCarousel
+      width={props.itemWidth}
+      height={props.itemHeight}
+      onPress={props?.onPressMoreOptions}
+    />
+  ), [props.onPressMoreOptions, props.itemWidth, props.itemHeight]);
+
+  const renderSeparator = useCallback(() => (
+    <View className="w-2 h-2" />
+  ), []);
+
   return (
     <List
       horizontal
       showsHorizontalScrollIndicator={false}
-      keyExtractor={(item) => `${item.id}`}
-      estimatedItemSize={props.itemHeight ?? 200}
-      estimatedListSize={{ width, height: props.itemHeight ?? 200 }}
-      contentContainerStyle={{ paddingHorizontal: 20 }}
-      ItemSeparatorComponent={() => <View className="w-2 h-2" />}
+      keyExtractor={keyExtractor}
+      contentContainerStyle={styles.container}
+      ItemSeparatorComponent={renderSeparator}
       data={props.data}
       renderItem={renderItem}
-      ListFooterComponent={() => (
-        <MoreOptionsCarousel
-          width={props.itemWidth}
-          height={props.itemHeight}
-          onPress={props?.onPressMoreOptions}
-        />
-      )}
+      ListFooterComponent={renderFooter}
     />
   );
+});
+
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 20,
+  },
 });
