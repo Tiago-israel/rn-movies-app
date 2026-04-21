@@ -1,4 +1,3 @@
-import { useRef, useState } from "react";
 import {
   View,
   TextInput,
@@ -6,46 +5,54 @@ import {
   type TextInputProps,
 } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
-import { useDebounce } from "@/hooks";
 
-export type SearchFieldProps = TextInputProps & {
+export type SearchFieldProps = Omit<
+  TextInputProps,
+  "value" | "onChangeText" | "defaultValue"
+> & {
+  value: string;
+  onChangeText: (text: string) => void;
   onClear?: () => void;
 };
 
 export function SearchField({
-  placeholder = "Type a movie",
+  placeholder = "Movies, TV shows, or people",
+  value,
   onChangeText,
+  onClear,
   ...props
 }: SearchFieldProps) {
-  const [text, setText] = useState<string>();
-  const onChangeTextDebounce = useDebounce<string>((text: string) => {
-    onChangeText?.(text);
-  }, 300);
-
   function clearText() {
-    setText("");
-    props.onClear?.();
+    onChangeText("");
+    onClear?.();
   }
 
   return (
     <View className="w-full h-12 flex-row bg-white rounded-lg items-center">
+      <Icon
+        name="magnify"
+        size={22}
+        color="#666"
+        style={{ marginLeft: 12 }}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      />
       <TextInput
-        className="flex-1 h-full px-5 text-black"
-        style={{ paddingVertical: 0 }}
+        className="flex-1 h-full pr-5 text-black"
+        style={{ paddingVertical: 0, paddingLeft: 8 }}
         placeholderTextColor="#000"
         placeholder={placeholder}
-        value={text}
-        onChangeText={(value) => {
-          setText(value);
-          onChangeTextDebounce(value);
-        }}
+        value={value}
+        onChangeText={onChangeText}
+        returnKeyType="search"
+        clearButtonMode="never"
         {...props}
       />
-      {text && (
-        <Pressable className="pr-xs" onPress={clearText}>
+      {value.length > 0 ? (
+        <Pressable className="pr-xs" onPress={clearText} hitSlop={12}>
           <Icon name="close-circle" size={24} />
         </Pressable>
-      )}
+      ) : null}
     </View>
   );
 }

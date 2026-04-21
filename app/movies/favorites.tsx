@@ -1,9 +1,16 @@
 import { router } from "expo-router";
-import { FavoriteMoviesView } from "@/features";
+import { WatchlistView } from "@/features";
 
 export default function Favorites() {
   function goToMovieDetails(movieId?: number) {
     router.navigate(`/movies/${movieId}`);
   }
-  return <FavoriteMoviesView goToDetails={goToMovieDetails} />;
+
+  function goToSearch() {
+    router.navigate("/movies/search");
+  }
+
+  return (
+    <WatchlistView goToDetails={goToMovieDetails} goToSearch={goToSearch} />
+  );
 }

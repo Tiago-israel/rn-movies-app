@@ -4,6 +4,7 @@ export {
   HomeView,
   MovieReviewsView,
   FavoriteMoviesView,
+  WatchlistView,
   SearchView,
   PreferencesView,
   CastView,
@@ -13,4 +14,4 @@ export {
 } from "./views";
 export { Layout } from "./components";
 export { initializeLanguage } from "./localization";
-export { useUserStore } from "./store";
+export { useUserStore, useSearchRecentStore } from "./store";

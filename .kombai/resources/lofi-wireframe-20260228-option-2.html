@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Option 2 – Collections-First View (Balanced)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #e8e8e8;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px 60px;
+    min-height: 100vh;
+  }
+  h1 { font-size: 20px; color: #333; margin-bottom: 6px; text-align: center; }
+  .subtitle { font-size: 13px; color: #666; margin-bottom: 24px; text-align: center; max-width: 540px; }
+  .legend { display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; justify-content: center; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #333; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 2px; }
+
+  .phone-wrap { display: flex; flex-direction: column; align-items: center; }
+  .phone {
+    width: 375px; background: #fff;
+    border: 3px solid #333; border-radius: 40px;
+    overflow: hidden; box-shadow: 4px 4px 0 #999;
+    position: relative;
+  }
+  .phone-notch { width: 120px; height: 28px; background: #333; border-radius: 0 0 18px 18px; margin: 0 auto; }
+  .phone-screen { padding: 0 0 28px; }
+
+  .badge-reuse {
+    position: absolute; top: -8px; right: -8px;
+    background: #4CAF50; color: #fff;
+    padding: 2px 6px; border-radius: 3px;
+    font-size: 9px; font-family: Arial, sans-serif; font-weight: bold; z-index: 20; white-space: nowrap;
+  }
+  .badge-new {
+    position: absolute; top: -8px; right: -8px;
+    background: #FF9800; color: #fff;
+    padding: 2px 6px; border-radius: 3px;
+    font-size: 9px; font-family: Arial, sans-serif; font-weight: bold; z-index: 20; white-space: nowrap;
+  }
+  .rel { position: relative; display: inline-block; }
+  .rel-block { position: relative; display: block; }
+
+  /* NavBar */
+  .navbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; border-bottom: 2px solid #ccc; background: #fff;
+  }
+  .nav-back { width: 32px; height: 32px; border: 2px solid #999; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #333; }
+  .nav-title { font-size: 15px; font-weight: bold; color: #333; }
+  .nav-icons { display: flex; gap: 8px; }
+  .nav-icon { width: 32px; height: 32px; border: 2px solid #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #333; }
+
+  /* Stats */
+  .stats-row { display: flex; gap: 8px; padding: 12px 16px 0; }
+  .stat-card { flex: 1; border: 2px solid #ccc; border-radius: 10px; padding: 8px 10px; background: #f5f5f5; position: relative; }
+  .stat-label { font-size: 9px; color: #666; }
+  .stat-value { font-size: 18px; font-weight: bold; color: #333; }
+  .stat-sub { font-size: 9px; color: #999; }
+
+  /* Collection pills */
+  .collection-scroll { padding: 12px 0 4px; overflow: hidden; }
+  .collection-pills { display: flex; gap: 8px; padding: 0 16px; }
+  .coll-pill {
+    display: flex; align-items: center; gap: 6px;
+    border: 2px solid #ccc; border-radius: 20px;
+    padding: 5px 12px; font-size: 11px; white-space: nowrap;
+    background: #f5f5f5; color: #555;
+  }
+  .coll-pill.active { border-color: #333; background: #333; color: #fff; }
+  .coll-count {
+    background: rgba(255,255,255,0.3); border-radius: 20px;
+    padding: 1px 6px; font-size: 9px;
+  }
+  .coll-pill.active .coll-count { background: rgba(255,255,255,0.2); }
+
+  /* Section header */
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px 6px;
+  }
+  .section-title { font-size: 13px; font-weight: bold; color: #333; }
+  .section-count { font-size: 10px; color: #888; }
+  .see-all { font-size: 10px; color: #555; border-bottom: 1px solid #555; }
+
+  /* Horizontal movie carousel */
+  .movie-row { display: flex; gap: 10px; padding: 0 16px 12px; overflow: hidden; }
+  .movie-card {
+    width: 90px; flex-shrink: 0; border: 2px solid #ccc;
+    border-radius: 10px; overflow: hidden; background: #f5f5f5;
+    position: relative;
+  }
+  .movie-poster { width: 90px; height: 130px; background: #ccc; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .movie-info { padding: 4px 6px 6px; }
+  .movie-name { font-size: 8px; font-weight: bold; color: #333; line-height: 1.3; }
+  .movie-meta { font-size: 7px; color: #888; margin-top: 2px; }
+  .movie-status {
+    position: absolute; top: 5px; left: 5px;
+    border-radius: 4px; padding: 2px 5px;
+    font-size: 7px; font-weight: bold;
+  }
+  .status-watched { background: #333; color: #fff; }
+  .status-unwatched { background: #999; color: #fff; }
+  .status-watching { background: #555; color: #fff; }
+
+  /* Collection card for create new */
+  .create-collection {
+    margin: 4px 16px 12px;
+    border: 2px dashed #999; border-radius: 12px;
+    padding: 14px; text-align: center;
+    color: #888; font-size: 11px;
+    position: relative;
+  }
+  .create-icon { font-size: 22px; color: #bbb; margin-bottom: 4px; }
+
+  /* Second collection section */
+  .divider { height: 1px; background: #e0e0e0; margin: 4px 16px 0; }
+
+  /* Empty state hint */
+  .empty-hint {
+    margin: 8px 16px 4px; border: 2px dashed #ccc; border-radius: 10px;
+    padding: 16px; text-align: center; font-size: 10px; color: #aaa; position: relative;
+  }
+</style>
+</head>
+<body>
+
+<h1>Option 2 – Collections-First View</h1>
+<p class="subtitle">Balanced approach: Organises the watchlist into user-created collections (e.g. "Action Night", "Date Movies"). Each collection shows a horizontal carousel with watch-status overlays. Mix of existing and two new components.</p>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#4CAF50"></div> [REUSE] Existing component</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#FF9800"></div> [NEW] New component</div>
+</div>
+
+<div class="phone-wrap">
+  <div class="phone">
+    <div class="phone-notch"></div>
+    <div class="phone-screen">
+
+      <!-- NavBar -->
+      <!-- REUSABLE: NavBar from features/movies/components/navbar.tsx -->
+      <div class="rel-block">
+        <span class="badge-reuse" style="top:4px;right:4px;">[REUSE] NavBar</span>
+        <div class="navbar">
+          <div class="nav-back">←</div>
+          <span class="nav-title">My Collections</span>
+          <div class="nav-icons">
+            <!-- REUSABLE: IconButton from features/movies/components/Icon-button.tsx -->
+            <div class="rel">
+              <span class="badge-reuse" style="top:-6px;right:-6px;">[REUSE] IconButton</span>
+              <div class="nav-icon">🔍</div>
+            </div>
+            <div class="nav-icon" style="position:relative;">
+              <span style="position:absolute;top:-6px;right:-6px;background:#4CAF50;color:#fff;padding:2px 4px;border-radius:3px;font-size:7px;font-family:Arial,sans-serif;font-weight:bold;white-space:nowrap;">[REUSE] IconButton</span>
+              +
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <!-- REUSABLE: StatCard from features/movies/components/stat-card.tsx -->
+        <div class="stat-card rel-block">
+          <span class="badge-reuse">[REUSE] StatCard</span>
+          <div class="stat-label">Collections</div>
+          <div class="stat-value">5</div>
+          <div class="stat-sub">lists created</div>
+        </div>
+        <div class="stat-card rel-block">
+          <span class="badge-reuse">[REUSE] StatCard</span>
+          <div class="stat-label">Total Items</div>
+          <div class="stat-value">42</div>
+          <div class="stat-sub">movies &amp; series</div>
+        </div>
+        <div class="stat-card rel-block">
+          <span class="badge-reuse">[REUSE] StatCard</span>
+          <div class="stat-label">Watched</div>
+          <div class="stat-value">67%</div>
+          <div class="stat-sub">completion</div>
+        </div>
+      </div>
+
+      <!-- Collection Selector Pills -->
+      <!-- NEW: CollectionSelector -->
+      <div class="collection-scroll rel-block">
+        <span class="badge-new" style="top:4px;right:4px;">[NEW] CollectionSelector</span>
+        <div class="collection-pills">
+          <div class="coll-pill active">
+            All <span class="coll-count">42</span>
+          </div>
+          <div class="coll-pill">
+            Action Night <span class="coll-count">12</span>
+          </div>
+          <div class="coll-pill">
+            Date Movies <span class="coll-count">8</span>
+          </div>
+          <div class="coll-pill">
+            Sci-Fi <span class="coll-count">11</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Section 1: Currently Watching ── -->
+      <div class="section-header">
+        <span class="section-title">▶ Currently Watching</span>
+        <span class="section-count">3 items</span>
+      </div>
+
+      <!-- REUSABLE: MovieCarousel from features/movies/components/movie-carousel.tsx -->
+      <div class="rel-block">
+        <span class="badge-reuse" style="top:0;right:4px;">[REUSE] MovieCarousel</span>
+        <div class="movie-row">
+          <div class="movie-card">
+            <div class="movie-poster">🎬</div>
+            <div class="movie-status status-watching">▶ Watching</div>
+            <div class="movie-info">
+              <div class="movie-name">Shogun (2024)</div>
+              <div class="movie-meta">Ep 5 of 10</div>
+            </div>
+          </div>
+          <div class="movie-card">
+            <div class="movie-poster">🎬</div>
+            <div class="movie-status status-watching">▶ Watching</div>
+            <div class="movie-info">
+              <div class="movie-name">Severance S2</div>
+              <div class="movie-meta">Ep 3 of 10</div>
+            </div>
+          </div>
+          <div class="movie-card">
+            <div class="movie-poster">🎬</div>
+            <div class="movie-status status-watching">▶ Watching</div>
+            <div class="movie-info">
+              <div class="movie-name">The Bear S3</div>
+              <div class="movie-meta">Ep 1 of 10</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- ── Section 2: Want to Watch ── -->
+      <div class="section-header">
+        <span class="section-title">🕐 Want to Watch</span>
+        <span class="see-all">See all 22 →</span>
+      </div>
+      <!-- REUSABLE: MovieCarousel -->
+      <div class="rel-block">
+        <span class="badge-reuse" style="top:0;right:4px;">[REUSE] MovieCarousel</span>
+        <div class="movie-row">
+          <div class="movie-card">
+            <div class="movie-poster">🎬</div>
+            <div class="movie-status status-unwatched">📌 Saved</div>
+            <div class="movie-info">
+              <div class="movie-name">Dune: Part Two</div>
+              <div class="movie-meta">8.5★  2024</div>
+            </div>
+          </div>
+          <div class="movie-card">
+            <div class="movie-poster">🎬</div>
+            <div class="movie-status status-unwatched">📌 Saved</div>
+            <div class="movie-info">
+              <div class="movie-name">Oppenheimer</div>
+              <div class="movie-meta">8.3★  2023</div>
+            </div>
+          </div>
+          <div class="movie-card">
+            <div class="movie-poster">🎬</div>
+            <div class="movie-status status-unwatched">📌 Saved</div>
+            <div class="movie-info">
+              <div class="movie-name">Poor Things</div>
+              <div class="movie-meta">7.9★  2023</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- ── Section 3: Watched ── -->
+      <div class="section-header">
+        <span class="section-title">✓ Watched</span>
+        <span class="see-all">See all 17 →</span>
+      </div>
+      <div class="rel-block">
+        <span class="badge-reuse" style="top:0;right:4px;">[REUSE] MovieCarousel</span>
+        <div class="movie-row">
+          <div class="movie-card">
+            <div class="movie-poster">🎬</div>
+            <div class="movie-status status-watched">✓ Watched</div>
+            <div class="movie-info">
+              <div class="movie-name">Interstellar</div>
+              <div class="movie-meta">Your rating: 9★</div>
+            </div>
+          </div>
+          <div class="movie-card">
+            <div class="movie-poster">🎬</div>
+            <div class="movie-status status-watched">✓ Watched</div>
+            <div class="movie-info">
+              <div class="movie-name">The Dark Knight</div>
+              <div class="movie-meta">Your rating: 10★</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Create Collection CTA -->
+      <!-- REUSABLE: Drawer from features/movies/components/drawer.tsx -->
+      <div class="create-collection rel-block">
+        <span class="badge-new">[NEW] CreateCollectionCard</span>
+        <div class="create-icon">📂</div>
+        <div>+ Create a new collection</div>
+        <div style="font-size:9px;color:#bbb;margin-top:3px;">Group your movies into custom lists</div>
+      </div>
+
+    </div><!-- /phone-screen -->
+  </div><!-- /phone -->
+</div>
+
+</body>
+</html>

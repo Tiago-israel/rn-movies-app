@@ -15,3 +15,5 @@ export * from './tv-series-details.response';
 export * from './tv-season-details.response';
 export * from './provider.response'
 export * from './provider-wraper.response';
+export * from './search-multi.response';
+export * from './watch-providers-list.response';

@@ -17,7 +17,9 @@ export function IconButton(props: IconButtonProps) {
   const { colors } = useTheme<MovieTheme>();
   return (
     <Pressable
-      className="w-12 h-12 items-center justify-center overflow-hidden rounded-full bg-secondary"
+      className={`w-12 h-12 items-center justify-center rounded-full bg-secondary ${
+        props.children ? "overflow-visible" : "overflow-hidden"
+      }`}
       onPress={props.onPress}
       onPressIn={() => TapStateRef.current?.setPressed(true)}
       onPressOut={() => TapStateRef.current?.setPressed(false)}

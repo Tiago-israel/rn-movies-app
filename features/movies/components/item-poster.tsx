@@ -1,4 +1,5 @@
-import { View, Pressable, Image } from "react-native";
+import { View, Pressable } from "react-native";
+import { Image } from "expo-image";
 
 export type ItemPosterProps = {
   width?: number;
@@ -6,12 +7,14 @@ export type ItemPosterProps = {
   posterUrl?: string;
   borderRadius?: "lg" | "none";
   onPress?: () => void | Promise<void>;
+  recyclingKey?: string;
 };
 
 export function ItemPoster({
   width = 150,
   height = 200,
   borderRadius = "lg",
+  recyclingKey,
   ...props
 }: ItemPosterProps) {
   const radiusClass = borderRadius === "none" ? "" : "rounded-lg";
@@ -23,10 +26,21 @@ export function ItemPoster({
       style={{ width, height }}
       onPress={props.onPress}
     >
-      <Image
-        source={{ uri: props.posterUrl }}
-        style={{ width, height }}
-      />
+      {props.posterUrl ? (
+        <Image
+          source={{ uri: props.posterUrl }}
+          style={{ width, height }}
+          contentFit="cover"
+          recyclingKey={recyclingKey ?? props.posterUrl}
+          transition={150}
+          cachePolicy="memory-disk"
+        />
+      ) : (
+        <View
+          className="h-full w-full bg-muted"
+          style={{ width, height }}
+        />
+      )}
     </Component>
   );
 }

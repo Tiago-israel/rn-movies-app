@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Option 1 – Enhanced Grid View (Conservative)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #e8e8e8;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px 60px;
+    min-height: 100vh;
+  }
+  h1 { font-size: 20px; color: #333; margin-bottom: 6px; text-align: center; }
+  .subtitle { font-size: 13px; color: #666; margin-bottom: 24px; text-align: center; max-width: 520px; }
+
+  /* Legend */
+  .legend {
+    display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; justify-content: center;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #333; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 2px; }
+
+  /* Phone frame */
+  .phone-wrap { display: flex; flex-direction: column; align-items: center; }
+  .phone {
+    width: 375px;
+    background: #fff;
+    border: 3px solid #333;
+    border-radius: 40px;
+    overflow: hidden;
+    box-shadow: 4px 4px 0 #999;
+    position: relative;
+  }
+  .phone-notch {
+    width: 120px; height: 28px; background: #333;
+    border-radius: 0 0 18px 18px; margin: 0 auto 0;
+  }
+  .phone-screen { padding: 0 0 24px; }
+
+  /* Reusable badge */
+  .badge-reuse {
+    position: absolute; top: -8px; right: -8px;
+    background: #4CAF50; color: #fff;
+    padding: 2px 6px; border-radius: 3px;
+    font-size: 9px; font-family: Arial, sans-serif; font-weight: bold;
+    z-index: 20; white-space: nowrap;
+  }
+  .badge-new {
+    position: absolute; top: -8px; right: -8px;
+    background: #FF9800; color: #fff;
+    padding: 2px 6px; border-radius: 3px;
+    font-size: 9px; font-family: Arial, sans-serif; font-weight: bold;
+    z-index: 20; white-space: nowrap;
+  }
+  .rel { position: relative; display: inline-block; }
+  .rel-block { position: relative; display: block; }
+
+  /* NavBar */
+  .navbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px 10px;
+    border-bottom: 2px solid #ccc;
+    background: #fff;
+  }
+  .nav-back {
+    width: 32px; height: 32px; border: 2px solid #999;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: #333;
+  }
+  .nav-title { font-size: 15px; font-weight: bold; color: #333; }
+  .nav-action {
+    width: 32px; height: 32px; border: 2px solid #333;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: bold; color: #333;
+  }
+
+  /* Stats row */
+  .stats-row {
+    display: flex; gap: 8px; padding: 12px 16px 0;
+  }
+  .stat-card {
+    flex: 1; border: 2px solid #ccc; border-radius: 10px;
+    padding: 8px 10px; background: #f5f5f5; position: relative;
+  }
+  .stat-label { font-size: 9px; color: #666; }
+  .stat-value { font-size: 18px; font-weight: bold; color: #333; }
+  .stat-sub { font-size: 9px; color: #999; }
+
+  /* Tabs */
+  .tabs-wrap { padding: 10px 16px; }
+  .tabs {
+    display: flex; border: 2px solid #ccc; border-radius: 20px;
+    overflow: hidden; position: relative;
+  }
+  .tab-item {
+    flex: 1; text-align: center; padding: 6px 0; font-size: 12px;
+    color: #666; position: relative; z-index: 1;
+  }
+  .tab-item.active {
+    background: #333; color: #fff; border-radius: 18px;
+    font-weight: bold;
+  }
+
+  /* Filter row */
+  .filter-row {
+    display: flex; align-items: center; gap: 8px; padding: 4px 16px 8px;
+  }
+  .filter-chip {
+    border: 2px solid #ccc; border-radius: 16px; padding: 3px 10px;
+    font-size: 10px; color: #555; background: #f5f5f5;
+  }
+  .filter-chip.active { border-color: #333; background: #333; color: #fff; }
+  .filter-select {
+    margin-left: auto; border: 2px solid #ccc; border-radius: 6px;
+    padding: 3px 8px; font-size: 10px; color: #555; font-family: inherit;
+    background: #f5f5f5; display: flex; align-items: center; gap: 4px;
+  }
+
+  /* Grid */
+  .poster-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 8px; padding: 4px 16px 16px;
+  }
+  .poster-cell {
+    aspect-ratio: 2/3; background: #ddd; border: 2px solid #ccc;
+    border-radius: 10px; overflow: hidden; position: relative;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; color: #888; flex-direction: column; gap: 4px;
+  }
+  .poster-img-placeholder {
+    width: 100%; height: 75%; background: #ccc;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; color: #888;
+  }
+  .poster-title {
+    font-size: 8px; color: #333; text-align: center; padding: 0 4px;
+  }
+  .watched-badge {
+    position: absolute; top: 4px; left: 4px;
+    background: #333; color: #fff; border-radius: 50%;
+    width: 18px; height: 18px; font-size: 9px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .rating-badge {
+    position: absolute; bottom: 24px; right: 4px;
+    background: rgba(0,0,0,0.6); color: #fff; border-radius: 4px;
+    padding: 1px 4px; font-size: 8px;
+  }
+
+  /* Section label */
+  .section-info {
+    padding: 2px 16px 4px; font-size: 10px; color: #888;
+  }
+</style>
+</head>
+<body>
+
+<h1>Option 1 – Enhanced Grid View</h1>
+<p class="subtitle">Conservative approach: Enhances the existing FavoriteMoviesView with watch-status tabs, status badges on posters, filter chips, and stats summary — reusing nearly all existing components.</p>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#4CAF50"></div> [REUSE] Existing component</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#FF9800"></div> [NEW] New component</div>
+</div>
+
+<div class="phone-wrap">
+  <div class="phone">
+    <div class="phone-notch"></div>
+    <div class="phone-screen">
+
+      <!-- NavBar -->
+      <!-- REUSABLE: NavBar from features/movies/components/navbar.tsx -->
+      <div class="rel-block" style="margin-bottom:0;">
+        <span class="badge-reuse" style="top:4px;right:4px;">[REUSE] NavBar</span>
+        <div class="navbar">
+          <div class="nav-back">←</div>
+          <span class="nav-title">My Watchlist</span>
+          <div class="rel">
+            <span class="badge-reuse" style="top:-6px;right:-6px;">[REUSE] IconButton</span>
+            <div class="nav-action">+</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <!-- REUSABLE: StatCard from features/movies/components/stat-card.tsx -->
+        <div class="stat-card rel-block">
+          <span class="badge-reuse">[REUSE] StatCard</span>
+          <div class="stat-label">Total</div>
+          <div class="stat-value">42</div>
+          <div class="stat-sub">movies &amp; series</div>
+        </div>
+        <div class="stat-card rel-block">
+          <span class="badge-reuse">[REUSE] StatCard</span>
+          <div class="stat-label">Watched</div>
+          <div class="stat-value">28</div>
+          <div class="stat-sub">✓ completed</div>
+        </div>
+        <div class="stat-card rel-block">
+          <span class="badge-reuse">[REUSE] StatCard</span>
+          <div class="stat-label">Unwatched</div>
+          <div class="stat-value">14</div>
+          <div class="stat-sub">⏳ pending</div>
+        </div>
+      </div>
+
+      <!-- Tabs: Movies / Series -->
+      <div class="tabs-wrap">
+        <!-- REUSABLE: TabsGroup from features/movies/components/tab.tsx -->
+        <div class="rel-block">
+          <span class="badge-reuse">[REUSE] TabsGroup</span>
+          <div class="tabs">
+            <div class="tab-item active">Movies</div>
+            <div class="tab-item">Series</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Row -->
+      <div class="filter-row">
+        <!-- REUSABLE: Pill from features/movies/components/pill.tsx -->
+        <div class="rel" style="display:flex;gap:6px;align-items:center;">
+          <span class="badge-reuse" style="top:-8px;right:-8px;">[REUSE] Pill</span>
+          <div class="filter-chip active">All</div>
+          <div class="filter-chip">Watched</div>
+          <div class="filter-chip">Unwatched</div>
+        </div>
+        <!-- NEW: SortDropdown -->
+        <div class="rel" style="margin-left:auto;">
+          <span class="badge-new">[NEW] SortDropdown</span>
+          <div class="filter-select">Sort ▾</div>
+        </div>
+      </div>
+
+      <div class="section-info">28 movies</div>
+
+      <!-- Poster Grid -->
+      <!-- REUSABLE: List (FlashList) from components/List.tsx -->
+      <!-- REUSABLE: ItemPoster from features/movies/components/item-poster.tsx -->
+      <div class="rel-block">
+        <span class="badge-reuse" style="top:0;right:4px;z-index:30;">[REUSE] List + ItemPoster</span>
+        <div class="poster-grid">
+
+          <div class="poster-cell">
+            <div class="poster-img-placeholder">🎬</div>
+            <div class="poster-title">Interstellar</div>
+            <div class="watched-badge">✓</div>
+            <div class="rating-badge">8.6★</div>
+          </div>
+
+          <div class="poster-cell">
+            <div class="poster-img-placeholder">🎬</div>
+            <div class="poster-title">The Dark Knight</div>
+            <div class="watched-badge">✓</div>
+            <div class="rating-badge">9.0★</div>
+          </div>
+
+          <div class="poster-cell">
+            <div class="poster-img-placeholder">🎬</div>
+            <div class="poster-title">Oppenheimer</div>
+            <!-- NEW: WatchStatusBadge -->
+            <div class="rel" style="position:absolute;top:4px;left:4px;">
+              <span class="badge-new" style="top:-2px;left:0;right:auto;">[NEW] WatchStatus</span>
+              <div style="background:#999;color:#fff;border-radius:50%;width:18px;height:18px;font-size:9px;display:flex;align-items:center;justify-content:center;">⏳</div>
+            </div>
+          </div>
+
+          <div class="poster-cell">
+            <div class="poster-img-placeholder">🎬</div>
+            <div class="poster-title">Dune Part Two</div>
+            <div class="watched-badge">✓</div>
+            <div class="rating-badge">8.2★</div>
+          </div>
+
+          <div class="poster-cell">
+            <div class="poster-img-placeholder">🎬</div>
+            <div class="poster-title">Inception</div>
+            <div style="position:absolute;top:4px;left:4px;background:#999;color:#fff;border-radius:50%;width:18px;height:18px;font-size:9px;display:flex;align-items:center;justify-content:center;">⏳</div>
+          </div>
+
+          <div class="poster-cell">
+            <div class="poster-img-placeholder">🎬</div>
+            <div class="poster-title">Gladiator II</div>
+            <div class="watched-badge">✓</div>
+            <div class="rating-badge">7.5★</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Drawer hint -->
+      <!-- REUSABLE: Drawer from features/movies/components/drawer.tsx -->
+      <div style="margin:0 16px; border:2px dashed #ccc; border-radius:10px; padding:10px; font-size:10px; color:#999; text-align:center; position:relative;">
+        <span class="badge-reuse" style="top:-8px;right:-8px;">[REUSE] Drawer (slide from right)</span>
+        + Tap to add a movie to watchlist
+      </div>
+
+    </div><!-- /phone-screen -->
+  </div><!-- /phone -->
+</div>
+
+</body>
+</html>

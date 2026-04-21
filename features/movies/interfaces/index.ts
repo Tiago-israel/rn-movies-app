@@ -16,3 +16,5 @@ export * from "./generic-item";
 export * from "./paginated-result";
 export * from "./service-type";
 export * from "./provider";
+export * from "./watchlist-item";
+export * from "./search-result";

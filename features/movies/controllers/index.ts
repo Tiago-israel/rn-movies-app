@@ -9,3 +9,4 @@ export * from "./use-tv-series-home";
 export * from "./use-series-details";
 export * from "./use-series-cast";
 export * from "./use-view-more";
+export * from "./use-watchlist";

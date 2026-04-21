@@ -3,4 +3,5 @@ export type GenericItem = {
   title?: string;
   posterPath: string;
   backdropPath?: string;
+  genreIds?: number[];
 };

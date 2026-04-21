@@ -43,7 +43,8 @@ export class TVSeriesService {
     });
     
     return {
-      totalPages: response.total_results,
+      totalPages: response.total_pages,
+      totalResults: response.total_results,
       results: response.results.map(this.mapGenericItem),
     };
   };
@@ -56,7 +57,8 @@ export class TVSeriesService {
     });
 
     return {
-      totalPages: response.total_results,
+      totalPages: response.total_pages,
+      totalResults: response.total_results,
       results: response.results.map(this.mapGenericItem),
     };
   };
@@ -69,7 +71,8 @@ export class TVSeriesService {
     });
 
     return {
-      totalPages: response.total_results,
+      totalPages: response.total_pages,
+      totalResults: response.total_results,
       results: response.results.map(this.mapGenericItem),
     };
   };
@@ -82,7 +85,45 @@ export class TVSeriesService {
     });
 
     return {
-      totalPages: response.total_results,
+      totalPages: response.total_pages,
+      totalResults: response.total_results,
+      results: response.results.map(this.mapGenericItem),
+    };
+  };
+
+  discoverTv = async (
+    page: number,
+    options: {
+      sortBy: string;
+      withWatchProviders?: string;
+      withGenres?: string;
+    }
+  ): Promise<PaginatedResult<GenericItem>> => {
+    const languageMap: Record<string, string> = {
+      en: "US",
+      "pt-BR": "BR",
+    };
+    const region = languageMap[this.language] || "US";
+    const params = new URLSearchParams({
+      language: this.language,
+      page: String(page),
+      sort_by: options.sortBy,
+      watch_region: region,
+      include_adult: "false",
+    });
+    if (options.withWatchProviders) {
+      params.set("with_watch_providers", options.withWatchProviders);
+    }
+    if (options.withGenres) {
+      params.set("with_genres", options.withGenres);
+    }
+    const response = await this.httpClient.get<
+      PaginatedResultResponse<TVSeriesListItemResponse>
+    >(`discover/tv?${params.toString()}`, { headers: this.headers });
+
+    return {
+      totalPages: response.total_pages,
+      totalResults: response.total_results,
       results: response.results.map(this.mapGenericItem),
     };
   };
@@ -113,6 +154,7 @@ export class TVSeriesService {
     return {
       id: response.id,
       title: response.name,
+      genreIds: response.genre_ids,
       posterPath: `${movieDBBaseImageUrl}${response.poster_path}`,
       backdropPath: response.backdrop_path
         ? `${movieDBBaseImageUrl}${response.backdrop_path}`
@@ -261,15 +303,21 @@ export class TVSeriesService {
       `tv/${seriesId}/watch/providers`,
       { headers: this.headers }
     );
-    if (!response?.results?.[region]) return [];
-    return this.mapProvider(response.results[region]);
+    const regionData = response?.results?.[region];
+    if (regionData == null || typeof regionData !== "object") return [];
+    return this.mapProvider(regionData);
   }
 
-  private mapProvider(response: ProviderResponse): Provider[] {
-    const { flatrate = [], rent = [], buy = [] } = response;
+  private mapProvider(response: ProviderResponse | undefined | null): Provider[] {
+    if (response == null || typeof response !== "object") return [];
+    const flatrate = Array.isArray(response.flatrate) ? response.flatrate : [];
+    const rent = Array.isArray(response.rent) ? response.rent : [];
+    const buy = Array.isArray(response.buy) ? response.buy : [];
     const sortedProviders = flatrate.concat(rent).concat(buy);
+    const link = typeof response.link === "string" ? response.link : "";
     const list: ProviderItem[] = [];
     for (const p of sortedProviders) {
+      if (p == null || typeof p !== "object") continue;
       const existing = list.find((item) => {
         const [first] = item.provider_name.split(" ");
         return p.provider_name.startsWith(first);
@@ -278,7 +326,7 @@ export class TVSeriesService {
     }
     return list.map((item) => ({
       id: item.provider_id,
-      link: response.link,
+      link,
       image: `${movieDBBaseImageUrl}${item.logo_path}`,
     }));
   }

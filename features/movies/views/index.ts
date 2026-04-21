@@ -4,6 +4,7 @@ export * from "./series-cast";
 export * from "./home";
 export * from "./reviews";
 export * from "./favorite-movies";
+export * from "./watchlist";
 export * from "./search";
 export * from "./preferences";
 export * from "./cast";

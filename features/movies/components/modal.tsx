@@ -1,6 +1,7 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from "react";
 import {
   View,
+  Text,
   Pressable,
   Modal as RNModal,
   Animated,
@@ -9,11 +10,21 @@ import {
   ScrollView,
 } from "react-native";
 import * as Haptics from "expo-haptics";
+import { IconButton } from "./Icon-button";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
+const HANDLE_BLOCK = 40;
+const HEADER_BLOCK = 56;
+const FOOTER_BLOCK = 148;
+const MODAL_VERTICAL_PADDING = 8;
+
 export type ModalProps = {
   children?: React.ReactNode;
+  /** Renders below the scroll area, fixed at the bottom of the sheet. */
+  footer?: React.ReactNode;
+  /** Optional header row with title and close control. */
+  title?: string;
   visible?: boolean;
   onClose?: () => void;
 };
@@ -66,7 +77,7 @@ export const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       setIsVisible(false);
       props.onClose?.();
     });
-  }, [translateY, opacity]);
+  }, [translateY, opacity, props.onClose]);
 
   useImperativeHandle(ref, () => ({
     open,
@@ -101,7 +112,7 @@ export const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
 
         {/* Modal Content */}
         <Animated.View
-          className="absolute bottom-0 left-0 right-0 bg-background rounded-t-3xl"
+          className="absolute bottom-0 left-0 right-0 bg-background rounded-t-3xl overflow-hidden"
           style={{
             transform: [{ translateY }],
             maxHeight: SCREEN_HEIGHT * 0.9,
@@ -112,13 +123,43 @@ export const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
             <View className="w-10 h-1 bg-muted-foreground rounded-full opacity-30" />
           </View>
 
-          {/* Scrollable Content */}
+          {props.title ? (
+            <View className="flex-row items-center justify-between px-sm pb-3 border-b border-border gap-xs">
+              <Text
+                className="text-lg font-semibold text-foreground flex-1"
+                numberOfLines={1}
+              >
+                {props.title}
+              </Text>
+              <IconButton icon="close" onPress={close} />
+            </View>
+          ) : null}
+
           <ScrollView
-            className="px-sm pb-10"
-            showsVerticalScrollIndicator={false}
+            className="px-sm"
+            style={{
+              maxHeight:
+                SCREEN_HEIGHT * 0.9 -
+                HANDLE_BLOCK -
+                MODAL_VERTICAL_PADDING -
+                (props.title ? HEADER_BLOCK : 0) -
+                (props.footer != null ? FOOTER_BLOCK : 0),
+            }}
+            contentContainerStyle={{
+              paddingBottom: props.footer != null ? 8 : 40,
+            }}
+            showsVerticalScrollIndicator
+            keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled
           >
             {props.children}
           </ScrollView>
+
+          {props.footer != null ? (
+            <View className="px-sm pt-2 pb-5 border-t border-border bg-background">
+              {props.footer}
+            </View>
+          ) : null}
         </Animated.View>
       </View>
     </RNModal>

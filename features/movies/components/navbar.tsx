@@ -35,7 +35,7 @@ export function NavBar({
 }: NavBarProps) {
   return (
     <View
-      className="w-full flex-row items-center px-sm border-b border-border"
+      className="w-full flex-row items-center overflow-visible px-sm border-b border-border"
       style={{
         height: NAVBAR_HEIGHT,
         justifyContent: props.hideButtons ? "center" : "space-between",
@@ -51,7 +51,7 @@ export function NavBar({
       {props.title && (
         <Text className="text-xl text-foreground">{props.title}</Text>
       )}
-      <View className="flex-row gap-xs">
+      <View className="flex-row gap-xs overflow-visible">
         {!props.hideButtons &&
           trainlingIcon?.map((item, index) => (
             <IconButton

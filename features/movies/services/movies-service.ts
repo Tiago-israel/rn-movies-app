@@ -3,7 +3,6 @@ import { token, movieDBBaseUrl, movieDBBaseImageUrl } from "../constants";
 import { useUserStore } from "../store";
 import type {
   MovieDetailsResponse,
-  MovieListResponse,
   MovieDetails,
   MovieReview,
   PaginatedResultResponse,
@@ -19,6 +18,13 @@ import type {
   ProviderWrapperResponse,
   ProviderItem,
   Provider,
+  SearchMultiListResponse,
+  SearchMultiResultResponse,
+  SearchResultItem,
+  SearchMultiPage,
+  WatchProvidersListResponse,
+  WatchProviderOption,
+  Genre,
 } from "../interfaces";
 import { formatDate } from "../helpers";
 
@@ -61,7 +67,8 @@ export class MoviesService {
     });
 
     return {
-      totalPages: response.total_results,
+      totalPages: response.total_pages,
+      totalResults: response.total_results,
       results: response.results.map(this.mapGenericItem),
     };
   };
@@ -76,7 +83,8 @@ export class MoviesService {
     });
 
     return {
-      totalPages: response.total_results,
+      totalPages: response.total_pages,
+      totalResults: response.total_results,
       results: response.results.map(this.mapGenericItem),
     };
   };
@@ -91,7 +99,8 @@ export class MoviesService {
     });
 
     return {
-      totalPages: response.total_results,
+      totalPages: response.total_pages,
+      totalResults: response.total_results,
       results: response.results.map(this.mapGenericItem),
     };
   };
@@ -106,7 +115,42 @@ export class MoviesService {
     });
 
     return {
-      totalPages: response.total_results,
+      totalPages: response.total_pages,
+      totalResults: response.total_results,
+      results: response.results.map(this.mapGenericItem),
+    };
+  };
+
+  /** Paginated discover — use with `withWatchProviders` instead of per-title /watch/providers for filters. */
+  discoverMovies = async (
+    page: number,
+    options: {
+      sortBy: string;
+      withWatchProviders?: string;
+      withGenres?: string;
+    }
+  ): Promise<PaginatedResult<GenericItem>> => {
+    const region = this.watchRegion();
+    const params = new URLSearchParams({
+      language: this.language,
+      page: String(page),
+      sort_by: options.sortBy,
+      watch_region: region,
+      include_adult: "false",
+    });
+    if (options.withWatchProviders) {
+      params.set("with_watch_providers", options.withWatchProviders);
+    }
+    if (options.withGenres) {
+      params.set("with_genres", options.withGenres);
+    }
+    const response = await this.httpClient.get<
+      PaginatedResultResponse<MovieDetailsResponse>
+    >(`discover/movie?${params.toString()}`, { headers: this.headers });
+
+    return {
+      totalPages: response.total_pages,
+      totalResults: response.total_results,
       results: response.results.map(this.mapGenericItem),
     };
   };
@@ -131,15 +175,86 @@ export class MoviesService {
     return result;
   }
 
-  async findMovies(query: string): Promise<MovieDetails[]> {
-    const response = await this.httpClient.get<MovieListResponse>(
-      `search/movie?query=${query}&include_adult=false&language=${this.language}&page=1`,
+  async searchMulti(
+    query: string,
+    page = 1,
+    options?: { signal?: AbortSignal }
+  ): Promise<SearchMultiPage> {
+    const q = encodeURIComponent(query.trim());
+    const response = await this.httpClient.get<SearchMultiListResponse>(
+      `search/multi?query=${q}&include_adult=false&language=${this.language}&page=${page}`,
       {
         headers: this.headers,
+        signal: options?.signal,
       }
     );
-    const result = response.results.map(this.mapMovieDetails);
-    return result;
+    return {
+      results: response.results
+        .map((item) => this.mapSearchMultiItem(item))
+        .filter((item): item is SearchResultItem => item != null),
+      page: response.page,
+      totalPages: response.total_pages,
+      totalResults: response.total_results,
+    };
+  }
+
+  /** Trending movies, TV, and people (TMDB combined daily list). */
+  async getTrendingAllDay(
+    page = 1,
+    options?: { signal?: AbortSignal }
+  ): Promise<Omit<SearchMultiPage, "totalResults">> {
+    const response = await this.httpClient.get<SearchMultiListResponse>(
+      `trending/all/day?language=${this.language}&page=${page}`,
+      {
+        headers: this.headers,
+        signal: options?.signal,
+      }
+    );
+    return {
+      results: response.results
+        .map((item) => this.mapSearchMultiItem(item))
+        .filter((item): item is SearchResultItem => item != null),
+      page: response.page,
+      totalPages: response.total_pages,
+    };
+  }
+
+  private mapSearchMultiItem(
+    item: SearchMultiResultResponse
+  ): SearchResultItem | null {
+    if (item.media_type === "movie") {
+      return {
+        id: item.id,
+        mediaType: "movie",
+        title: item.title,
+        genreIds: item.genre_ids,
+        posterPath: item.poster_path
+          ? `${movieDBBaseImageUrl}${item.poster_path}`
+          : undefined,
+      };
+    }
+    if (item.media_type === "tv") {
+      return {
+        id: item.id,
+        mediaType: "tv",
+        title: item.name,
+        genreIds: item.genre_ids,
+        posterPath: item.poster_path
+          ? `${movieDBBaseImageUrl}${item.poster_path}`
+          : undefined,
+      };
+    }
+    if (item.media_type === "person") {
+      return {
+        id: item.id,
+        mediaType: "person",
+        title: item.name,
+        posterPath: item.profile_path
+          ? `${movieDBBaseImageUrl}${item.profile_path}`
+          : undefined,
+      };
+    }
+    return null;
   }
 
   async getImages(id: number): Promise<string[]> {
@@ -183,7 +298,7 @@ export class MoviesService {
     return result;
   }
 
-  async getGenres() {
+  async getGenres(): Promise<Genre[]> {
     const { genres } = await this.httpClient.get<GenresResponse>(
       `genre/movie/list?language=${this.language}`,
       {
@@ -192,6 +307,42 @@ export class MoviesService {
     );
 
     return genres;
+  }
+
+  async getTvGenres(): Promise<Genre[]> {
+    const { genres } = await this.httpClient.get<GenresResponse>(
+      `genre/tv/list?language=${this.language}`,
+      {
+        headers: this.headers,
+      }
+    );
+
+    return genres;
+  }
+
+  /** Regional streaming catalog (for filter chips). */
+  async getWatchProvidersCatalog(
+    media: "movie" | "tv" = "movie"
+  ): Promise<WatchProviderOption[]> {
+    const region = this.watchRegion();
+    const response = await this.httpClient.get<WatchProvidersListResponse>(
+      `watch/providers/${media}?watch_region=${region}`,
+      { headers: this.headers }
+    );
+    const list = response?.results ?? [];
+    return [...list]
+      .sort(
+        (a, b) => (a.display_priority ?? 0) - (b.display_priority ?? 0)
+      )
+      .map((p) => ({ id: p.provider_id, name: p.provider_name }));
+  }
+
+  private watchRegion(): string {
+    const languageMap: Record<string, string> = {
+      en: "US",
+      "pt-BR": "BR",
+    };
+    return languageMap[this.language] || "US";
   }
 
   async getMovieCredits(id: number): Promise<Cast[]> {
@@ -217,19 +368,16 @@ export class MoviesService {
   }
 
   async getWatchProviders(movieId: number): Promise<Provider[]> {
-    const languageMap = {
-      'en': 'US',
-      'pt-BR': 'BR',
-    };
-    const language = languageMap[this.language] || 'US';
+    const region = this.watchRegion();
     const response = await this.httpClient.get<ProviderWrapperResponse>(
       `movie/${movieId}/watch/providers`,
       {
         headers: this.headers,
       }
     );
-    if (!response) return [];
-    return this.mapProvider(response.results[language]);
+    const regionData = response?.results?.[region];
+    if (regionData == null || typeof regionData !== "object") return [];
+    return this.mapProvider(regionData);
   }
 
   private getYear(date: string): string {
@@ -291,6 +439,7 @@ export class MoviesService {
     return {
       id: response.id,
       title: response.title,
+      genreIds: response.genre_ids,
       posterPath: `${movieDBBaseImageUrl}${response.poster_path}`,
       backdropPath: response.backdrop_path
         ? `${movieDBBaseImageUrl}${response.backdrop_path}`
@@ -298,14 +447,19 @@ export class MoviesService {
     };
   };
 
-  mapProvider = (response: ProviderResponse): Provider[] => {
-    const { flatrate = [], rent = [], buy = [], } = response;
+  mapProvider = (response: ProviderResponse | undefined | null): Provider[] => {
+    if (response == null || typeof response !== "object") return [];
+    const flatrate = Array.isArray(response.flatrate) ? response.flatrate : [];
+    const rent = Array.isArray(response.rent) ? response.rent : [];
+    const buy = Array.isArray(response.buy) ? response.buy : [];
     const sortedProviders = flatrate.concat(rent).concat(buy);
+    const link = typeof response.link === "string" ? response.link : "";
 
     const list: ProviderItem[] = [];
     for (const p of sortedProviders) {
-      const existing = list.find(item => {
-        const [first] = item.provider_name.split(' ');
+      if (p == null || typeof p !== "object") continue;
+      const existing = list.find((item) => {
+        const [first] = item.provider_name.split(" ");
         return p.provider_name.startsWith(first);
       });
 
@@ -314,9 +468,9 @@ export class MoviesService {
       }
     }
 
-    return list.map(item => ({
+    return list.map((item) => ({
       id: item.provider_id,
-      link: response.link,
+      link,
       image: `${movieDBBaseImageUrl}${item.logo_path}`,
     }));
   }
