@@ -17,11 +17,34 @@ export default function MoviesHome() {
     };
   }
 
+  function goToSearch() {
+    router.push("/movies/search");
+  }
+
+  function goToGenreDiscover(args: {
+    catalog: "movie" | "tv";
+    genreId: number;
+    title: string;
+  }) {
+    const type: ServiceType =
+      args.catalog === "movie" ? "movies.popular" : "tv.popular";
+    router.push({
+      pathname: "/movies/view-more",
+      params: {
+        type,
+        title: args.title,
+        genreIds: String(args.genreId),
+      },
+    });
+  }
+
   return (
     <HomeView
       navigateToMovieDetails={goToMovieDetails}
       navigateToSeriesDetails={goToSeriesDetails}
       navigateToViewMore={goToViewMore}
+      navigateToSearch={goToSearch}
+      navigateToGenreDiscover={goToGenreDiscover}
     />
   );
 }

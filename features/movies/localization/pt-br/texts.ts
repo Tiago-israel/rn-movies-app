@@ -1,4 +1,9 @@
 export const ptBRTexts = {
+  home_tab_movies: "Filmes",
+  home_tab_series: "Séries",
+  home_header_title: "Descubra",
+  home_genre_highlights: "Por gênero",
+  home_trending_title: "Em alta hoje",
   movie_home_now_playing: "Em exibição",
   movie_home_popular: "Popular",
   movie_home_top_rated: "Sucessos",

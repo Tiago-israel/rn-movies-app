@@ -38,7 +38,12 @@ export const TabItem = forwardRef((props: TabItemProps, ref) => {
         props.onPress?.(props.index);
       }}
     >
-      <Text color="primary-foreground text-center" numberOfLines={1}>{props.children}</Text>
+      <Text
+        color={props.selected ? "accent-foreground text-center font-semibold" : "primary-foreground text-center"}
+        numberOfLines={1}
+      >
+        {props.children}
+      </Text>
     </Pressable>
   );
 });
@@ -93,7 +98,7 @@ export function TabsGroup({
     <View className="flex-row border-2 border-border rounded-full">
       <Animated.View
         pointerEvents="none"
-        className="rounded-full h-8 absolute top-0 bg-red-600"
+        className="rounded-full h-8 absolute top-0 bg-white"
         style={[{ width: selectedWidth, left }]}
       />
       {items?.map((item, index) => {

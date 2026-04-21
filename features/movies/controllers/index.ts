@@ -2,6 +2,8 @@ export * from "./use-favorite-movies";
 export * from "./use-movie-cast";
 export * from "./use-movie-details";
 export * from "./use-movie-home";
+export * from "./use-trending-home";
+export * from "./use-home-genres";
 export * from "./use-movie-review";
 export * from "./use-person";
 export * from "./use-search-movies";

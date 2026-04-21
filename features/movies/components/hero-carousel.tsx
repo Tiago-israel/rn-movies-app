@@ -8,6 +8,7 @@ import {
   useWindowDimensions,
   type ViewToken,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import type { GenericItem } from "../interfaces";
 
 type HeroCarouselProps = {
@@ -43,6 +44,8 @@ export function HeroCarousel({ data, onPressItem }: HeroCarouselProps) {
           onPress={() => onPressItem(item.id)}
           style={{ width }}
           className="overflow-hidden"
+          accessibilityRole="button"
+          accessibilityLabel={item.title ?? "Open details"}
         >
           <Image
             source={{ uri: imageUri }}
@@ -93,35 +96,46 @@ export function HeroCarousel({ data, onPressItem }: HeroCarouselProps) {
         viewabilityConfig={viewabilityConfig}
         getItemLayout={getItemLayout}
       />
-      {data[activeIndex]?.title ? (
-        <View className="absolute left-0 right-0 top-0 w-full">
-          <View className="self-start w-full bg-black/50 px-3 py-2">
-            <Text
-              className="text-lg font-semibold text-white"
-              numberOfLines={2}
-            >
-              {data[activeIndex].title}
-            </Text>
+      <LinearGradient
+        colors={["transparent", "rgba(0,0,0,0.88)"]}
+        pointerEvents="box-none"
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          paddingBottom: 20,
+          paddingTop: 56,
+        }}
+      >
+        {data[activeIndex]?.title ? (
+          <Text
+            className="px-4 text-xl font-bold text-white"
+            numberOfLines={2}
+          >
+            {data[activeIndex].title}
+          </Text>
+        ) : null}
+        <View className="mt-4 flex-row justify-center px-4">
+          <View className="flex-row items-center gap-2 rounded-full bg-black/40 px-3 py-2">
+            {data.map((_, index) => (
+              <Pressable
+                key={index}
+                onPress={() => handleBulletPress(index)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityRole="button"
+                accessibilityLabel={`Slide ${index + 1} of ${data.length}`}
+              >
+                <View
+                  className={`h-2 rounded-full ${
+                    index === activeIndex ? "w-6 bg-white" : "w-2 bg-white/50"
+                  }`}
+                />
+              </Pressable>
+            ))}
           </View>
         </View>
-      ) : null}
-      <View className="absolute bottom-4 left-0 right-0 flex-row justify-center">
-        <View className="flex-row items-center gap-2 rounded-full bg-black/40 px-3 py-2">
-          {data.map((_, index) => (
-            <Pressable
-              key={index}
-              onPress={() => handleBulletPress(index)}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <View
-                className={`h-2 rounded-full ${
-                  index === activeIndex ? "w-6 bg-white" : "w-2 bg-white/50"
-                }`}
-              />
-            </Pressable>
-          ))}
-        </View>
-      </View>
+      </LinearGradient>
     </View>
   );
 }

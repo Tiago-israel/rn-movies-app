@@ -26,6 +26,23 @@ import { useUserStore } from "../store";
 
 const FILTER_META_STALE_MS = 1000 * 60 * 60 * 24;
 
+function parseGenreIdsFromParam(param: string | undefined): number[] {
+  if (param == null || String(param).trim() === "") return [];
+  return [
+    ...new Set(
+      String(param)
+        .split(/[|,]/)
+        .map((x) => Number(x.trim()))
+        .filter((n) => !Number.isNaN(n))
+    ),
+  ].sort((a, b) => a - b);
+}
+
+export type UseViewMoreOptions = {
+  /** Comma- or pipe-separated genre ids (e.g. from route `genreIds`). */
+  initialGenreIdsParam?: string;
+};
+
 function discoverSortByForViewMore(type: ServiceType): string {
   switch (type) {
     case "movies.popular":
@@ -45,7 +62,7 @@ function discoverSortByForViewMore(type: ServiceType): string {
   }
 }
 
-export function useViewMore(type: ServiceType) {
+export function useViewMore(type: ServiceType, options?: UseViewMoreOptions) {
   const language = useUserStore((s) => s.language);
   const isMovieCatalog = type.startsWith("movies.");
 
@@ -53,8 +70,20 @@ export function useViewMore(type: ServiceType) {
   const tvService = useRef(new TVSeriesService()).current;
   const viewMoreService = useMemo(() => new ViewMoreService(type), [type]);
 
-  const [appliedGenreIds, setAppliedGenreIds] = useState<number[]>([]);
+  const parsedInitialGenreIds = useMemo(
+    () => parseGenreIdsFromParam(options?.initialGenreIdsParam),
+    [options?.initialGenreIdsParam]
+  );
+
+  const [appliedGenreIds, setAppliedGenreIds] = useState<number[]>(
+    () => parsedInitialGenreIds
+  );
   const [appliedProviderIds, setAppliedProviderIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    setAppliedGenreIds(parsedInitialGenreIds);
+    setAppliedProviderIds([]);
+  }, [type, parsedInitialGenreIds]);
 
   const providerFilterKey = useMemo(
     () => [...appliedProviderIds].sort((a, b) => a - b).join(","),
@@ -69,11 +98,6 @@ export function useViewMore(type: ServiceType) {
   );
   const hasGenreFilter = appliedGenreIds.length > 0;
   const needsDiscover = hasProviderFilter || hasGenreFilter;
-
-  useEffect(() => {
-    setAppliedGenreIds([]);
-    setAppliedProviderIds([]);
-  }, [type]);
 
   const { data: genres = [] } = useQuery<Genre[]>({
     queryKey: ["viewMoreGenres", isMovieCatalog ? "movie" : "tv", language],

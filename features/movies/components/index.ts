@@ -23,6 +23,8 @@ export * from "./tab";
 export * from "./series-carousel";
 export * from './more-options-carousel';
 export * from './hero-carousel';
+export * from './home-genre-chips';
+export * from './trending-home-row';
 export * from './modal';
 export * from './stat-card';
 export * from './animated-hero';

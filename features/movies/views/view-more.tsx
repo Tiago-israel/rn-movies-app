@@ -41,6 +41,8 @@ export type ViewMoreProps = {
   title: string;
   goBack: () => void;
   onPressItem: (item: GenericItem) => void;
+  /** Raw `genreIds` route param (comma-separated TMDB genre ids). */
+  initialGenreIdsParam?: string;
 };
 
 /* ─── animated poster card ──────────────────────────────── */
@@ -190,7 +192,9 @@ export function ViewMoreView(props: ViewMoreProps) {
     applyFilters,
     providersLoading,
     isListFooterLoading,
-  } = useViewMore(props.type);
+  } = useViewMore(props.type, {
+    initialGenreIdsParam: props.initialGenreIdsParam,
+  });
 
   const { width } = useWindowDimensions();
   const columnWidth = useMemo(

@@ -1,26 +1,99 @@
-import { ScrollView, View, Dimensions } from "react-native";
-import { HomeTitle, HeroCarousel, SeriesCarousel } from "../components";
-import { useTVSeriesHome } from "../controllers";
+import { useCallback, useState } from "react";
+import {
+  ScrollView,
+  View,
+  Dimensions,
+  RefreshControl,
+} from "react-native";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  HomeTitle,
+  HeroCarousel,
+  SeriesCarousel,
+  HomeGenreChips,
+  TrendingHomeRow,
+} from "../components";
+import {
+  useTVSeriesHome,
+  useTrendingHome,
+  TRENDING_HOME_QUERY_KEY,
+  useHomeGenres,
+} from "../controllers";
 import { SkeletonPlaceholder } from "@/components";
+import { ServiceType } from "../interfaces";
+import { getText } from "../localization";
+import type { Genre } from "../interfaces";
+import type { SearchResultItem } from "../interfaces";
+import { useUserStore } from "../store";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTENT_WIDTH = SCREEN_WIDTH - 40;
-import { ServiceType } from "../interfaces";
-import { getText } from "../localization";
 
 export type HomeSeriesProps = {
   navigateToSeriesDetails: (seriesId: number) => void;
+  navigateToMovieDetails: (movieId: number) => void;
   navigateToViewMore: (type: ServiceType, title: string) => () => void;
+  navigateToSearch?: () => void;
+  navigateToGenreDiscover: (args: {
+    catalog: "movie" | "tv";
+    genreId: number;
+    title: string;
+  }) => void;
 };
 
 export function HomeSeriesView(props: HomeSeriesProps) {
+  const language = useUserStore((s) => s.language);
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+
   const { airingToday, onTheAir, popular, topRated, isLoading } =
     useTVSeriesHome();
+
+  const { trendingItems, trendingLoading } = useTrendingHome();
+  const { data: homeGenres = [] } = useHomeGenres("tv");
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["airingToday"] }),
+        queryClient.invalidateQueries({ queryKey: ["onTheAir"] }),
+        queryClient.invalidateQueries({ queryKey: ["popular"] }),
+        queryClient.invalidateQueries({ queryKey: ["topRated"] }),
+        queryClient.invalidateQueries({ queryKey: TRENDING_HOME_QUERY_KEY }),
+        queryClient.invalidateQueries({ queryKey: ["homeGenres", "tv", language] }),
+      ]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [queryClient, language]);
+
+  const onTrendingPress = useCallback(
+    (item: SearchResultItem) => {
+      if (item.mediaType === "movie") {
+        props.navigateToMovieDetails(item.id);
+      } else {
+        props.navigateToSeriesDetails(item.id);
+      }
+    },
+    [props]
+  );
+
+  const onGenrePress = useCallback(
+    (genre: Genre) => {
+      props.navigateToGenreDiscover({
+        catalog: "tv",
+        genreId: genre.id,
+        title: genre.name,
+      });
+    },
+    [props]
+  );
 
   if (isLoading) {
     return (
       <ScrollView
-        bounces={false}
+        bounces
         contentContainerStyle={{ paddingBottom: 200 }}
         showsVerticalScrollIndicator={false}
       >
@@ -66,13 +139,28 @@ export function HomeSeriesView(props: HomeSeriesProps) {
 
   return (
     <ScrollView
-      bounces={false}
+      bounces
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
       contentContainerStyle={{ paddingBottom: 200 }}
       showsVerticalScrollIndicator={false}
     >
       <HeroCarousel
         data={airingToday}
         onPressItem={props.navigateToSeriesDetails}
+      />
+      <HomeTitle icon={{ name: "shape-outline", color: "#9b59b6" }}>
+        {getText("home_genre_highlights")}
+      </HomeTitle>
+      <HomeGenreChips genres={homeGenres} onSelectGenre={onGenrePress} />
+      <HomeTitle icon={{ name: "chart-line-variant", color: "#e74c3c" }}>
+        {getText("home_trending_title")}
+      </HomeTitle>
+      <TrendingHomeRow
+        items={trendingItems}
+        loading={trendingLoading}
+        onSelectItem={onTrendingPress}
       />
       <HomeTitle icon={{ name: "tv", color: "#2980b9" }}>
         {getText("tv_series_home_on_the_air")}

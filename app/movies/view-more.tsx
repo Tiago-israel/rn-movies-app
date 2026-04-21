@@ -4,7 +4,13 @@ import { GenericItem, ServiceType } from "@/features/movies/interfaces";
 
 export default function ViewMore() {
   const router = useRouter();
-  const { type, title } = useLocalSearchParams();
+  const { type, title, genreIds } = useLocalSearchParams();
+  const genreIdsParam =
+    typeof genreIds === "string"
+      ? genreIds
+      : Array.isArray(genreIds)
+        ? genreIds[0]
+        : undefined;
 
   function goBack() {
     router.back();
@@ -25,6 +31,7 @@ export default function ViewMore() {
       title={title as string}
       goBack={goBack}
       onPressItem={onPressItem}
+      initialGenreIdsParam={genreIdsParam}
     />
   );
 }

@@ -1,4 +1,9 @@
 export const usTexts = {
+  home_tab_movies: "Movies",
+  home_tab_series: "Series",
+  home_header_title: "Discover",
+  home_genre_highlights: "Browse by genre",
+  home_trending_title: "Trending today",
   movie_home_now_playing: "Now playing",
   movie_home_popular: "Popular",
   movie_home_top_rated: "Top Rated",
