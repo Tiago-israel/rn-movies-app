@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useMemo, useRef, useState } from "react";
 import {
   useWindowDimensions,
   View,
@@ -45,8 +45,8 @@ export type ViewMoreProps = {
   initialGenreIdsParam?: string;
 };
 
-/* ─── animated poster card ──────────────────────────────── */
-function PosterCard({
+/* ─── poster card (Pressable scale — avoids per-cell RN Animated) ─ */
+const PosterCard = memo(function PosterCard({
   item,
   width,
   onPress,
@@ -59,44 +59,20 @@ function PosterCard({
   cardBg: string;
   shadowColor: string;
 }) {
-  const scale = useRef(new RNAnimated.Value(1)).current;
-
-  const handlePressIn = useCallback(() => {
-    RNAnimated.spring(scale, {
-      toValue: 0.95,
-      useNativeDriver: true,
-      speed: 50,
-      bounciness: 4,
-    }).start();
-  }, [scale]);
-
-  const handlePressOut = useCallback(() => {
-    RNAnimated.spring(scale, {
-      toValue: 1,
-      useNativeDriver: true,
-      speed: 20,
-      bounciness: 6,
-    }).start();
-  }, [scale]);
-
   return (
-    <RNAnimated.View
-      style={[
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
         styles.posterCard,
         {
           width,
           backgroundColor: cardBg,
           shadowColor,
-          transform: [{ scale }],
+          transform: [{ scale: pressed ? 0.96 : 1 }],
         },
       ]}
     >
-      <Pressable
-        onPress={onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        style={styles.posterPressable}
-      >
+      <View style={styles.posterPressable}>
         <ItemPoster
           width={width}
           height={POSTER_HEIGHT}
@@ -104,10 +80,10 @@ function PosterCard({
           borderRadius="none"
           recyclingKey={String(item.id)}
         />
-      </Pressable>
-    </RNAnimated.View>
+      </View>
+    </Pressable>
   );
-}
+});
 
 /* ─── active filter chip ────────────────────────────────── */
 function ActiveFilterChip({

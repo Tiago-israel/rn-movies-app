@@ -101,10 +101,10 @@ export function useViewMore(type: ServiceType, options?: UseViewMoreOptions) {
 
   const { data: genres = [] } = useQuery<Genre[]>({
     queryKey: ["viewMoreGenres", isMovieCatalog ? "movie" : "tv", language],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       const g = isMovieCatalog
-        ? await moviesService.getGenres()
-        : await moviesService.getTvGenres();
+        ? await moviesService.getGenres({ signal })
+        : await moviesService.getTvGenres({ signal });
       return [...g].sort((a, b) => a.name.localeCompare(b.name));
     },
     enabled: Boolean(type),
@@ -117,9 +117,10 @@ export function useViewMore(type: ServiceType, options?: UseViewMoreOptions) {
       isMovieCatalog ? "movie" : "tv",
       language,
     ],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       const catalog = await moviesService.getWatchProvidersCatalog(
-        isMovieCatalog ? "movie" : "tv"
+        isMovieCatalog ? "movie" : "tv",
+        { signal }
       );
       return catalog.slice(0, 48);
     },

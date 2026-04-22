@@ -1,4 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
+import {
+  STALE_CATALOG_DEFAULT_MS,
+  STALE_CATALOG_MEDIUM_MS,
+  STALE_CATALOG_SLOW_MS,
+  STALE_NOW_PLAYING_MS,
+} from "../constants/query-stale";
 import { MoviesService } from "../services";
 
 export function useMovieHome() {
@@ -6,8 +12,11 @@ export function useMovieHome() {
 
   const { data: nowPlayingMovies, isFetching: isNowPlayingFetching } = useQuery({
     queryKey: ["nowPlayingMovies"],
-    queryFn: async () => {
-      const { results = [] } = await moviesService.getNowPlayingMovies();
+    staleTime: STALE_NOW_PLAYING_MS,
+    queryFn: async ({ signal }) => {
+      const { results = [] } = await moviesService.getNowPlayingMovies(1, {
+        signal,
+      });
       return results;
     },
   });
@@ -17,24 +26,33 @@ export function useMovieHome() {
 
   const { data: popularMovies } = useQuery({
     queryKey: ["popularMovies"],
-    queryFn: async () => {
-      const { results = [] } = await moviesService.getPopularMovies();
+    staleTime: STALE_CATALOG_DEFAULT_MS,
+    queryFn: async ({ signal }) => {
+      const { results = [] } = await moviesService.getPopularMovies(1, {
+        signal,
+      });
       return results;
     },
   });
 
   const { data: topRatedMovies } = useQuery({
     queryKey: ["topRatedMovies"],
-    queryFn: async () => {
-      const { results = [] } = await moviesService.getTopRatedMovies();
+    staleTime: STALE_CATALOG_SLOW_MS,
+    queryFn: async ({ signal }) => {
+      const { results = [] } = await moviesService.getTopRatedMovies(1, {
+        signal,
+      });
       return results;
     },
   });
 
   const { data: upcomingMovies } = useQuery({
     queryKey: ["upcomingMovies"],
-    queryFn: async () => {
-      const { results = [] } = await moviesService.getUpcomingMovies();
+    staleTime: STALE_CATALOG_MEDIUM_MS,
+    queryFn: async ({ signal }) => {
+      const { results = [] } = await moviesService.getUpcomingMovies(1, {
+        signal,
+      });
       return results;
     },
   });

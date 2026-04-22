@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { STALE_TRENDING_MS } from "../constants/query-stale";
 import { MoviesService } from "../services";
 import type { SearchResultItem } from "../interfaces";
 
@@ -9,8 +10,11 @@ export function useTrendingHome() {
 
   const { data: trendingItems = [], isFetching: trendingLoading } = useQuery({
     queryKey: TRENDING_HOME_QUERY_KEY,
-    queryFn: async () => {
-      const { results = [] } = await moviesService.getTrendingAllDay(1);
+    staleTime: STALE_TRENDING_MS,
+    queryFn: async ({ signal }) => {
+      const { results = [] } = await moviesService.getTrendingAllDay(1, {
+        signal,
+      });
       return results.filter(
         (item): item is SearchResultItem =>
           item.mediaType === "movie" || item.mediaType === "tv"

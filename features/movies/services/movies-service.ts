@@ -58,12 +58,14 @@ export class MoviesService {
   }
 
   getNowPlayingMovies = async (
-    page = 1
+    page = 1,
+    opts?: { signal?: AbortSignal }
   ): Promise<PaginatedResult<GenericItem>> => {
     const response = await this.httpClient.get<
       PaginatedResultResponse<MovieDetailsResponse>
     >(`movie/now_playing?language=${this.language}&page=${page}`, {
       headers: this.headers,
+      signal: opts?.signal,
     });
 
     return {
@@ -74,12 +76,14 @@ export class MoviesService {
   };
 
   getPopularMovies = async (
-    page = 1
+    page = 1,
+    opts?: { signal?: AbortSignal }
   ): Promise<PaginatedResult<GenericItem>> => {
     const response = await this.httpClient.get<
       PaginatedResultResponse<MovieDetailsResponse>
     >(`movie/popular?language=${this.language}&page=${page}`, {
       headers: this.headers,
+      signal: opts?.signal,
     });
 
     return {
@@ -90,12 +94,14 @@ export class MoviesService {
   };
 
   getTopRatedMovies = async (
-    page = 1
+    page = 1,
+    opts?: { signal?: AbortSignal }
   ): Promise<PaginatedResult<GenericItem>> => {
     const response = await this.httpClient.get<
       PaginatedResultResponse<MovieDetailsResponse>
     >(`movie/top_rated?language=${this.language}&page=${page}`, {
       headers: this.headers,
+      signal: opts?.signal,
     });
 
     return {
@@ -106,12 +112,14 @@ export class MoviesService {
   };
 
   getUpcomingMovies = async (
-    page = 1
+    page = 1,
+    opts?: { signal?: AbortSignal }
   ): Promise<PaginatedResult<GenericItem>> => {
     const response = await this.httpClient.get<
       PaginatedResultResponse<MovieDetailsResponse>
     >(`movie/upcoming?language=${this.language}&page=${page}`, {
       headers: this.headers,
+      signal: opts?.signal,
     });
 
     return {
@@ -298,22 +306,24 @@ export class MoviesService {
     return result;
   }
 
-  async getGenres(): Promise<Genre[]> {
+  async getGenres(opts?: { signal?: AbortSignal }): Promise<Genre[]> {
     const { genres } = await this.httpClient.get<GenresResponse>(
       `genre/movie/list?language=${this.language}`,
       {
         headers: this.headers,
+        signal: opts?.signal,
       }
     );
 
     return genres;
   }
 
-  async getTvGenres(): Promise<Genre[]> {
+  async getTvGenres(opts?: { signal?: AbortSignal }): Promise<Genre[]> {
     const { genres } = await this.httpClient.get<GenresResponse>(
       `genre/tv/list?language=${this.language}`,
       {
         headers: this.headers,
+        signal: opts?.signal,
       }
     );
 
@@ -322,12 +332,13 @@ export class MoviesService {
 
   /** Regional streaming catalog (for filter chips). */
   async getWatchProvidersCatalog(
-    media: "movie" | "tv" = "movie"
+    media: "movie" | "tv" = "movie",
+    opts?: { signal?: AbortSignal }
   ): Promise<WatchProviderOption[]> {
     const region = this.watchRegion();
     const response = await this.httpClient.get<WatchProvidersListResponse>(
       `watch/providers/${media}?watch_region=${region}`,
-      { headers: this.headers }
+      { headers: this.headers, signal: opts?.signal }
     );
     const list = response?.results ?? [];
     return [...list]

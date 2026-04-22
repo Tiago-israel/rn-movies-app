@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { View, Text, Pressable } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import type { SearchResultItem } from "../interfaces";
@@ -22,9 +22,9 @@ export type SearchResultCardProps = {
   item: SearchResultItem;
   width: number;
   posterHeight: number;
-  onPress?: () => void;
+  onItemPress?: (item: SearchResultItem) => void;
   /** Save movie/TV to local watchlist (shown as bookmark on poster). */
-  onAddToWatchlist?: () => void;
+  onAddToWatchlistItem?: (item: SearchResultItem) => void;
   inWatchlist?: boolean;
 };
 
@@ -32,14 +32,23 @@ export const SearchResultCard = memo(function SearchResultCard({
   item,
   width,
   posterHeight,
-  onPress,
-  onAddToWatchlist,
+  onItemPress,
+  onAddToWatchlistItem,
   inWatchlist,
 }: SearchResultCardProps) {
   const label = useMemo(() => mediaLabel(item.mediaType), [item.mediaType]);
   const a11y = `${item.title}, ${label}`;
   const showListBtn =
-    (item.mediaType === "movie" || item.mediaType === "tv") && onAddToWatchlist;
+    (item.mediaType === "movie" || item.mediaType === "tv") &&
+    onAddToWatchlistItem;
+
+  const handlePress = useCallback(() => {
+    onItemPress?.(item);
+  }, [onItemPress, item]);
+
+  const handleAddWatchlist = useCallback(() => {
+    onAddToWatchlistItem?.(item);
+  }, [onAddToWatchlistItem, item]);
 
   const texts = (
     <>
@@ -61,11 +70,11 @@ export const SearchResultCard = memo(function SearchResultCard({
   return (
     <View className="mb-2" style={{ width, marginHorizontal: 4 }}>
       <View className="relative w-full">
-        {onPress ? (
+        {onItemPress ? (
           <Pressable
             accessibilityLabel={a11y}
             accessibilityRole="button"
-            onPress={onPress}
+            onPress={handlePress}
           >
             <ItemPoster
               width={width}
@@ -84,7 +93,7 @@ export const SearchResultCard = memo(function SearchResultCard({
         )}
         {showListBtn ? (
           <Pressable
-            onPress={onAddToWatchlist}
+            onPress={handleAddWatchlist}
             accessibilityLabel={
               inWatchlist
                 ? getText("search_in_watchlist_a11y")
@@ -102,11 +111,11 @@ export const SearchResultCard = memo(function SearchResultCard({
           </Pressable>
         ) : null}
       </View>
-      {onPress ? (
+      {onItemPress ? (
         <Pressable
           accessibilityLabel={a11y}
           accessibilityRole="button"
-          onPress={onPress}
+          onPress={handlePress}
         >
           {texts}
         </Pressable>

@@ -145,6 +145,7 @@ export function HomeMoviesView(props: HomeMoviesProps) {
   return (
     <ScrollView
       bounces
+      nestedScrollEnabled
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }

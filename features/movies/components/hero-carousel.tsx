@@ -1,14 +1,15 @@
 import { useCallback, useRef, useState } from "react";
 import {
-  FlatList,
-  Image,
   Pressable,
   Text,
   View,
   useWindowDimensions,
   type ViewToken,
 } from "react-native";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
+import type { ListRenderItemInfo } from "@shopify/flash-list";
+import { List } from "@/components";
 import type { GenericItem } from "../interfaces";
 
 type HeroCarouselProps = {
@@ -19,7 +20,8 @@ type HeroCarouselProps = {
 export function HeroCarousel({ data, onPressItem }: HeroCarouselProps) {
   const { width } = useWindowDimensions();
   const [activeIndex, setActiveIndex] = useState(0);
-  const flatListRef = useRef<FlatList<GenericItem>>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const listRef = useRef<any>(null);
 
   const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: ViewToken[] }) => {
@@ -34,7 +36,7 @@ export function HeroCarousel({ data, onPressItem }: HeroCarouselProps) {
   }).current;
 
   const renderItem = useCallback(
-    ({ item }: { item: GenericItem }) => {
+    ({ item }: ListRenderItemInfo<GenericItem>) => {
       const imageUri = item.backdropPath || item.posterPath;
       const aspectRatio = item.backdropPath ? 16 / 9 : 2 / 3;
       const height = width / aspectRatio;
@@ -50,7 +52,10 @@ export function HeroCarousel({ data, onPressItem }: HeroCarouselProps) {
           <Image
             source={{ uri: imageUri }}
             style={{ width, height }}
-            resizeMode="cover"
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            recyclingKey={`hero-${item.id}-${imageUri}`}
+            transition={200}
           />
         </Pressable>
       );
@@ -60,7 +65,7 @@ export function HeroCarousel({ data, onPressItem }: HeroCarouselProps) {
 
   const handleBulletPress = useCallback(
     (index: number) => {
-      flatListRef.current?.scrollToOffset({
+      listRef.current?.scrollToOffset({
         offset: index * width,
         animated: true,
       });
@@ -68,33 +73,29 @@ export function HeroCarousel({ data, onPressItem }: HeroCarouselProps) {
     [width]
   );
 
-  const getItemLayout = useCallback(
-    (_: unknown, index: number) => ({
-      length: width,
-      offset: width * index,
-      index,
-    }),
-    [width]
+  const keyExtractor = useCallback(
+    (item: GenericItem) => `hero-${item.id}`,
+    []
   );
 
   if (!data?.length) return null;
 
   return (
     <View className="w-full">
-      <FlatList
-        ref={flatListRef}
+      <List<GenericItem>
+        innerRef={listRef}
         data={data}
         renderItem={renderItem}
-        keyExtractor={(item) => `hero-${item.id}`}
+        keyExtractor={keyExtractor}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
+        estimatedItemSize={width}
         snapToInterval={width}
         snapToAlignment="start"
         decelerationRate="fast"
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
-        getItemLayout={getItemLayout}
       />
       <LinearGradient
         colors={["transparent", "rgba(0,0,0,0.88)"]}

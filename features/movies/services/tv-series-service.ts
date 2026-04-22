@@ -35,11 +35,15 @@ export class TVSeriesService {
     return useUserStore.getState().language;
   }
 
-  getAiringToday = async (page = 1): Promise<PaginatedResult<GenericItem>> => {
+  getAiringToday = async (
+    page = 1,
+    opts?: { signal?: AbortSignal }
+  ): Promise<PaginatedResult<GenericItem>> => {
     const response = await this.httpClient.get<
       PaginatedResultResponse<TVSeriesListItemResponse>
     >(`tv/airing_today?language=${this.language}&page=${page}`, {
       headers: this.headers,
+      signal: opts?.signal,
     });
     
     return {
@@ -49,11 +53,15 @@ export class TVSeriesService {
     };
   };
 
-  getOnTheAir = async (page = 1): Promise<PaginatedResult<GenericItem>> => {
+  getOnTheAir = async (
+    page = 1,
+    opts?: { signal?: AbortSignal }
+  ): Promise<PaginatedResult<GenericItem>> => {
     const response = await this.httpClient.get<
       PaginatedResultResponse<TVSeriesListItemResponse>
     >(`tv/on_the_air?language=${this.language}&page=${page}`, {
       headers: this.headers,
+      signal: opts?.signal,
     });
 
     return {
@@ -63,11 +71,15 @@ export class TVSeriesService {
     };
   };
 
-  getPopular = async (page = 1): Promise<PaginatedResult<GenericItem>> => {
+  getPopular = async (
+    page = 1,
+    opts?: { signal?: AbortSignal }
+  ): Promise<PaginatedResult<GenericItem>> => {
     const response = await this.httpClient.get<
       PaginatedResultResponse<TVSeriesListItemResponse>
     >(`tv/popular?language=${this.language}&page=${page}`, {
       headers: this.headers,
+      signal: opts?.signal,
     });
 
     return {
@@ -77,11 +89,15 @@ export class TVSeriesService {
     };
   };
 
-  getTopRated = async (page = 1): Promise<PaginatedResult<GenericItem>> => {
+  getTopRated = async (
+    page = 1,
+    opts?: { signal?: AbortSignal }
+  ): Promise<PaginatedResult<GenericItem>> => {
     const response = await this.httpClient.get<
       PaginatedResultResponse<TVSeriesListItemResponse>
     >(`tv/top_rated?language=${this.language}&page=${page}`, {
       headers: this.headers,
+      signal: opts?.signal,
     });
 
     return {

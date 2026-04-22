@@ -72,6 +72,10 @@ function CommentItem(info: { item: MovieReview; index: number }) {
   );
 }
 
+function ReviewRowSeparator() {
+  return <View className="w-full h-px bg-separator" />;
+}
+
 export function MovieReviewsView(props: MovieReviewsViewProps) {
   const { movieReviews, isLoading } = useMovieReview(props.movieId);
 
@@ -126,9 +130,7 @@ export function MovieReviewsView(props: MovieReviewsViewProps) {
         keyExtractor={(item, index) => `${item.userName}-${index}`}
         estimatedItemSize={70}
         renderItem={CommentItem}
-        ItemSeparatorComponent={() => (
-          <View className="w-full h-px bg-separator" />
-        )}
+        ItemSeparatorComponent={ReviewRowSeparator}
       />
     </View>
   );

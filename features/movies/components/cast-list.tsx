@@ -29,23 +29,25 @@ const CastItem = memo(({ item, index, onPress }: CastItemProps) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    // Staggered slide-in animation
+    const staggerIndex = Math.min(index, 10);
+    const delay = staggerIndex * 80;
     Animated.parallel([
       Animated.timing(slideAnim, {
         toValue: 0,
         duration: 400,
-        delay: index * 80, // Stagger delay
+        delay,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.timing(opacityAnim, {
         toValue: 1,
         duration: 400,
-        delay: index * 80,
+        delay,
         easing: Easing.out(Easing.ease),
         useNativeDriver: true,
       }),
     ]).start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once per index; anims are refs
   }, [index]);
 
   const handlePress = () => {
@@ -114,6 +116,7 @@ export function CastList({ cast, onPressCast }: CastListProps) {
   return (
     <List
       data={cast}
+      estimatedItemSize={80}
       keyExtractor={(item) => item.id.toString()}
       renderItem={renderItem}
     />

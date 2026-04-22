@@ -5,7 +5,6 @@ import {
   View,
   Text,
   Pressable,
-  FlatList,
   Linking,
   Animated,
   Easing,
@@ -261,16 +260,24 @@ export function MovieDetails(props: MovieDetailsProps) {
           <Text className="text-foreground font-bold text-lg mb-3">
             {getText("movie_details_watch_providers_title")}
           </Text>
-          <FlatList
+          <ScrollView
             horizontal
-            data={watchProviders}
-            contentContainerStyle={{ gap: 12 }}
-            keyExtractor={(item, index) => `${item.id}-${index}`}
             showsHorizontalScrollIndicator={false}
-            renderItem={({ item, index }) => (
-              <WatchProviderItem item={item} index={index} />
-            )}
-          />
+            nestedScrollEnabled
+            contentContainerStyle={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            {watchProviders.map((item, index) => (
+              <WatchProviderItem
+                key={`${item.id}-${index}`}
+                item={item}
+                index={index}
+              />
+            ))}
+          </ScrollView>
         </View>
       )}
 
@@ -389,6 +396,7 @@ export function MovieDetails(props: MovieDetailsProps) {
 
       <ScrollView
         ref={scrollViewRef}
+        nestedScrollEnabled
         contentContainerStyle={{ paddingBottom: 80 }}
         showsVerticalScrollIndicator={false}
       >

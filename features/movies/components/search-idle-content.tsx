@@ -54,6 +54,20 @@ export const SearchIdleContent = memo(function SearchIdleContent({
     return chunk;
   }, [trendingItems, numColumns]);
 
+  const handleItemPress = useCallback(
+    (item: SearchResultItem) => {
+      onSelectResult(item);
+    },
+    [onSelectResult]
+  );
+
+  const handleAddToWatchlistItem = useCallback(
+    (item: SearchResultItem) => {
+      onAddToWatchlist?.(item);
+    },
+    [onAddToWatchlist]
+  );
+
   const renderRow = useCallback(
     (row: SearchResultItem[], rowIndex: number) => (
       <View key={`row-${rowIndex}`} className="flex-row flex-wrap justify-start">
@@ -63,9 +77,9 @@ export const SearchIdleContent = memo(function SearchIdleContent({
             item={item}
             width={columnWidth}
             posterHeight={posterHeight}
-            onPress={() => onSelectResult(item)}
-            onAddToWatchlist={
-              onAddToWatchlist ? () => onAddToWatchlist(item) : undefined
+            onItemPress={handleItemPress}
+            onAddToWatchlistItem={
+              onAddToWatchlist ? handleAddToWatchlistItem : undefined
             }
             inWatchlist={isInWatchlist?.(item)}
           />
@@ -75,9 +89,11 @@ export const SearchIdleContent = memo(function SearchIdleContent({
     [
       columnWidth,
       posterHeight,
-      onSelectResult,
+      handleItemPress,
+      handleAddToWatchlistItem,
       onAddToWatchlist,
       isInWatchlist,
+      watchlistVersion,
     ]
   );
 

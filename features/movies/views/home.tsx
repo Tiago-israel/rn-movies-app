@@ -251,6 +251,7 @@ export function HomeView(props: HomeProps) {
       {/* ── Scrollable content ── */}
       <ScrollView
         bounces
+        nestedScrollEnabled
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }

@@ -1,4 +1,4 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { List } from "@/components";
 import type { SearchResultItem } from "../interfaces";
@@ -37,6 +37,14 @@ export const TrendingHomeRow = memo(function TrendingHomeRow({
     []
   );
 
+  const ItemSeparator = useMemo(
+    () =>
+      function ItemSeparator() {
+        return <View className="w-2 h-2" />;
+      },
+    []
+  );
+
   if (loading && !items.length) {
     return (
       <View className="py-6 items-center justify-center">
@@ -47,13 +55,16 @@ export const TrendingHomeRow = memo(function TrendingHomeRow({
 
   if (!items.length) return null;
 
+  const estimatedSpan = itemWidth + 8;
+
   return (
     <List
       horizontal
       showsHorizontalScrollIndicator={false}
+      estimatedItemSize={estimatedSpan}
       keyExtractor={keyExtractor}
       contentContainerStyle={{ paddingHorizontal: 20 }}
-      ItemSeparatorComponent={() => <View className="w-2 h-2" />}
+      ItemSeparatorComponent={ItemSeparator}
       data={items}
       renderItem={renderItem}
     />

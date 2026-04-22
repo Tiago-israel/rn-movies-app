@@ -18,6 +18,9 @@ import { useTheme } from "@/lib/theme-provider";
 import type { MovieTheme } from "../theme";
 
 const POSTER_HEIGHT = 152;
+/** Grid cell: poster + two text lines + margins (FlashList per-cell estimate) */
+const SEARCH_GRID_ESTIMATED_ITEM_SIZE =
+  POSTER_HEIGHT + 4 + 28 + 14 + 8;
 
 export type SearchResultsProps = {
   displayedItems: SearchResultItem[];
@@ -89,22 +92,40 @@ export const SearchResults = memo(function SearchResults({
     [width]
   );
 
+  const handleItemPress = useCallback(
+    (item: SearchResultItem) => {
+      onPress?.(item);
+    },
+    [onPress]
+  );
+
+  const handleAddToWatchlistItem = useCallback(
+    (item: SearchResultItem) => {
+      onAddToWatchlist?.(item);
+    },
+    [onAddToWatchlist]
+  );
+
   const renderItem = useCallback(
     (info: ListRenderItemInfo<SearchResultItem>) => (
       <SearchResultCard
         item={info.item}
         width={columnWidth}
         posterHeight={POSTER_HEIGHT}
-        onPress={() => onPress?.(info.item)}
-        onAddToWatchlist={
-          onAddToWatchlist
-            ? () => onAddToWatchlist(info.item)
-            : undefined
+        onItemPress={handleItemPress}
+        onAddToWatchlistItem={
+          onAddToWatchlist ? handleAddToWatchlistItem : undefined
         }
         inWatchlist={isInWatchlist?.(info.item)}
       />
     ),
-    [columnWidth, onPress, onAddToWatchlist, isInWatchlist, watchlistVersion]
+    [
+      columnWidth,
+      handleItemPress,
+      handleAddToWatchlistItem,
+      onAddToWatchlist,
+      isInWatchlist,
+    ]
   );
 
   const keyExtractor = useCallback(
@@ -269,6 +290,7 @@ export const SearchResults = memo(function SearchResults({
       <List
         data={displayedItems}
         numColumns={numColumns}
+        estimatedItemSize={SEARCH_GRID_ESTIMATED_ITEM_SIZE}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
         extraData={{
