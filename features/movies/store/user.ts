@@ -35,6 +35,7 @@ function matchesWatchlistItem(
 type UserStore = {
   favoriteMovies: MovieDetails[];
   favoriteSeries: SeriesDetails[];
+  favoriteRanking: string[];
   theme: Theme;
   language: Language;
   favoriteItems: FavoriteItem[];
@@ -48,6 +49,7 @@ type UserStore = {
   setTheme: (theme: Theme) => void;
   setLanguage: (language: Language) => void;
   setFavoriteItem: (item: FavoriteItem) => void;
+  setFavoriteRanking: (ranking: string[]) => void;
   addToWatchlist: (item: WatchlistItem) => void;
   removeFromWatchlist: (id: number, mediaType?: WatchlistMediaType) => void;
   updateWatchStatus: (
@@ -69,6 +71,7 @@ export const useUserStore = create(
     (set, store) => ({
       favoriteMovies: [],
       favoriteSeries: [],
+      favoriteRanking: [],
       favoriteItems: [],
       watchlistItems: [],
       theme: "dark",
@@ -140,6 +143,11 @@ export const useUserStore = create(
           };
         });
       },
+      setFavoriteRanking: (ranking: string[]) => {
+        set(() => ({
+          favoriteRanking: ranking,
+        }));
+      },
       addToWatchlist: (item: WatchlistItem) => {
         set((state) => {
           const next: WatchlistItem = {
@@ -185,6 +193,7 @@ export const useUserStore = create(
       partialize: ((state) => ({
         favoriteMovies: state.favoriteMovies,
         favoriteSeries: state.favoriteSeries,
+        favoriteRanking: state.favoriteRanking,
         favoriteItems: state.favoriteItems,
         theme: state.theme,
         language: state.language,

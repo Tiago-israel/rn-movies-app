@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useUserStore } from "../store";
 import { DrawerRef } from "../components";
 import { FavoriteService } from "../services";
@@ -9,7 +9,9 @@ export function useFavoriteMovies() {
   const drawerRef = useRef<DrawerRef>();
   const favoriteMovies = useUserStore((state) => state.favoriteMovies);
   const favoriteSeries = useUserStore((state) => state.favoriteSeries);
+  const favoriteRanking = useUserStore((state) => state.favoriteRanking);
   const favoriteItems = useUserStore((state) => state.favoriteItems);
+  const setFavoriteRanking = useUserStore((state) => state.setFavoriteRanking);
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
 
@@ -26,9 +28,11 @@ export function useFavoriteMovies() {
     description,
     favoriteMovies,
     favoriteSeries,
+    favoriteRanking,
     favoriteItems,
     setName,
     setDescription,
+    setFavoriteRanking,
     subimtFavoriteItem,
   };
 }

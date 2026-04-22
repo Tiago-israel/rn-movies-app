@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { Pressable, View } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
-import { List } from "@/components";
+import * as Haptics from "expo-haptics";
+import DraggableFlatList from "react-native-draggable-flatlist";
 import { useFavoriteMovies } from "../controllers";
 import { getText } from "../localization";
 import {
@@ -21,6 +22,7 @@ export type FavoriteMoviesViewProps = {
 };
 
 type FavoriteEntry = {
+  rankingKey: string;
   id: number;
   title: string;
   posterPath?: string;
@@ -34,18 +36,25 @@ export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
     drawerRef,
     favoriteMovies,
     favoriteSeries,
+    favoriteRanking,
     name,
     description,
     setDescription,
     setName,
+    setFavoriteRanking,
     subimtFavoriteItem,
   } = useFavoriteMovies();
 
   const favoriteEntries = useMemo<FavoriteEntry[]>(
-    () => [
-      ...favoriteMovies
+    () => {
+      const rankingOrder = new Map(
+        favoriteRanking.map((key, index) => [key, index] as const)
+      );
+      return [
+        ...favoriteMovies
         .filter((m) => m.id != null)
         .map((m) => ({
+          rankingKey: `movie-${m.id}`,
           id: m.id as number,
           title: m.title ?? "Untitled",
           posterPath: m.posterPath,
@@ -53,9 +62,10 @@ export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
           meta: [m.genre, m.runtime ?? m.releaseDate].filter(Boolean).join(" · "),
           rating: m.voteAverageStr,
         })),
-      ...favoriteSeries
+        ...favoriteSeries
         .filter((s) => s.id != null)
         .map((s) => ({
+          rankingKey: `tv-${s.id}`,
           id: s.id as number,
           title: s.name ?? "Untitled",
           posterPath: s.posterPath,
@@ -63,8 +73,16 @@ export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
           meta: [s.genre, s.firstAirDate].filter(Boolean).join(" · "),
           rating: s.voteAverageStr,
         })),
-    ],
-    [favoriteMovies, favoriteSeries]
+      ].sort((a, b) => {
+        const aPos = rankingOrder.get(a.rankingKey);
+        const bPos = rankingOrder.get(b.rankingKey);
+        if (aPos == null && bPos == null) return 0;
+        if (aPos == null) return 1;
+        if (bPos == null) return -1;
+        return aPos - bPos;
+      });
+    },
+    [favoriteMovies, favoriteSeries, favoriteRanking]
   );
 
   return (
@@ -76,15 +94,29 @@ export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
           { name: "plus", onPress: () => drawerRef.current?.open() },
         ]}
       />
-      <List
+      <DraggableFlatList
         data={favoriteEntries}
-        keyExtractor={(item) => `${item.mediaType}-${item.id}`}
-        renderItem={({ item }) => (
+        keyExtractor={(item) => item.rankingKey}
+        onDragEnd={({ data }) => {
+          setFavoriteRanking(data.map((entry) => entry.rankingKey));
+        }}
+        renderItem={({ item, drag, isActive }) => (
           <Pressable
             onPress={() => props.goToDetails(item.id, item.mediaType)}
+            onLongPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              drag();
+            }}
+            disabled={isActive}
             className="flex-row items-center bg-background border-b border-border px-sm"
-            style={{ paddingVertical: 10 }}
+            style={{
+              paddingVertical: 10,
+              opacity: isActive ? 0.95 : 1,
+            }}
           >
+            <View style={{ marginRight: 10 }}>
+              <Icon name="drag-vertical" size={18} color="#7f8c8d" />
+            </View>
             <ItemPoster
               width={52}
               height={76}
