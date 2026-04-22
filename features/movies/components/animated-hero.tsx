@@ -51,11 +51,15 @@ export function AnimatedHero({
           transform: [{ scale: scaleAnim }],
         }}
       >
-        <Image
-          source={{ uri: imageUri }}
-          style={{ width: "100%", height: "100%" }}
-          contentFit="cover"
-        />
+        {imageUri ? (
+          <Image
+            source={{ uri: imageUri }}
+            style={{ width: "100%", height: "100%" }}
+            contentFit="cover"
+          />
+        ) : (
+          <View className="bg-secondary w-full h-full" />
+        )}
       </Animated.View>
 
       {/* Overlay Content */}

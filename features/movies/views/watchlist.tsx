@@ -1,17 +1,17 @@
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { List } from "@/components";
 import { useWatchlist } from "../controllers";
-import {
-  NavBar,
-  TabsGroup,
-  ContinueWatchingHero,
-  WatchlistRowItem,
-  WatchlistFAB,
-} from "../components";
+import { getText } from "../localization";
+import type { WatchlistMediaType } from "../interfaces";
+import { NavBar, TabsGroup, WatchlistRowItem, WatchlistFAB } from "../components";
 
 export type WatchlistViewProps = {
-  goToDetails: (movieId?: number) => void;
+  goToDetails: (
+    id?: number,
+    options?: { mediaType?: WatchlistMediaType }
+  ) => void;
   goToSearch: () => void;
 };
 
@@ -23,49 +23,52 @@ function SwipeHint() {
     >
       <Icon name="chevron-left" size={12} color="#7f8c8d" />
       <Text className="text-muted-foreground" style={{ fontSize: 10 }}>
-        Swipe left · mark watched &nbsp;·&nbsp; Swipe right · remove
+        {getText("watchlist_swipe_hint")}
       </Text>
       <Icon name="chevron-right" size={12} color="#7f8c8d" />
     </View>
   );
 }
 
-function EmptyTab({ tab }: { tab: number }) {
-  const config = [
-    {
-      icon: "play-circle-outline",
-      text: "Nothing in progress.\nStart watching from your saved list!",
-    },
-    {
-      icon: "bookmark-outline",
-      text: "Your saved list is empty.\nTap + to search and save movies.",
-    },
-    {
-      icon: "check-circle-outline",
-      text: "No movies watched yet.\nTrack everything you've seen here.",
-    },
-  ][tab];
+type EmptyTabProps = {
+  tab: number;
+  onSearch: () => void;
+};
+
+function EmptyTab({ tab, onSearch }: EmptyTabProps) {
+  const keys = ["watchlist_empty_saved", "watchlist_empty_watched"] as const;
+  const icons = ["bookmark-outline", "check-circle-outline"] as const;
 
   return (
     <View
       className="flex-1 items-center justify-center px-lg"
-      style={{ paddingTop: 60 }}
+      style={{ paddingTop: 48 }}
     >
-      <Icon name={config.icon as any} size={52} color="#7f8c8d" />
+      <Icon name={icons[tab] as "bookmark-outline"} size={52} color="#7f8c8d" />
       <Text
         className="text-muted-foreground text-sm text-center"
         style={{ marginTop: 16, lineHeight: 22 }}
       >
-        {config.text}
+        {getText(keys[tab])}
       </Text>
+      <Pressable
+        onPress={onSearch}
+        className="mt-5 rounded-xl bg-foreground px-5 py-3 flex-row items-center"
+        style={{ gap: 8 }}
+      >
+        <Icon name="magnify" size={18} color="#101218" />
+        <Text className="text-background font-semibold text-sm">
+          {getText("watchlist_empty_cta")}
+        </Text>
+      </Pressable>
     </View>
   );
 }
 
 export function WatchlistView({ goToDetails, goToSearch }: WatchlistViewProps) {
+  const insets = useSafeAreaInsets();
   const {
     filteredItems,
-    continueWatchingItem,
     activeTab,
     setActiveTab,
     counts,
@@ -75,70 +78,68 @@ export function WatchlistView({ goToDetails, goToSearch }: WatchlistViewProps) {
     removeFromWatchlist,
   } = useWatchlist();
 
-  const showHero =
-    activeTab === 0 && continueWatchingItem != null;
+  const itemMedia = (item: { id?: number; mediaType?: WatchlistMediaType }) =>
+    ({ mediaType: item.mediaType ?? "movie" } as const);
 
-  const ListHeader = (
-    <View>
-      {showHero && (
-        <ContinueWatchingHero
-          item={continueWatchingItem!}
-          onResume={() => goToDetails(continueWatchingItem!.id)}
-          onMarkWatched={() =>
-            updateWatchStatus(continueWatchingItem!.id!, "watched", 100)
-          }
-        />
-      )}
-      {filteredItems.length > 0 && <SwipeHint />}
-    </View>
-  );
+  const ListHeader = filteredItems.length > 0 ? <SwipeHint /> : null;
 
   return (
-    <View className="flex-1 bg-background">
-      {/* NavBar */}
+    <View className="flex-1 bg-background" style={{ paddingBottom: insets.bottom }}>
       <NavBar
-        title="Watchlist"
+        title={getText("watchlist_title")}
         trainlingIcon={[
           { name: "magnify", onPress: goToSearch },
           { name: "sort-variant", onPress: cycleSortOrder },
-          { name: "dots-vertical" },
         ]}
       />
 
-      {/* Fixed tabs + sort row */}
       <View className="px-sm pt-xxs pb-1">
         <TabsGroup
           items={[
-            { title: `In Progress (${counts.watching})` },
-            { title: `Saved (${counts.saved})` },
-            { title: `Watched (${counts.watched})` },
+            { title: `${getText("watchlist_tab_saved")} (${counts.saved})` },
+            { title: `${getText("watchlist_tab_watched")} (${counts.watched})` },
           ]}
           selectedIndex={activeTab}
           onPress={setActiveTab}
         />
       </View>
-      <View className="flex-row items-center justify-end px-sm pb-1">
-        <Text className="text-muted-foreground" style={{ fontSize: 10 }}>
-          Sort: {sortLabel}
+      <Pressable
+        onPress={cycleSortOrder}
+        className="flex-row items-center justify-end px-sm pb-2"
+        hitSlop={8}
+      >
+        <Icon name="sort-variant" size={14} color="#7f8c8d" />
+        <Text className="text-muted-foreground ml-1" style={{ fontSize: 11 }}>
+          {getText("watchlist_sort_label")}: {sortLabel}
         </Text>
-      </View>
+      </Pressable>
 
-      {/* Scrollable list */}
       <View className="flex-1">
         <List
           data={filteredItems}
           estimatedItemSize={96}
-          keyExtractor={(item) => `${item.id}`}
+          keyExtractor={(item) =>
+            `${item.mediaType ?? "movie"}-${item.id}`
+          }
           ListHeaderComponent={() => ListHeader}
-          ListEmptyComponent={<EmptyTab tab={activeTab} />}
+          ListEmptyComponent={
+            <EmptyTab tab={activeTab} onSearch={goToSearch} />
+          }
           renderItem={({ item }) => (
             <WatchlistRowItem
               item={item}
-              onPress={() => goToDetails(item.id)}
+              onPress={() => goToDetails(item.id, itemMedia(item))}
               onMarkWatched={() =>
-                updateWatchStatus(item.id!, "watched", 100)
+                updateWatchStatus(
+                  item.id!,
+                  "watched",
+                  100,
+                  item.mediaType ?? "movie"
+                )
               }
-              onRemove={() => removeFromWatchlist(item.id!)}
+              onRemove={() =>
+                removeFromWatchlist(item.id!, item.mediaType ?? "movie")
+              }
             />
           )}
           contentContainerStyle={{ paddingBottom: 100 }}
@@ -146,7 +147,6 @@ export function WatchlistView({ goToDetails, goToSearch }: WatchlistViewProps) {
         />
       </View>
 
-      {/* FAB */}
       <WatchlistFAB onPress={goToSearch} />
     </View>
   );

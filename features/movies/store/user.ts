@@ -1,9 +1,19 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setLocation } from "../localization";
-import { type MovieDetails, type User, type WatchlistItem, type WatchStatus } from "../interfaces";
+import {
+  type MovieDetails,
+  type User,
+  type WatchlistItem,
+  type WatchStatus,
+  type WatchlistMediaType,
+} from "../interfaces";
+import {
+  fromPersistedWatchlistItem,
+  toPersistedWatchlistItem,
+  watchlistEntryKey,
+} from "../helpers/watchlist-storage";
 
 type Theme = "light" | "dark";
 type Language = "pt-BR" | "en";
@@ -13,109 +23,13 @@ type FavoriteItem = {
   favoriteMovies?: MovieDetails[];
 };
 
-const INITIAL_WATCHLIST: WatchlistItem[] = [
-  {
-    id: 1001,
-    title: "Shōgun",
-    posterPath: "https://picsum.photos/seed/shogun-p/150/220",
-    backdropPath: "https://picsum.photos/seed/shogun-b/800/480",
-    genre: "Drama",
-    releaseDate: "2024",
-    watchStatus: "watching",
-    progress: 62,
-    currentEpisode: 5,
-    totalEpisodes: 10,
-    isSeries: true,
-    addedAt: "2026-01-20",
-  },
-  {
-    id: 1002,
-    title: "Severance",
-    posterPath: "https://picsum.photos/seed/severance-p/150/220",
-    backdropPath: "https://picsum.photos/seed/severance-b/800/480",
-    genre: "Drama",
-    releaseDate: "2025",
-    watchStatus: "watching",
-    progress: 30,
-    currentEpisode: 3,
-    totalEpisodes: 10,
-    isSeries: true,
-    addedAt: "2026-01-18",
-  },
-  {
-    id: 1003,
-    title: "Dune: Part Two",
-    posterPath: "https://picsum.photos/seed/dune2-p/150/220",
-    backdropPath: "https://picsum.photos/seed/dune2-b/800/480",
-    genre: "Sci-Fi",
-    runtime: "2h 46m",
-    voteAverageStr: "8.5",
-    voteAverage: 8.5,
-    releaseDate: "2024",
-    watchStatus: "saved",
-    progress: 0,
-    isSeries: false,
-    addedAt: "2026-01-10",
-  },
-  {
-    id: 1004,
-    title: "Oppenheimer",
-    posterPath: "https://picsum.photos/seed/oppie-p/150/220",
-    genre: "Drama",
-    runtime: "3h 1m",
-    voteAverageStr: "8.3",
-    voteAverage: 8.3,
-    releaseDate: "2023",
-    watchStatus: "saved",
-    progress: 0,
-    isSeries: false,
-    addedAt: "2026-01-05",
-  },
-  {
-    id: 1005,
-    title: "Poor Things",
-    posterPath: "https://picsum.photos/seed/poorthings-p/150/220",
-    genre: "Comedy",
-    runtime: "2h 21m",
-    voteAverageStr: "7.9",
-    voteAverage: 7.9,
-    releaseDate: "2023",
-    watchStatus: "saved",
-    progress: 0,
-    isSeries: false,
-    addedAt: "2025-12-20",
-  },
-  {
-    id: 1006,
-    title: "Interstellar",
-    posterPath: "https://picsum.photos/seed/interstellar-p/150/220",
-    genre: "Sci-Fi",
-    runtime: "2h 49m",
-    voteAverageStr: "8.6",
-    voteAverage: 8.6,
-    releaseDate: "2014",
-    watchStatus: "watched",
-    progress: 100,
-    isSeries: false,
-    userRating: 9,
-    addedAt: "2025-12-01",
-  },
-  {
-    id: 1007,
-    title: "The Dark Knight",
-    posterPath: "https://picsum.photos/seed/darkknight-p/150/220",
-    genre: "Action",
-    runtime: "2h 32m",
-    voteAverageStr: "9.0",
-    voteAverage: 9.0,
-    releaseDate: "2008",
-    watchStatus: "watched",
-    progress: 100,
-    isSeries: false,
-    userRating: 10,
-    addedAt: "2025-11-15",
-  },
-];
+function matchesWatchlistItem(
+  item: WatchlistItem,
+  id: number,
+  mediaType: WatchlistMediaType
+): boolean {
+  return item.id === id && (item.mediaType ?? "movie") === mediaType;
+}
 
 type UserStore = {
   favoriteMovies: MovieDetails[];
@@ -130,8 +44,13 @@ type UserStore = {
   setLanguage: (language: Language) => void;
   setFavoriteItem: (item: FavoriteItem) => void;
   addToWatchlist: (item: WatchlistItem) => void;
-  removeFromWatchlist: (id: number) => void;
-  updateWatchStatus: (id: number, status: WatchStatus, progress?: number) => void;
+  removeFromWatchlist: (id: number, mediaType?: WatchlistMediaType) => void;
+  updateWatchStatus: (
+    id: number,
+    status: WatchStatus,
+    progress?: number,
+    mediaType?: WatchlistMediaType
+  ) => void;
 };
 
 const StoreManager = {
@@ -145,7 +64,7 @@ export const useUserStore = create(
     (set, store) => ({
       favoriteMovies: [],
       favoriteItems: [],
-      watchlistItems: INITIAL_WATCHLIST,
+      watchlistItems: [],
       theme: "dark",
       language: "en",
       addFavoriteMovie: (movie: MovieDetails) => {
@@ -196,21 +115,33 @@ export const useUserStore = create(
       },
       addToWatchlist: (item: WatchlistItem) => {
         set((state) => {
-          if (state.watchlistItems.find((i) => i.id === item.id)) {
+          const next: WatchlistItem = {
+            ...item,
+            mediaType: item.mediaType ?? "movie",
+          };
+          const key = watchlistEntryKey(next);
+          if (state.watchlistItems.some((i) => watchlistEntryKey(i) === key)) {
             return state;
           }
-          return { watchlistItems: [...state.watchlistItems, item] };
+          return { watchlistItems: [...state.watchlistItems, next] };
         });
       },
-      removeFromWatchlist: (id: number) => {
+      removeFromWatchlist: (id: number, mediaType: WatchlistMediaType = "movie") => {
         set((state) => ({
-          watchlistItems: state.watchlistItems.filter((i) => i.id !== id),
+          watchlistItems: state.watchlistItems.filter(
+            (i) => !matchesWatchlistItem(i, id, mediaType)
+          ),
         }));
       },
-      updateWatchStatus: (id: number, status: WatchStatus, progress?: number) => {
+      updateWatchStatus: (
+        id: number,
+        status: WatchStatus,
+        progress?: number,
+        mediaType: WatchlistMediaType = "movie"
+      ) => {
         set((state) => ({
           watchlistItems: state.watchlistItems.map((i) =>
-            i.id === id
+            matchesWatchlistItem(i, id, mediaType)
               ? {
                   ...i,
                   watchStatus: status,
@@ -224,6 +155,34 @@ export const useUserStore = create(
     {
       name: "user",
       storage: createJSONStorage(() => StoreManager),
+      partialize: ((state) => ({
+        favoriteMovies: state.favoriteMovies,
+        favoriteItems: state.favoriteItems,
+        theme: state.theme,
+        language: state.language,
+        watchlistItems: state.watchlistItems.map(toPersistedWatchlistItem),
+      })) as (state: UserStore) => UserStore,
+      merge: (persisted, current) => {
+        const p = persisted as
+          | (Partial<UserStore> & {
+              watchlistItems?: unknown[];
+            })
+          | undefined;
+        if (!p) return current as UserStore;
+        const rawWatchlist = p.watchlistItems;
+        const watchlistItems = Array.isArray(rawWatchlist)
+          ? rawWatchlist.map((row) =>
+              fromPersistedWatchlistItem(
+                toPersistedWatchlistItem(row as WatchlistItem)
+              )
+            )
+          : (current as UserStore).watchlistItems;
+        return {
+          ...(current as UserStore),
+          ...p,
+          watchlistItems,
+        };
+      },
     }
   )
 );

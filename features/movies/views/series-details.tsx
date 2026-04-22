@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback, } from "react";
+import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   ScrollView,
@@ -11,6 +11,7 @@ import {
   ListRenderItemInfo as ReactListRenderItemInfo
 } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
+import * as Haptics from "expo-haptics";
 import {
   BottomSheet,
   Image as ExpoImage,
@@ -26,7 +27,12 @@ import {
   SeriesCarousel,
 } from "../components";
 import { useSeriesDetails } from "../controllers";
+import {
+  watchlistEntryKey,
+  watchlistItemFromSeriesDetails,
+} from "../helpers/watchlist-storage";
 import { getText } from "../localization";
+import { useUserStore } from "../store";
 import { Cast, Episode, Provider, TVSeriesListItem } from "../interfaces";
 import { ListRenderItemInfo } from "@shopify/flash-list";
 
@@ -113,6 +119,29 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
     onFavoriteSeries,
     isLoading,
   } = useSeriesDetails(props.seriesId, selectedSeason);
+
+  const watchlistItems = useUserStore((s) => s.watchlistItems);
+  const addToWatchlist = useUserStore((s) => s.addToWatchlist);
+  const removeFromWatchlist = useUserStore((s) => s.removeFromWatchlist);
+
+  const inWatchlist = useMemo(() => {
+    const key = watchlistEntryKey({
+      id: props.seriesId,
+      mediaType: "tv",
+    });
+    return watchlistItems.some((i) => watchlistEntryKey(i) === key);
+  }, [watchlistItems, props.seriesId]);
+
+  const onToggleWatchlist = useCallback(() => {
+    if (!series?.id) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (inWatchlist) {
+      removeFromWatchlist(series.id, "tv");
+    } else {
+      const item = watchlistItemFromSeriesDetails(series);
+      if (item) addToWatchlist(item);
+    }
+  }, [series, inWatchlist, addToWatchlist, removeFromWatchlist]);
 
   const numberOfSeasons = series?.numberOfSeasons ?? 0;
   const seasonOptions = Array.from({ length: numberOfSeasons }, (_, i) => ({
@@ -247,6 +276,32 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
     if (!isLoading) scrollToTop();
   }, [isLoading, scrollToTop]);
 
+  const navBarTrailingIcons = useMemo(
+    () => [
+      {
+        name: "share-variant" as const,
+        onPress: handleShareSeries,
+      },
+      {
+        name: inWatchlist ? ("bookmark" as const) : ("bookmark-outline" as const),
+        color: inWatchlist ? "#f1c40f" : undefined,
+        onPress: onToggleWatchlist,
+      },
+      {
+        name: isFavorite ? ("heart" as const) : ("heart-outline" as const),
+        color: ICON_FAVORITE_COLOR,
+        onPress: onFavoriteSeries,
+      },
+    ],
+    [
+      handleShareSeries,
+      inWatchlist,
+      onToggleWatchlist,
+      isFavorite,
+      onFavoriteSeries,
+    ]
+  );
+
   if (isLoading) {
     return (
       <View className="h-full bg-background">
@@ -326,18 +381,6 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
       </View>
     );
   }
-
-  const navBarTrailingIcons = [
-    {
-      name: "share-variant" as const,
-      onPress: handleShareSeries,
-    },
-    {
-      name: isFavorite ? "heart" : "heart-outline",
-      color: ICON_FAVORITE_COLOR,
-      onPress: onFavoriteSeries,
-    },
-  ];
 
   return (
     <View className="h-full bg-background">

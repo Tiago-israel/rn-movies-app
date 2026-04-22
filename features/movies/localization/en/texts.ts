@@ -34,4 +34,17 @@ export const usTexts = {
   search_media_tv: "TV",
   search_media_person: "Person",
   search_genres_title: "Genres",
+  watchlist_title: "Watchlist",
+  watchlist_tab_saved: "Saved",
+  watchlist_tab_watched: "Watched",
+  watchlist_sort_label: "Sort",
+  watchlist_swipe_hint:
+    "Swipe left · mark watched  ·  Swipe right · remove",
+  watchlist_empty_saved:
+    "Your list is empty.\nUse search to add movies and series.",
+  watchlist_empty_watched:
+    "No completed titles yet.\nFinish something or mark items as watched.",
+  watchlist_empty_cta: "Search titles",
+  search_add_watchlist_a11y: "Add to watchlist",
+  search_in_watchlist_a11y: "Already in watchlist",
 };

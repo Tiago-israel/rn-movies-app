@@ -34,4 +34,17 @@ export const ptBRTexts = {
   search_media_tv: "Série",
   search_media_person: "Pessoa",
   search_genres_title: "Gêneros",
+  watchlist_title: "Lista",
+  watchlist_tab_saved: "Salvos",
+  watchlist_tab_watched: "Assistidos",
+  watchlist_sort_label: "Ordenar",
+  watchlist_swipe_hint:
+    "Deslize esq. · assistido  ·  Deslize dir. · remover",
+  watchlist_empty_saved:
+    "Sua lista está vazia.\nUse a busca para adicionar filmes e séries.",
+  watchlist_empty_watched:
+    "Nenhum título concluído ainda.\nConclua ou marque como assistido.",
+  watchlist_empty_cta: "Buscar títulos",
+  search_add_watchlist_a11y: "Adicionar à lista",
+  search_in_watchlist_a11y: "Já na lista",
 };

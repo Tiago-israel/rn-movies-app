@@ -4,6 +4,7 @@ import { Swipeable } from "react-native-gesture-handler";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import * as Haptics from "expo-haptics";
 import { Image } from "@/components";
+import { posterUrlFromTmdbPath } from "../helpers/watchlist-storage";
 import { ProgressBar } from "./progress-bar";
 import type { WatchlistItem, WatchStatus } from "../interfaces";
 
@@ -76,6 +77,9 @@ export const WatchlistRowItem = memo(
       ? `Ep ${item.currentEpisode ?? 1}/${item.totalEpisodes ?? "?"} · ${item.genre ?? "Series"}`
       : [item.genre, item.runtime ?? item.releaseDate].filter(Boolean).join(" · ");
 
+    const posterUri =
+      item.posterPath ?? posterUrlFromTmdbPath(item.posterImageId);
+
     return (
       <Swipeable
         ref={swipeRef}
@@ -97,11 +101,20 @@ export const WatchlistRowItem = memo(
             className="rounded-lg overflow-hidden"
             style={{ width: 52, height: 76, marginRight: 12 }}
           >
-            <Image
-              source={{ uri: item.posterPath }}
-              style={{ width: 52, height: 76 }}
-              contentFit="cover"
-            />
+            {posterUri ? (
+              <Image
+                source={{ uri: posterUri }}
+                style={{ width: 52, height: 76 }}
+                contentFit="cover"
+              />
+            ) : (
+              <View
+                className="bg-secondary items-center justify-center"
+                style={{ width: 52, height: 76 }}
+              >
+                <Icon name="image-off-outline" size={22} color="#7f8c8d" />
+              </View>
+            )}
           </View>
 
           {/* Info column */}
@@ -167,9 +180,6 @@ export const WatchlistRowItem = memo(
                 {status.label}
               </Text>
             </View>
-            <Text className="text-muted-foreground" style={{ fontSize: 9 }}>
-              ← swipe
-            </Text>
           </View>
         </Pressable>
       </Swipeable>

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   ScrollView,
@@ -26,7 +26,12 @@ import {
   CastList,
 } from "../components";
 import { useMovieDetails } from "../controllers";
+import {
+  watchlistEntryKey,
+  watchlistItemFromMovieDetails,
+} from "../helpers/watchlist-storage";
 import { getText } from "../localization";
+import { useUserStore } from "../store";
 import type { Provider } from "../interfaces";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -104,6 +109,29 @@ export function MovieDetails(props: MovieDetailsProps) {
     onFavoriteMovie,
     isLoading,
   } = useMovieDetails(props.movieId);
+
+  const watchlistItems = useUserStore((s) => s.watchlistItems);
+  const addToWatchlist = useUserStore((s) => s.addToWatchlist);
+  const removeFromWatchlist = useUserStore((s) => s.removeFromWatchlist);
+
+  const inWatchlist = useMemo(() => {
+    const key = watchlistEntryKey({
+      id: props.movieId,
+      mediaType: "movie",
+    });
+    return watchlistItems.some((i) => watchlistEntryKey(i) === key);
+  }, [watchlistItems, props.movieId]);
+
+  const onToggleWatchlist = useCallback(() => {
+    if (!movie?.id) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (inWatchlist) {
+      removeFromWatchlist(movie.id, "movie");
+    } else {
+      const item = watchlistItemFromMovieDetails(movie);
+      if (item) addToWatchlist(item);
+    }
+  }, [movie, inWatchlist, addToWatchlist, removeFromWatchlist]);
 
   const scrollToTop = useCallback(() => {
     requestAnimationFrame(() => {
@@ -344,6 +372,11 @@ export function MovieDetails(props: MovieDetailsProps) {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               props.onShareMovie(movie?.videoUrl);
             },
+          },
+          {
+            name: inWatchlist ? "bookmark" : "bookmark-outline",
+            color: inWatchlist ? "#f1c40f" : undefined,
+            onPress: onToggleWatchlist,
           },
           {
             name: isFavorite ? "heart" : "heart-outline",

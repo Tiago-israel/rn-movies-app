@@ -1,20 +1,9 @@
 import { useMemo, useState } from "react";
 import { useUserStore } from "../store";
-import type { WatchStatus } from "../interfaces";
 
 type SortOrder = "date" | "title" | "rating";
 
-const STATUS_MAP: Record<number, WatchStatus> = {
-  0: "watching",
-  1: "saved",
-  2: "watched",
-};
-
-export const WATCHLIST_TABS = [
-  { title: "In Progress" },
-  { title: "Saved" },
-  { title: "Watched" },
-];
+export const WATCHLIST_TABS = [{ title: "Saved" }, { title: "Watched" }];
 
 export function useWatchlist() {
   const watchlistItems = useUserStore((state) => state.watchlistItems);
@@ -25,14 +14,14 @@ export function useWatchlist() {
   const [activeTab, setActiveTab] = useState(0);
   const [sortOrder, setSortOrder] = useState<SortOrder>("date");
 
-  const continueWatchingItem = useMemo(
-    () => watchlistItems.find((item) => item.watchStatus === "watching"),
-    [watchlistItems]
-  );
-
   const filteredItems = useMemo(() => {
-    const status = STATUS_MAP[activeTab];
-    let items = watchlistItems.filter((item) => item.watchStatus === status);
+    let items =
+      activeTab === 0
+        ? watchlistItems.filter(
+            (item) =>
+              item.watchStatus === "saved" || item.watchStatus === "watching"
+          )
+        : watchlistItems.filter((item) => item.watchStatus === "watched");
 
     switch (sortOrder) {
       case "title":
@@ -69,8 +58,9 @@ export function useWatchlist() {
 
   const counts = useMemo(
     () => ({
-      watching: watchlistItems.filter((i) => i.watchStatus === "watching").length,
-      saved: watchlistItems.filter((i) => i.watchStatus === "saved").length,
+      saved: watchlistItems.filter(
+        (i) => i.watchStatus === "saved" || i.watchStatus === "watching"
+      ).length,
       watched: watchlistItems.filter((i) => i.watchStatus === "watched").length,
     }),
     [watchlistItems]
@@ -79,7 +69,6 @@ export function useWatchlist() {
   return {
     watchlistItems,
     filteredItems,
-    continueWatchingItem,
     activeTab,
     setActiveTab,
     tabs: WATCHLIST_TABS,

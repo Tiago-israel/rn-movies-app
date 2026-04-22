@@ -1,5 +1,7 @@
+import { useMemo, useCallback } from "react";
 import { KeyboardAvoidingView, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
 import {
   SearchField,
   SearchResults,
@@ -7,6 +9,12 @@ import {
 } from "../components";
 import { useSearchMovies } from "../controllers";
 import type { SearchResultItem } from "../interfaces";
+import { useUserStore } from "../store";
+import {
+  watchlistEntryKey,
+  watchlistItemFromSearchResult,
+  watchlistKeyFromSearchResult,
+} from "../helpers/watchlist-storage";
 
 export type SearchViewProps = {
   onSelectResult: (item: SearchResultItem) => void;
@@ -44,6 +52,37 @@ export function SearchView(props: SearchViewProps) {
     awaitingDebounce,
   } = useSearchMovies();
 
+  const watchlistItems = useUserStore((s) => s.watchlistItems);
+  const addToWatchlist = useUserStore((s) => s.addToWatchlist);
+  const watchlistKeys = useMemo(
+    () => new Set(watchlistItems.map(watchlistEntryKey)),
+    [watchlistItems]
+  );
+
+  const handleAddToWatchlist = useCallback(
+    (item: SearchResultItem) => {
+      const row = watchlistItemFromSearchResult(item);
+      if (!row) return;
+      const key = watchlistEntryKey(row);
+      if (watchlistKeys.has(key)) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        return;
+      }
+      addToWatchlist(row);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    },
+    [addToWatchlist, watchlistKeys]
+  );
+
+  const isInWatchlist = useCallback(
+    (item: SearchResultItem) => {
+      const key = watchlistKeyFromSearchResult(item);
+      if (!key) return false;
+      return watchlistKeys.has(key);
+    },
+    [watchlistKeys]
+  );
+
   return (
     <KeyboardAvoidingView
       className="flex-1 w-full h-full bg-background"
@@ -71,6 +110,9 @@ export function SearchView(props: SearchViewProps) {
             onSelectRecent={selectRecentQuery}
             onRemoveRecent={removeRecentQuery}
             onSelectResult={props.onSelectResult}
+            onAddToWatchlist={handleAddToWatchlist}
+            isInWatchlist={isInWatchlist}
+            watchlistVersion={watchlistItems.length}
             contentTopPadding={contentTopPadding}
           />
         ) : (
@@ -91,6 +133,9 @@ export function SearchView(props: SearchViewProps) {
             genreOptions={genreOptions}
             selectedGenreIds={selectedGenreIds}
             onToggleGenre={toggleGenre}
+            onAddToWatchlist={handleAddToWatchlist}
+            isInWatchlist={isInWatchlist}
+            watchlistVersion={watchlistItems.length}
             contentTopPadding={contentTopPadding}
           />
         )}

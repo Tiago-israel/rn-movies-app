@@ -1,9 +1,18 @@
 import { router } from "expo-router";
 import { WatchlistView } from "@/features";
+import type { WatchlistMediaType } from "@/features/movies/interfaces";
 
 export default function Favorites() {
-  function goToMovieDetails(movieId?: number) {
-    router.navigate(`/movies/${movieId}`);
+  function goToDetails(
+    id?: number,
+    options?: { mediaType?: WatchlistMediaType }
+  ) {
+    if (id == null) return;
+    if (options?.mediaType === "tv") {
+      router.navigate(`/movies/series/${id}`);
+      return;
+    }
+    router.navigate(`/movies/${id}`);
   }
 
   function goToSearch() {
@@ -11,6 +20,6 @@ export default function Favorites() {
   }
 
   return (
-    <WatchlistView goToDetails={goToMovieDetails} goToSearch={goToSearch} />
+    <WatchlistView goToDetails={goToDetails} goToSearch={goToSearch} />
   );
 }

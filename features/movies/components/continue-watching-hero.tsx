@@ -34,7 +34,10 @@ export function ContinueWatchingHero({
 
       <View className="bg-card rounded-xl overflow-hidden">
         {/* Animated backdrop with title overlay */}
-        <AnimatedHero imageUri={item.backdropPath} height={148}>
+        <AnimatedHero
+          imageUri={item.backdropPath ?? item.posterPath}
+          height={148}
+        >
           <View
             className="bg-overlay rounded-lg px-xs py-xxs"
             style={{ margin: 12 }}

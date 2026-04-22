@@ -19,6 +19,10 @@ export type SearchIdleContentProps = {
   onSelectRecent: (query: string) => void;
   onRemoveRecent: (query: string) => void;
   onSelectResult: (item: SearchResultItem) => void;
+  onAddToWatchlist?: (item: SearchResultItem) => void;
+  isInWatchlist?: (item: SearchResultItem) => boolean;
+  /** Bumps when watchlist changes so bookmark state refreshes. */
+  watchlistVersion?: number;
   contentTopPadding: number;
 };
 
@@ -29,6 +33,9 @@ export const SearchIdleContent = memo(function SearchIdleContent({
   onSelectRecent,
   onRemoveRecent,
   onSelectResult,
+  onAddToWatchlist,
+  isInWatchlist,
+  watchlistVersion = 0,
   contentTopPadding,
 }: SearchIdleContentProps) {
   const { width } = useWindowDimensions();
@@ -52,16 +59,26 @@ export const SearchIdleContent = memo(function SearchIdleContent({
       <View key={`row-${rowIndex}`} className="flex-row flex-wrap justify-start">
         {row.map((item) => (
           <SearchResultCard
-            key={`${item.mediaType}-${item.id}`}
+            key={`${item.mediaType}-${item.id}-wl${watchlistVersion}`}
             item={item}
             width={columnWidth}
             posterHeight={posterHeight}
             onPress={() => onSelectResult(item)}
+            onAddToWatchlist={
+              onAddToWatchlist ? () => onAddToWatchlist(item) : undefined
+            }
+            inWatchlist={isInWatchlist?.(item)}
           />
         ))}
       </View>
     ),
-    [columnWidth, posterHeight, onSelectResult]
+    [
+      columnWidth,
+      posterHeight,
+      onSelectResult,
+      onAddToWatchlist,
+      isInWatchlist,
+    ]
   );
 
   return (

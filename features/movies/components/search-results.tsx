@@ -36,6 +36,9 @@ export type SearchResultsProps = {
   genreOptions: { id: number; label: string }[];
   selectedGenreIds: number[];
   onToggleGenre: (id: number) => void;
+  onAddToWatchlist?: (item: SearchResultItem) => void;
+  isInWatchlist?: (item: SearchResultItem) => boolean;
+  watchlistVersion?: number;
   contentTopPadding: number;
 };
 
@@ -73,6 +76,9 @@ export const SearchResults = memo(function SearchResults({
   genreOptions,
   selectedGenreIds,
   onToggleGenre,
+  onAddToWatchlist,
+  isInWatchlist,
+  watchlistVersion = 0,
   contentTopPadding,
 }: SearchResultsProps) {
   const { width } = useWindowDimensions();
@@ -90,9 +96,15 @@ export const SearchResults = memo(function SearchResults({
         width={columnWidth}
         posterHeight={POSTER_HEIGHT}
         onPress={() => onPress?.(info.item)}
+        onAddToWatchlist={
+          onAddToWatchlist
+            ? () => onAddToWatchlist(info.item)
+            : undefined
+        }
+        inWatchlist={isInWatchlist?.(info.item)}
       />
     ),
-    [columnWidth, onPress]
+    [columnWidth, onPress, onAddToWatchlist, isInWatchlist, watchlistVersion]
   );
 
   const keyExtractor = useCallback(
@@ -260,7 +272,11 @@ export const SearchResults = memo(function SearchResults({
         numColumns={numColumns}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
-        extraData={{ mediaFilter, selectedGenreIds }}
+        extraData={{
+          mediaFilter,
+          selectedGenreIds,
+          watchlistVersion,
+        }}
         ListHeaderComponent={listHeader}
         ListEmptyComponent={emptyComponent}
         ListFooterComponent={footer}
