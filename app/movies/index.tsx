@@ -21,6 +21,14 @@ export default function MoviesHome() {
     router.push("/movies/search");
   }
 
+  function goToWatchlist() {
+    router.push("/movies/watchlist");
+  }
+
+  function goToFavorites() {
+    router.push("/movies/favorites");
+  }
+
   function goToGenreDiscover(args: {
     catalog: "movie" | "tv";
     genreId: number;
@@ -44,6 +52,8 @@ export default function MoviesHome() {
       navigateToSeriesDetails={goToSeriesDetails}
       navigateToViewMore={goToViewMore}
       navigateToSearch={goToSearch}
+      navigateToWatchlist={goToWatchlist}
+      navigateToFavorites={goToFavorites}
       navigateToGenreDiscover={goToGenreDiscover}
     />
   );

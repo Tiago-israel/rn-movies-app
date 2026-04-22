@@ -1,14 +1,15 @@
 import { useMemo, useCallback } from "react";
 import { KeyboardAvoidingView, Platform, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import {
+  NavBar,
   SearchField,
   SearchResults,
   SearchIdleContent,
 } from "../components";
 import { useSearchMovies } from "../controllers";
 import type { SearchResultItem } from "../interfaces";
+import { getText } from "../localization";
 import { useUserStore } from "../store";
 import {
   watchlistEntryKey,
@@ -17,13 +18,14 @@ import {
 } from "../helpers/watchlist-storage";
 
 export type SearchViewProps = {
+  onBack: () => void;
   onSelectResult: (item: SearchResultItem) => void;
 };
 
+/** Spacing under the search field, inside scroll areas (aligns with other tab screens). */
+const LIST_INSET_TOP = 8;
+
 export function SearchView(props: SearchViewProps) {
-  const insets = useSafeAreaInsets();
-  const headerPad = insets.top + 8;
-  const contentTopPadding = headerPad + 48 + 12;
 
   const {
     searchText,
@@ -90,12 +92,14 @@ export function SearchView(props: SearchViewProps) {
       keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
     >
       <View className="flex-1 w-full">
-        <View
-          className="w-full z-[999] absolute top-0 left-0 right-0 px-sm pt-sm bg-overlay"
-          style={{ paddingTop: headerPad }}
-        >
+        <NavBar
+          title={getText("search_title")}
+          onPressLeading={props.onBack}
+          trainlingIcon={[]}
+        />
+        <View className="w-full bg-background px-sm pt-xs pb-xs">
           <SearchField
-            placeholder="Movies, TV shows, or people"
+            placeholder={getText("search_idle_hint")}
             value={searchText}
             onChangeText={setSearchText}
             onClear={clearList}
@@ -113,7 +117,7 @@ export function SearchView(props: SearchViewProps) {
             onAddToWatchlist={handleAddToWatchlist}
             isInWatchlist={isInWatchlist}
             watchlistVersion={watchlistItems.length}
-            contentTopPadding={contentTopPadding}
+            contentTopPadding={LIST_INSET_TOP}
           />
         ) : (
           <SearchResults
@@ -136,7 +140,7 @@ export function SearchView(props: SearchViewProps) {
             onAddToWatchlist={handleAddToWatchlist}
             isInWatchlist={isInWatchlist}
             watchlistVersion={watchlistItems.length}
-            contentTopPadding={contentTopPadding}
+            contentTopPadding={LIST_INSET_TOP}
           />
         )}
       </View>

@@ -260,8 +260,7 @@ export const SearchResults = memo(function SearchResults({
     <View className="flex-1 w-full">
       {awaitingDebounce && rawCount > 0 ? (
         <View
-          className="absolute left-0 right-0 z-10 items-center py-2 bg-background/90"
-          style={{ top: contentTopPadding - 36 }}
+          className="absolute left-0 right-0 top-0 z-10 items-center py-2 bg-background/90"
           pointerEvents="none"
         >
           <ActivityIndicator size="small" />

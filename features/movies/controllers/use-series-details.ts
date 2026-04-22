@@ -1,10 +1,15 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { TVSeriesService } from "../services";
+import { useUserStore } from "../store";
 import type { Episode } from "../interfaces";
 
 export function useSeriesDetails(seriesId: number, seasonNumber: number = 1) {
   const tvSeriesService = useRef(new TVSeriesService()).current;
+  const [isFavorite, setIsFavorite] = useState(false);
+  const addFavoriteSeries = useUserStore((s) => s.addFavoriteSeries);
+  const getFavoriteSeries = useUserStore((s) => s.getFavoriteSeries);
+  const removeFavoriteSeries = useUserStore((s) => s.removeFavoriteSeries);
 
   const { data: series, isFetching: isSeriesFetching } = useQuery({
     initialData: {},
@@ -68,8 +73,27 @@ export function useSeriesDetails(seriesId: number, seasonNumber: number = 1) {
     return cast.length > 4 ? `+${cast.length -4}`: "";
   }, [cast]);
 
-  const isFavorite = false;
-  const onFavoriteSeries = () => {};
+  const syncFavorite = useCallback(
+    (id: number) => {
+      const favorite = getFavoriteSeries(id);
+      setIsFavorite(favorite !== undefined);
+    },
+    [getFavoriteSeries]
+  );
+
+  const onFavoriteSeries = useCallback(() => {
+    if (!series || series.id == null) return;
+    if (!isFavorite) {
+      addFavoriteSeries(series);
+    } else {
+      removeFavoriteSeries(series.id);
+    }
+    setIsFavorite((v) => !v);
+  }, [series, isFavorite, addFavoriteSeries, removeFavoriteSeries]);
+
+  useEffect(() => {
+    syncFavorite(seriesId);
+  }, [seriesId, syncFavorite]);
 
   return {
     series,

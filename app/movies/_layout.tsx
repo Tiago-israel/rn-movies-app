@@ -1,17 +1,15 @@
 import { useMemo } from "react";
-import { Platform, useWindowDimensions } from "react-native";
 import { Tabs } from "expo-router";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { Layout, useUserStore } from "@/features/movies";
 
+const TAB_ICON = 24;
+
 export default function MoviesLayout() {
-  const { width } = useWindowDimensions();
   const theme = useUserStore((state) => state.theme);
 
   const tabStyle = useMemo(() => {
     return {
-      color: theme === "light" ? "#ccc" : "#ccc",
-      activeColor: theme === "light" ? "#2980b9" : "#2980b9",
       background: theme === "light" ? "#ecf0f1" : "#101218",
     };
   }, [theme]);
@@ -19,10 +17,13 @@ export default function MoviesLayout() {
   const tabBarStyle: any = useMemo(() => {
     return {
       tabBarShowLabel: false,
-      tabBarActiveTintColor: "#fff",
+      tabBarActiveTintColor: "#f1c40f",
+      tabBarInactiveTintColor: "#7f8c8d",
       tabBarStyle: {
         backgroundColor: tabStyle.background,
         paddingTop: 12,
+        borderTopColor: "rgba(127, 140, 141, 0.25)",
+        borderTopWidth: 1,
       },
     };
   }, [tabStyle]);
@@ -38,24 +39,31 @@ export default function MoviesLayout() {
     >
       <Tabs.Screen
         name="index"
-
         options={{
           ...tabBarStyle,
-          tabBarLabelStyle: {
-            display: 'none',
-          },
-          tabBarIcon: (props) => (
-            <Icon name="home" color={props.color} size={24} />
+          title: "Home",
+          tabBarAccessibilityLabel: "Home",
+          tabBarIcon: ({ color, focused }) => (
+            <Icon
+              name={focused ? "home" : "home-outline"}
+              color={color}
+              size={TAB_ICON}
+            />
           ),
         }}
       />
-
       <Tabs.Screen
-        name="search"
+        name="watchlist"
         options={{
           ...tabBarStyle,
-          tabBarIcon: (props) => (
-            <Icon name="magnify" color={props.color} size={24} />
+          title: "Watchlist",
+          tabBarAccessibilityLabel: "Watchlist",
+          tabBarIcon: ({ color, focused }) => (
+            <Icon
+              name={focused ? "bookmark" : "bookmark-outline"}
+              color={color}
+              size={TAB_ICON}
+            />
           ),
         }}
       />
@@ -63,8 +71,14 @@ export default function MoviesLayout() {
         name="favorites"
         options={{
           ...tabBarStyle,
-          tabBarIcon: (props) => (
-            <Icon name="heart" color={props.color} size={24} />
+          title: "Favorites",
+          tabBarAccessibilityLabel: "Favorites",
+          tabBarIcon: ({ color, focused }) => (
+            <Icon
+              name={focused ? "heart" : "heart-outline"}
+              color={color}
+              size={TAB_ICON}
+            />
           ),
         }}
       />
@@ -72,9 +86,24 @@ export default function MoviesLayout() {
         name="preferences"
         options={{
           ...tabBarStyle,
-          tabBarIcon: (props) => (
-            <Icon name="cog-outline" color={props.color} size={24} />
+          title: "Config",
+          tabBarAccessibilityLabel: "Settings",
+          tabBarIcon: ({ color, focused }) => (
+            <Icon
+              name={focused ? "cog" : "cog-outline"}
+              color={color}
+              size={TAB_ICON}
+            />
           ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="search"
+        options={{
+          href: null,
+          headerShown: false,
+          tabBarStyle: { display: "none" },
         }}
       />
       <Tabs.Screen

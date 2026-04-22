@@ -8,6 +8,7 @@ import type { WatchlistMediaType } from "../interfaces";
 import { NavBar, TabsGroup, WatchlistRowItem, WatchlistFAB } from "../components";
 
 export type WatchlistViewProps = {
+  onBack: () => void;
   goToDetails: (
     id?: number,
     options?: { mediaType?: WatchlistMediaType }
@@ -65,7 +66,11 @@ function EmptyTab({ tab, onSearch }: EmptyTabProps) {
   );
 }
 
-export function WatchlistView({ goToDetails, goToSearch }: WatchlistViewProps) {
+export function WatchlistView({
+  onBack,
+  goToDetails,
+  goToSearch,
+}: WatchlistViewProps) {
   const insets = useSafeAreaInsets();
   const {
     filteredItems,
@@ -87,6 +92,7 @@ export function WatchlistView({ goToDetails, goToSearch }: WatchlistViewProps) {
     <View className="flex-1 bg-background" style={{ paddingBottom: insets.bottom }}>
       <NavBar
         title={getText("watchlist_title")}
+        onPressLeading={onBack}
         trainlingIcon={[
           { name: "magnify", onPress: goToSearch },
           { name: "sort-variant", onPress: cycleSortOrder },

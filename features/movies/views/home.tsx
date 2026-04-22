@@ -41,6 +41,8 @@ export type HomeProps = {
   navigateToSeriesDetails: (seriesId: number) => void;
   navigateToViewMore: (type: ServiceType, title: string) => () => void;
   navigateToSearch: () => void;
+  navigateToWatchlist: () => void;
+  navigateToFavorites: () => void;
   navigateToGenreDiscover: (args: {
     catalog: "movie" | "tv";
     genreId: number;
@@ -193,10 +195,28 @@ export function HomeView(props: HomeProps) {
   if (isLoading) {
     return (
       <View className="flex-1 bg-background">
-        <View className="px-sm pt-xs pb-xxs">
+        <View className="px-sm pt-xs pb-xxs flex-row items-center justify-between">
           <Text className="text-3xl font-extrabold text-foreground tracking-tight">
             {getText("home_header_title")}
           </Text>
+          <View className="flex-row items-center" style={{ gap: 4 }}>
+            <Pressable
+              onPress={props.navigateToWatchlist}
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel={getText("home_nav_watchlist_a11y")}
+            >
+              <Icon name="bookmark-outline" size={28} color="#f1c40f" />
+            </Pressable>
+            <Pressable
+              onPress={props.navigateToFavorites}
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel={getText("home_nav_favorites_a11y")}
+            >
+              <Icon name="heart-outline" size={28} color="#e74c3c" />
+            </Pressable>
+          </View>
         </View>
         <HomeSkeleton />
       </View>
@@ -206,7 +226,7 @@ export function HomeView(props: HomeProps) {
   return (
     <View className="flex-1 bg-background">
       {/* ── Header ── */}
-      <View className="px-sm pt-xs pb-xxs">
+      <View className="px-sm pt-xs pb-xxs flex-row items-center justify-between">
         <Text
           className="text-3xl font-extrabold text-foreground tracking-tight"
           accessibilityRole="header"

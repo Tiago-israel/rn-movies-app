@@ -28,19 +28,19 @@ export function SearchField({
   }
 
   return (
-    <View className="w-full h-12 flex-row bg-white rounded-lg items-center">
+    <View className="w-full h-12 flex-row items-center rounded-lg border border-border bg-secondary px-xs">
       <Icon
         name="magnify"
         size={22}
-        color="#666"
-        style={{ marginLeft: 12 }}
+        color="#95a5a6"
+        style={{ marginLeft: 8 }}
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
       />
       <TextInput
-        className="flex-1 h-full pr-5 text-black"
+        className="flex-1 h-full pr-4 text-foreground"
         style={{ paddingVertical: 0, paddingLeft: 8 }}
-        placeholderTextColor="#000"
+        placeholderTextColor="#95a5a6"
         placeholder={placeholder}
         value={value}
         onChangeText={onChangeText}
@@ -49,8 +49,8 @@ export function SearchField({
         {...props}
       />
       {value.length > 0 ? (
-        <Pressable className="pr-xs" onPress={clearText} hitSlop={12}>
-          <Icon name="close-circle" size={24} />
+        <Pressable className="pr-1" onPress={clearText} hitSlop={12}>
+          <Icon name="close-circle" size={24} color="#95a5a6" />
         </Pressable>
       ) : null}
     </View>

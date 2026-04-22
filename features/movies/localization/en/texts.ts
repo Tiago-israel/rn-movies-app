@@ -2,6 +2,8 @@ export const usTexts = {
   home_tab_movies: "Movies",
   home_tab_series: "Series",
   home_header_title: "Discover",
+  home_nav_watchlist_a11y: "Open watchlist",
+  home_nav_favorites_a11y: "Open favorite movies",
   home_genre_highlights: "Browse by genre",
   home_trending_title: "Trending today",
   movie_home_now_playing: "Now playing",
@@ -19,6 +21,7 @@ export const usTexts = {
   tv_series_home_popular: "Popular",
   tv_series_home_top_rated: "Top Rated",
   show_more: "Show more",
+  search_title: "Search",
   search_idle_hint: "Search for movies, TV shows, or people",
   search_recent_title: "Recent",
   search_trending_title: "Trending today",
@@ -47,4 +50,5 @@ export const usTexts = {
   watchlist_empty_cta: "Search titles",
   search_add_watchlist_a11y: "Add to watchlist",
   search_in_watchlist_a11y: "Already in watchlist",
+  favorites_title: "Favorites",
 };

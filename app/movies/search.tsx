@@ -15,5 +15,7 @@ export default function Search() {
     router.navigate(`/movies/series/0/people/${item.id}`);
   }
 
-  return <SearchView onSelectResult={onSelectResult} />;
+  return (
+    <SearchView onBack={() => router.back()} onSelectResult={onSelectResult} />
+  );
 }

@@ -5,6 +5,7 @@ import { setLocation } from "../localization";
 import {
   type MovieDetails,
   type User,
+  type SeriesDetails,
   type WatchlistItem,
   type WatchStatus,
   type WatchlistMediaType,
@@ -33,6 +34,7 @@ function matchesWatchlistItem(
 
 type UserStore = {
   favoriteMovies: MovieDetails[];
+  favoriteSeries: SeriesDetails[];
   theme: Theme;
   language: Language;
   favoriteItems: FavoriteItem[];
@@ -40,6 +42,9 @@ type UserStore = {
   addFavoriteMovie: (movie: MovieDetails) => void;
   removeFavoriteMovie: (movieId?: number) => void;
   getFavorite: (movieId?: number) => MovieDetails | undefined;
+  addFavoriteSeries: (series: SeriesDetails) => void;
+  removeFavoriteSeries: (seriesId?: number) => void;
+  getFavoriteSeries: (seriesId?: number) => SeriesDetails | undefined;
   setTheme: (theme: Theme) => void;
   setLanguage: (language: Language) => void;
   setFavoriteItem: (item: FavoriteItem) => void;
@@ -63,6 +68,7 @@ export const useUserStore = create(
   persist<UserStore>(
     (set, store) => ({
       favoriteMovies: [],
+      favoriteSeries: [],
       favoriteItems: [],
       watchlistItems: [],
       theme: "dark",
@@ -87,6 +93,27 @@ export const useUserStore = create(
       },
       getFavorite(movieId) {
         return store().favoriteMovies.find((x) => x.id === movieId);
+      },
+      addFavoriteSeries: (series: SeriesDetails) => {
+        set((state) => {
+          if (
+            !series.id ||
+            state.favoriteSeries.find((item) => item.id === series.id)
+          ) {
+            return state;
+          }
+          return { favoriteSeries: [...state.favoriteSeries, series] };
+        });
+      },
+      removeFavoriteSeries: (seriesId?: number) => {
+        set((state) => ({
+          favoriteSeries: state.favoriteSeries.filter(
+            (item) => item.id !== seriesId
+          ),
+        }));
+      },
+      getFavoriteSeries(seriesId) {
+        return store().favoriteSeries.find((x) => x.id === seriesId);
       },
       setTheme(theme: Theme) {
         set((state) => {
@@ -157,6 +184,7 @@ export const useUserStore = create(
       storage: createJSONStorage(() => StoreManager),
       partialize: ((state) => ({
         favoriteMovies: state.favoriteMovies,
+        favoriteSeries: state.favoriteSeries,
         favoriteItems: state.favoriteItems,
         theme: state.theme,
         language: state.language,

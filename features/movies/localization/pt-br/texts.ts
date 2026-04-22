@@ -2,6 +2,8 @@ export const ptBRTexts = {
   home_tab_movies: "Filmes",
   home_tab_series: "Séries",
   home_header_title: "Descubra",
+  home_nav_watchlist_a11y: "Abrir a lista (watchlist)",
+  home_nav_favorites_a11y: "Abrir filmes favoritos",
   home_genre_highlights: "Por gênero",
   home_trending_title: "Em alta hoje",
   movie_home_now_playing: "Em exibição",
@@ -19,6 +21,7 @@ export const ptBRTexts = {
   tv_series_home_popular: "Popular",
   tv_series_home_top_rated: "Sucessos",
   show_more: "Ver mais",
+  search_title: "Busca",
   search_idle_hint: "Busque filmes, séries ou pessoas",
   search_recent_title: "Recentes",
   search_trending_title: "Em alta hoje",
@@ -47,4 +50,5 @@ export const ptBRTexts = {
   watchlist_empty_cta: "Buscar títulos",
   search_add_watchlist_a11y: "Adicionar à lista",
   search_in_watchlist_a11y: "Já na lista",
+  favorites_title: "Favoritos",
 };

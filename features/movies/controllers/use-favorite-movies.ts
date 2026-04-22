@@ -8,6 +8,7 @@ const favoriteService = new FavoriteService();
 export function useFavoriteMovies() {
   const drawerRef = useRef<DrawerRef>();
   const favoriteMovies = useUserStore((state) => state.favoriteMovies);
+  const favoriteSeries = useUserStore((state) => state.favoriteSeries);
   const favoriteItems = useUserStore((state) => state.favoriteItems);
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -24,6 +25,7 @@ export function useFavoriteMovies() {
     name,
     description,
     favoriteMovies,
+    favoriteSeries,
     favoriteItems,
     setName,
     setDescription,
