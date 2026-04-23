@@ -24,6 +24,12 @@ type FavoriteItem = {
   favoriteMovies?: MovieDetails[];
 };
 
+export type FavoriteGroup = {
+  id: string;
+  name: string;
+  itemKeys: string[];
+};
+
 function matchesWatchlistItem(
   item: WatchlistItem,
   id: number,
@@ -36,6 +42,7 @@ type UserStore = {
   favoriteMovies: MovieDetails[];
   favoriteSeries: SeriesDetails[];
   favoriteRanking: string[];
+  favoriteGroups: FavoriteGroup[];
   theme: Theme;
   language: Language;
   favoriteItems: FavoriteItem[];
@@ -50,6 +57,11 @@ type UserStore = {
   setLanguage: (language: Language) => void;
   setFavoriteItem: (item: FavoriteItem) => void;
   setFavoriteRanking: (ranking: string[]) => void;
+  addFavoriteGroup: (name: string) => void;
+  removeFavoriteGroup: (groupId: string) => void;
+  renameFavoriteGroup: (groupId: string, name: string) => void;
+  addItemToGroup: (groupId: string, itemKey: string) => void;
+  removeItemFromGroup: (groupId: string, itemKey: string) => void;
   addToWatchlist: (item: WatchlistItem) => void;
   removeFromWatchlist: (id: number, mediaType?: WatchlistMediaType) => void;
   updateWatchStatus: (
@@ -72,6 +84,7 @@ export const useUserStore = create(
       favoriteMovies: [],
       favoriteSeries: [],
       favoriteRanking: [],
+      favoriteGroups: [],
       favoriteItems: [],
       watchlistItems: [],
       theme: "dark",
@@ -148,6 +161,46 @@ export const useUserStore = create(
           favoriteRanking: ranking,
         }));
       },
+      addFavoriteGroup: (name: string) => {
+        const id = `group-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+        set((state) => ({
+          favoriteGroups: [...state.favoriteGroups, { id, name, itemKeys: [] }],
+        }));
+      },
+      removeFavoriteGroup: (groupId: string) => {
+        set((state) => ({
+          favoriteGroups: state.favoriteGroups.filter((g) => g.id !== groupId),
+        }));
+      },
+      renameFavoriteGroup: (groupId: string, name: string) => {
+        set((state) => ({
+          favoriteGroups: state.favoriteGroups.map((g) =>
+            g.id === groupId ? { ...g, name } : g
+          ),
+        }));
+      },
+      addItemToGroup: (groupId: string, itemKey: string) => {
+        set((state) => ({
+          favoriteGroups: state.favoriteGroups.map((g) => {
+            if (g.id !== groupId) {
+              return g.itemKeys.includes(itemKey)
+                ? { ...g, itemKeys: g.itemKeys.filter((k) => k !== itemKey) }
+                : g;
+            }
+            if (g.itemKeys.includes(itemKey)) return g;
+            return { ...g, itemKeys: [...g.itemKeys, itemKey] };
+          }),
+        }));
+      },
+      removeItemFromGroup: (groupId: string, itemKey: string) => {
+        set((state) => ({
+          favoriteGroups: state.favoriteGroups.map((g) =>
+            g.id === groupId
+              ? { ...g, itemKeys: g.itemKeys.filter((k) => k !== itemKey) }
+              : g
+          ),
+        }));
+      },
       addToWatchlist: (item: WatchlistItem) => {
         set((state) => {
           const next: WatchlistItem = {
@@ -194,6 +247,7 @@ export const useUserStore = create(
         favoriteMovies: state.favoriteMovies,
         favoriteSeries: state.favoriteSeries,
         favoriteRanking: state.favoriteRanking,
+        favoriteGroups: state.favoriteGroups,
         favoriteItems: state.favoriteItems,
         theme: state.theme,
         language: state.language,

@@ -33,3 +33,4 @@ export * from './progress-bar';
 export * from './continue-watching-hero';
 export * from './watchlist-row-item';
 export * from './watchlist-fab';
+export * from './group-list-item';
