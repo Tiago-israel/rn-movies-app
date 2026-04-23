@@ -50,6 +50,8 @@ export const SearchResultCard = memo(function SearchResultCard({
     onAddToWatchlistItem?.(item);
   }, [onAddToWatchlistItem, item]);
 
+  const rowTestID = `search-result-${item.mediaType}-${item.id}`;
+
   const texts = (
     <>
       <Text
@@ -72,6 +74,7 @@ export const SearchResultCard = memo(function SearchResultCard({
       <View className="relative w-full">
         {onItemPress ? (
           <Pressable
+            testID={rowTestID}
             accessibilityLabel={a11y}
             accessibilityRole="button"
             onPress={handlePress}

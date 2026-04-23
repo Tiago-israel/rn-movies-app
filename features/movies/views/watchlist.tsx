@@ -53,6 +53,7 @@ function EmptyTab({ tab, onSearch }: EmptyTabProps) {
         {getText(keys[tab])}
       </Text>
       <Pressable
+        testID="watchlist-empty-search-cta"
         onPress={onSearch}
         className="mt-5 rounded-xl bg-foreground px-5 py-3 flex-row items-center"
         style={{ gap: 8 }}
@@ -89,7 +90,12 @@ export function WatchlistView({
   const ListHeader = filteredItems.length > 0 ? <SwipeHint /> : null;
 
   return (
-    <View className="flex-1 bg-background" style={{ paddingBottom: insets.bottom }}>
+    <View
+      className="flex-1 bg-background"
+      style={{ paddingBottom: insets.bottom }}
+      testID="watchlist-screen"
+      collapsable={false}
+    >
       <NavBar
         title={getText("watchlist_title")}
         onPressLeading={onBack}
@@ -102,8 +108,14 @@ export function WatchlistView({
       <View className="px-sm pt-xxs pb-1">
         <TabsGroup
           items={[
-            { title: `${getText("watchlist_tab_saved")} (${counts.saved})` },
-            { title: `${getText("watchlist_tab_watched")} (${counts.watched})` },
+            {
+              title: `${getText("watchlist_tab_saved")} (${counts.saved})`,
+              testID: "watchlist-tab-saved",
+            },
+            {
+              title: `${getText("watchlist_tab_watched")} (${counts.watched})`,
+              testID: "watchlist-tab-watched",
+            },
           ]}
           selectedIndex={activeTab}
           onPress={setActiveTab}

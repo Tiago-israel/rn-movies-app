@@ -194,13 +194,14 @@ export function HomeView(props: HomeProps) {
   // ── Loading state ──
   if (isLoading) {
     return (
-      <View className="flex-1 bg-background">
+      <View className="flex-1 bg-background" testID="home-root">
         <View className="px-sm pt-xs pb-xxs flex-row items-center justify-between">
           <Text className="text-3xl font-extrabold text-foreground tracking-tight">
             {getText("home_header_title")}
           </Text>
           <View className="flex-row items-center" style={{ gap: 4 }}>
             <Pressable
+              testID="home-header-watchlist"
               onPress={props.navigateToWatchlist}
               hitSlop={12}
               accessibilityRole="button"
@@ -209,6 +210,7 @@ export function HomeView(props: HomeProps) {
               <Icon name="bookmark-outline" size={28} color="#f1c40f" />
             </Pressable>
             <Pressable
+              testID="home-header-favorites"
               onPress={props.navigateToFavorites}
               hitSlop={12}
               accessibilityRole="button"
@@ -224,8 +226,8 @@ export function HomeView(props: HomeProps) {
   }
 
   return (
-    <View className="flex-1 bg-background">
-      {/* ── Header ── */}
+    <View className="flex-1 bg-background" testID="home-root">
+      {/* ── Header (match loading branch — Maestro needs these ids after data loads) ── */}
       <View className="px-sm pt-xs pb-xxs flex-row items-center justify-between">
         <Text
           className="text-3xl font-extrabold text-foreground tracking-tight"
@@ -233,10 +235,31 @@ export function HomeView(props: HomeProps) {
         >
           {getText("home_header_title")}
         </Text>
+        <View className="flex-row items-center" style={{ gap: 4 }}>
+          <Pressable
+            testID="home-header-watchlist"
+            onPress={props.navigateToWatchlist}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel={getText("home_nav_watchlist_a11y")}
+          >
+            <Icon name="bookmark-outline" size={28} color="#f1c40f" />
+          </Pressable>
+          <Pressable
+            testID="home-header-favorites"
+            onPress={props.navigateToFavorites}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel={getText("home_nav_favorites_a11y")}
+          >
+            <Icon name="heart-outline" size={28} color="#e74c3c" />
+          </Pressable>
+        </View>
       </View>
 
       {/* ── Search bar ── */}
       <Pressable
+        testID="home-open-search"
         className="mx-sm mb-xs flex-row items-center gap-2 rounded-lg bg-secondary px-xs py-2.5"
         onPress={props.navigateToSearch}
         accessibilityRole="search"
@@ -298,6 +321,8 @@ export function HomeView(props: HomeProps) {
               "movies.popular",
               getText("movie_home_popular")
             )}
+            carouselTestID="home-popular-carousel"
+            moreOptionsTestID="home-view-more-popular"
           />
         </AnimatedSection>
 

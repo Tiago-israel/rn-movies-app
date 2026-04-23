@@ -10,6 +10,8 @@ export type IconButtonProps = {
   onPress?: () => void | Promise<void>;
   color?: string;
   children?: ReactNode;
+  testID?: string;
+  accessibilityLabel?: string;
 };
 
 export function IconButton(props: IconButtonProps) {
@@ -17,6 +19,9 @@ export function IconButton(props: IconButtonProps) {
   const { colors } = useTheme<MovieTheme>();
   return (
     <Pressable
+      testID={props.testID}
+      accessibilityLabel={props.accessibilityLabel}
+      accessibilityRole="button"
       className={`w-12 h-12 items-center justify-center rounded-full bg-secondary ${
         props.children ? "overflow-visible" : "overflow-hidden"
       }`}

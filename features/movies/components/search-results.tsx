@@ -224,6 +224,7 @@ export const SearchResults = memo(function SearchResults({
             {getText("search_error")}
           </Text>
           <Pressable
+            testID="search-error-retry"
             onPress={onRetry}
             className="px-4 py-2 rounded-lg bg-secondary"
           >
@@ -288,6 +289,7 @@ export const SearchResults = memo(function SearchResults({
         </View>
       ) : null}
       <List
+        testID="search-results-list"
         data={displayedItems}
         numColumns={numColumns}
         estimatedItemSize={SEARCH_GRID_ESTIMATED_ITEM_SIZE}

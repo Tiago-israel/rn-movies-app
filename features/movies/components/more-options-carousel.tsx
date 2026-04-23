@@ -10,6 +10,7 @@ export type MoreOptionsCarouselProps = {
   height?: number;
   borderRadius?: "lg" | "none";
   onPress: () => void | Promise<void>;
+  testID?: string;
 };
 
 export function MoreOptionsCarousel({
@@ -22,6 +23,7 @@ export function MoreOptionsCarousel({
   const radiusClass = borderRadius === "none" ? "" : "rounded-lg";
   return (
     <Pressable
+      testID={props.testID}
       className={`items-center justify-center overflow-hidden gap-2 ml-2 ${radiusClass}`}
       style={{
         width,

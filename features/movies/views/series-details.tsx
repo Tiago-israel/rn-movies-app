@@ -304,7 +304,7 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
 
   if (isLoading) {
     return (
-      <View className="h-full bg-background">
+      <View className="h-full bg-background" testID="series-details-screen">
         <NavBar
           onPressLeading={props.goBack}
           trainlingIcon={[]}
@@ -383,7 +383,7 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
   }
 
   return (
-    <View className="h-full bg-background">
+    <View className="h-full bg-background" testID="series-details-screen">
       <NavBar
         trainlingIcon={navBarTrailingIcons}
         onPressLeading={props.goBack}

@@ -10,6 +10,10 @@
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint",
+    "e2e:android:install-app": "expo run:android --no-bundler --variant release",
+    "e2e:android": "node ./scripts/run-maestro.cjs test .maestro/smoke",
+    "e2e:android:flows": "node ./scripts/run-maestro.cjs test .maestro/flows",
+    "e2e:android:all": "node ./scripts/run-maestro.cjs test .maestro",
     "postinstall": "patch-package"
   },
   "jest": {

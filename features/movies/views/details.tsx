@@ -37,9 +37,9 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTENT_WIDTH = SCREEN_WIDTH - 40;
 
 const TAB_ITEMS = [
-  { title: "Overview" },
-  { title: "Cast" },
-  { title: "Reviews" },
+  { title: "Overview", testID: "details-tab-overview" },
+  { title: "Cast", testID: "details-tab-cast" },
+  { title: "Reviews", testID: "details-tab-reviews" },
   // { title: "Media" },
   // { title: "Similar" },
 ];
@@ -201,7 +201,7 @@ export function MovieDetails(props: MovieDetailsProps) {
 
   if (isLoading) {
     return (
-      <View className="h-full bg-background">
+      <View className="h-full bg-background" testID="movie-details-screen">
         <NavBar onPressLeading={props.goBack} trainlingIcon={[]} />
         <ScrollView
           contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 80 }}
@@ -370,7 +370,7 @@ export function MovieDetails(props: MovieDetailsProps) {
   };
 
   return (
-    <View className="h-full bg-background">
+    <View className="h-full bg-background" testID="movie-details-screen">
       <NavBar
         trainlingIcon={[
           {

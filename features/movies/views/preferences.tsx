@@ -19,7 +19,11 @@ export function usePreferences() {
 export function PreferencesView(props: PreferencesProps) {
   const { userTheme, setTheme, setLanguage } = usePreferences();
   return (
-    <View className="w-full h-full bg-background">
+    <View
+      className="w-full h-full bg-background"
+      testID="preferences-screen"
+      collapsable={false}
+    >
       <NavBar hideButtons title="Settings" />
       <ScrollView
         contentContainerStyle={{ paddingTop: 20, gap: 8 }}

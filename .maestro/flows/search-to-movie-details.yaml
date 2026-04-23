@@ -1,0 +1,38 @@
+appId: com.tico77.rnapp
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "home-root"
+    timeout: 90000
+- tapOn:
+    id: "home-open-search"
+- extendedWaitUntil:
+    visible:
+      id: "search-screen"
+    timeout: 15000
+- tapOn:
+    id: "search-input"
+- inputText: "Fight Club"
+- extendedWaitUntil:
+    visible:
+      id: "search-result-movie-550"
+    timeout: 60000
+- tapOn:
+    id: "search-result-movie-550"
+- extendedWaitUntil:
+    visible:
+      id: "movie-details-screen"
+    timeout: 30000
+- tapOn:
+    id: "nav-back"
+- extendedWaitUntil:
+    visible:
+      id: "search-input"
+    timeout: 15000
+- tapOn:
+    id: "nav-back"
+- extendedWaitUntil:
+    visible:
+      id: "home-root"
+    timeout: 15000

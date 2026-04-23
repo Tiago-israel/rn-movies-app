@@ -87,6 +87,7 @@ export function SearchView(props: SearchViewProps) {
 
   return (
     <KeyboardAvoidingView
+      testID="search-screen"
       className="flex-1 w-full h-full bg-background"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}

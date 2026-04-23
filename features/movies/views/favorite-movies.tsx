@@ -86,7 +86,11 @@ export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
   );
 
   return (
-    <View className="w-full h-full bg-background">
+    <View
+      className="w-full h-full bg-background"
+      testID="favorites-screen"
+      collapsable={false}
+    >
       <NavBar
         title={getText("favorites_title")}
         onPressLeading={props.onBack}

@@ -4,20 +4,27 @@ import { IconButton } from "./Icon-button";
 
 const NAVBAR_HEIGHT = 72;
 
+export type NavBarTrailingItem = {
+  name: any;
+  color?: string;
+  children?: ReactNode;
+  onPress?: () => void;
+  testID?: string;
+  accessibilityLabel?: string;
+};
+
 export type NavBarProps = {
   title?: string;
   hideButtons?: boolean;
+  /** Defaults to `nav-back` for Maestro / a11y. */
+  leadingTestID?: string;
+  leadingAccessibilityLabel?: string;
   leadingIcon?: {
     name: any;
     color?: string;
     children?: ReactNode;
   };
-  trainlingIcon?: {
-    name: any;
-    color?: string;
-    children?: ReactNode;
-    onPress?: () => void;
-  }[];
+  trainlingIcon?: NavBarTrailingItem[];
   onPressLeading?: () => void | Promise<void>;
   onPressTrailing?: () => void | Promise<void>;
 };
@@ -46,6 +53,10 @@ export function NavBar({
           icon={leadingIcon.name}
           onPress={props.onPressLeading}
           children={leadingIcon.children}
+          testID={props.leadingTestID ?? "nav-back"}
+          accessibilityLabel={
+            props.leadingAccessibilityLabel ?? "Go back"
+          }
         />
       )}
       {props.title && (
@@ -60,6 +71,8 @@ export function NavBar({
               color={item.color}
               children={item.children}
               onPress={item.onPress || props.onPressTrailing}
+              testID={item.testID ?? `nav-trailing-${index}`}
+              accessibilityLabel={item.accessibilityLabel}
             />
           ))}
       </View>

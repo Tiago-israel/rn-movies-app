@@ -10,6 +10,9 @@ type MovieCarouselProps = {
   itemHeight?: number;
   onPressItem: (movieId: number) => void | Promise<void>;
   onPressMoreOptions: () => void;
+  /** Horizontal list — for Maestro scroll before tapping “Show more”. */
+  carouselTestID?: string;
+  moreOptionsTestID?: string;
 };
 
 /**
@@ -23,9 +26,12 @@ export const MovieCarousel = memo(function MovieCarousel({
   itemHeight = 200,
   onPressItem,
   onPressMoreOptions,
+  carouselTestID,
+  moreOptionsTestID,
 }: MovieCarouselProps) {
   return (
     <ScrollView
+      testID={carouselTestID}
       horizontal
       nestedScrollEnabled
       showsHorizontalScrollIndicator={false}
@@ -47,6 +53,7 @@ export const MovieCarousel = memo(function MovieCarousel({
         width={itemWidth}
         height={itemHeight}
         onPress={onPressMoreOptions}
+        testID={moreOptionsTestID}
       />
     </ScrollView>
   );

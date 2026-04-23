@@ -11,10 +11,13 @@ import { Text } from "./text";
 
 const TABSGROUP_HEIGHT = 32;
 
+export type TabsGroupItem = {
+  title: string;
+  testID?: string;
+};
+
 export type TabsGroupProps = {
-  items?: Array<{
-    title: string;
-  }>;
+  items?: TabsGroupItem[];
   onPress?: (index: number) => void;
   selectedIndex?: number;
 };
@@ -25,11 +28,13 @@ export type TabItemProps = {
   selected?: boolean;
   onPress?: (index: number) => void;
   onLoad?: (index: number, measurements: LayoutRectangle) => void;
+  testID?: string;
 };
 
 export const TabItem = forwardRef((props: TabItemProps, ref) => {
   return (
     <Pressable
+      testID={props.testID}
       className="flex-1 h-8 items-center justify-center rounded-full px-3 z-[999]"
       onLayout={(event: LayoutChangeEvent) => {
         props.onLoad?.(props.index, event.nativeEvent.layout);
@@ -108,6 +113,7 @@ export function TabsGroup({
             index={index}
             selected={selectedIndex === index}
             onLoad={onLoad}
+            testID={item.testID}
             onPress={(index) => {
               selectedIndexRef.current = index;
               animate(index);

@@ -396,7 +396,11 @@ export function ViewMoreView(props: ViewMoreProps) {
 
   /* ═══ render ═══════════════════════════════════════════ */
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
+    <View
+      style={[styles.root, { backgroundColor: colors.background }]}
+      testID="view-more-screen"
+      collapsable={false}
+    >
       {/* ── header ── */}
       <NavBar
         title={props.title}

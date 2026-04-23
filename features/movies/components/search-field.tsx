@@ -38,6 +38,7 @@ export function SearchField({
         importantForAccessibility="no-hide-descendants"
       />
       <TextInput
+        testID="search-input"
         className="flex-1 h-full pr-4 text-foreground"
         style={{ paddingVertical: 0, paddingLeft: 8 }}
         placeholderTextColor="#95a5a6"
@@ -49,7 +50,12 @@ export function SearchField({
         {...props}
       />
       {value.length > 0 ? (
-        <Pressable className="pr-1" onPress={clearText} hitSlop={12}>
+        <Pressable
+          testID="search-input-clear"
+          className="pr-1"
+          onPress={clearText}
+          hitSlop={12}
+        >
           <Icon name="close-circle" size={24} color="#95a5a6" />
         </Pressable>
       ) : null}
