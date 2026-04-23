@@ -212,26 +212,151 @@ export function MovieDetails(props: MovieDetailsProps) {
       <View className="h-full bg-background" testID="movie-details-screen">
         <NavBar onPressLeading={props.goBack} trainlingIcon={[]} />
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 80 }}
+          contentContainerStyle={{ paddingBottom: 80 }}
           showsVerticalScrollIndicator={false}
         >
-          <View style={{ paddingTop: 8 }}>
+          {/* Hero placeholder (matches AnimatedHero 240px) */}
+          <View
+            className="relative border-b-2 border-border overflow-hidden"
+            style={{ height: 240 }}
+          >
             <SkeletonPlaceholder
-              width={CONTENT_WIDTH * 0.85}
-              height={36}
-              style={{ marginBottom: 16 }}
+              width={SCREEN_WIDTH}
+              height={240}
+              borderRadius={0}
             />
-            <SkeletonPlaceholder
-              width={CONTENT_WIDTH * 0.6}
-              height={28}
-              style={{ marginBottom: 24 }}
-            />
+            {/* Title overlay card at bottom of hero */}
+            <View className="absolute bottom-0 left-0 right-0 p-sm">
+              <View className="bg-card/90 p-3 rounded-xl border-2 border-border">
+                <SkeletonPlaceholder
+                  width={CONTENT_WIDTH * 0.7}
+                  height={22}
+                  borderRadius={4}
+                  style={{ marginBottom: 10 }}
+                />
+                <View className="flex-row gap-2">
+                  <SkeletonPlaceholder width={70} height={26} borderRadius={999} />
+                  <SkeletonPlaceholder width={85} height={26} borderRadius={999} />
+                  <SkeletonPlaceholder width={75} height={26} borderRadius={999} />
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Tabs placeholder (matches TabsGroup 32px rounded-full) */}
+          <View className="px-sm py-4">
             <SkeletonPlaceholder
               width={CONTENT_WIDTH}
-              height={200}
-              borderRadius={16}
-              style={{ marginBottom: 16 }}
+              height={32}
+              borderRadius={999}
             />
+          </View>
+
+          {/* Overview tab content skeleton */}
+          <View>
+            {/* Synopsis text lines */}
+            <View className="px-5 mb-6">
+              <SkeletonPlaceholder
+                width={CONTENT_WIDTH}
+                height={14}
+                borderRadius={4}
+                style={{ marginBottom: 10 }}
+              />
+              <SkeletonPlaceholder
+                width={CONTENT_WIDTH}
+                height={14}
+                borderRadius={4}
+                style={{ marginBottom: 10 }}
+              />
+              <SkeletonPlaceholder
+                width={CONTENT_WIDTH * 0.9}
+                height={14}
+                borderRadius={4}
+                style={{ marginBottom: 10 }}
+              />
+              <SkeletonPlaceholder
+                width={CONTENT_WIDTH * 0.6}
+                height={14}
+                borderRadius={4}
+              />
+            </View>
+
+            {/* Stats grid (2 cards side by side) */}
+            <View className="flex-row w-full gap-3 mb-6 px-5">
+              <View className="flex-1">
+                <SkeletonPlaceholder
+                  width="100%"
+                  height={110}
+                  borderRadius={8}
+                />
+              </View>
+              <View className="flex-1">
+                <SkeletonPlaceholder
+                  width="100%"
+                  height={110}
+                  borderRadius={8}
+                />
+              </View>
+            </View>
+
+            {/* Watch providers section */}
+            <View className="mb-6 px-5">
+              <SkeletonPlaceholder
+                width={160}
+                height={18}
+                borderRadius={4}
+                style={{ marginBottom: 12 }}
+              />
+              <View className="flex-row gap-3">
+                {[0, 1, 2, 3].map((i) => (
+                  <SkeletonPlaceholder
+                    key={`provider-${i}`}
+                    width={56}
+                    height={56}
+                    borderRadius={999}
+                  />
+                ))}
+              </View>
+            </View>
+
+            {/* Media gallery section */}
+            <View className="mb-4 px-5">
+              <SkeletonPlaceholder
+                width={120}
+                height={18}
+                borderRadius={4}
+                style={{ marginBottom: 12 }}
+              />
+              <SkeletonPlaceholder
+                width={CONTENT_WIDTH}
+                height={180}
+                borderRadius={16}
+              />
+            </View>
+
+            {/* Recommendations carousel */}
+            <View className="py-4">
+              <SkeletonPlaceholder
+                width={180}
+                height={18}
+                borderRadius={4}
+                style={{ marginBottom: 12, marginLeft: 20 }}
+              />
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
+              >
+                {[0, 1, 2, 3].map((i) => (
+                  <SkeletonPlaceholder
+                    key={`rec-${i}`}
+                    width={120}
+                    height={180}
+                    borderRadius={16}
+                  />
+                ))}
+              </ScrollView>
+            </View>
           </View>
         </ScrollView>
       </View>

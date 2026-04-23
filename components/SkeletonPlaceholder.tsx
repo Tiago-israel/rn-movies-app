@@ -1,9 +1,18 @@
 import { useEffect, useRef } from "react";
-import { View, Animated, StyleSheet, ViewStyle } from "react-native";
+import {
+  Animated,
+  Dimensions,
+  DimensionValue,
+  StyleSheet,
+  ViewStyle,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 type SkeletonPlaceholderProps = {
-  width: number | string;
-  height: number | string;
+  width: DimensionValue;
+  height: DimensionValue;
   borderRadius?: number;
   style?: ViewStyle;
 };
@@ -14,26 +23,19 @@ export function SkeletonPlaceholder({
   borderRadius = 8,
   style,
 }: SkeletonPlaceholderProps) {
-  const opacity = useRef(new Animated.Value(0.3)).current;
+  const shimmerTranslate = useRef(new Animated.Value(-SCREEN_WIDTH)).current;
 
   useEffect(() => {
     const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(opacity, {
-          toValue: 0.7,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 0.3,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ])
+      Animated.timing(shimmerTranslate, {
+        toValue: SCREEN_WIDTH,
+        duration: 1200,
+        useNativeDriver: true,
+      })
     );
     animation.start();
     return () => animation.stop();
-  }, [opacity]);
+  }, [shimmerTranslate]);
 
   return (
     <Animated.View
@@ -43,11 +45,31 @@ export function SkeletonPlaceholder({
           width,
           height,
           borderRadius,
-          opacity,
+          overflow: "hidden",
         },
         style,
       ]}
-    />
+    >
+      <Animated.View
+        style={[
+          StyleSheet.absoluteFill,
+          { transform: [{ translateX: shimmerTranslate }] },
+        ]}
+      >
+        <LinearGradient
+          colors={[
+            "transparent",
+            "rgba(255,255,255,0.06)",
+            "rgba(255,255,255,0.1)",
+            "rgba(255,255,255,0.06)",
+            "transparent",
+          ]}
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
+          style={StyleSheet.absoluteFill}
+        />
+      </Animated.View>
+    </Animated.View>
   );
 }
 
