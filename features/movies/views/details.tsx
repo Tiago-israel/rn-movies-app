@@ -138,15 +138,23 @@ export function MovieDetails(props: MovieDetailsProps) {
     });
   }, []);
 
+  const resetToFirstTab = useCallback(() => {
+    setSelectedTab(0);
+    fadeAnim.setValue(1);
+    slideAnim.setValue(0);
+  }, [fadeAnim, slideAnim]);
+
   useFocusEffect(
     useCallback(() => {
+      resetToFirstTab();
       scrollToTop();
-    }, [scrollToTop])
+    }, [resetToFirstTab, scrollToTop])
   );
 
   useEffect(() => {
+    resetToFirstTab();
     scrollToTop();
-  }, [props.movieId, scrollToTop]);
+  }, [props.movieId, resetToFirstTab, scrollToTop]);
 
   useEffect(() => {
     if (!isLoading) scrollToTop();

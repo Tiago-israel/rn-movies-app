@@ -305,16 +305,24 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
     });
   }, []);
 
+  const resetToFirstTab = useCallback(() => {
+    setSelectedTab(0);
+    fadeAnim.setValue(1);
+    slideAnim.setValue(0);
+  }, [fadeAnim, slideAnim]);
+
   useFocusEffect(
     useCallback(() => {
+      resetToFirstTab();
       scrollToTop();
-    }, [scrollToTop]),
+    }, [resetToFirstTab, scrollToTop]),
   );
 
   useEffect(() => {
     setSelectedSeason(1);
+    resetToFirstTab();
     scrollToTop();
-  }, [props.seriesId, scrollToTop]);
+  }, [props.seriesId, resetToFirstTab, scrollToTop]);
 
   useEffect(() => {
     if (!isLoading) scrollToTop();
