@@ -1,5 +1,6 @@
 import { memo, useCallback } from "react";
 import { Pressable, ScrollView, View } from "react-native";
+import { haptics } from "@/lib/haptics";
 import type { Genre } from "../interfaces";
 import { Text } from "./text";
 
@@ -18,7 +19,10 @@ export const HomeGenreChips = memo(function HomeGenreChips({
         key={g.id}
         accessibilityRole="button"
         accessibilityLabel={g.name}
-        onPress={() => onSelectGenre(g)}
+        onPress={() => {
+          haptics.selection();
+          onSelectGenre(g);
+        }}
         style={{ flexShrink: 0 }}
         className="mr-2 px-3 py-1.5 rounded-full border border-border bg-overlay active:opacity-80"
       >

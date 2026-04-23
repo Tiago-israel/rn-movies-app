@@ -1,7 +1,8 @@
-import { useRef, type ReactNode } from "react";
+import { useRef, useCallback, type ReactNode } from "react";
 import { Pressable } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { TapState, TapStateRef } from "@/components";
+import { haptics } from "@/lib/haptics";
 import { useTheme } from "@/lib/theme-provider";
 import { MovieTheme } from "../theme";
 
@@ -14,28 +15,41 @@ export type IconButtonProps = {
   accessibilityLabel?: string;
 };
 
-export function IconButton(props: IconButtonProps) {
+export function IconButton({
+  icon,
+  onPress: onPressProp,
+  color,
+  children,
+  testID,
+  accessibilityLabel,
+}: IconButtonProps) {
   const TapStateRef = useRef<TapStateRef>(null);
   const { colors } = useTheme<MovieTheme>();
+  const onPress = useCallback(() => {
+    if (onPressProp) {
+      haptics.light();
+      void onPressProp();
+    }
+  }, [onPressProp]);
   return (
     <Pressable
-      testID={props.testID}
-      accessibilityLabel={props.accessibilityLabel}
+      testID={testID}
+      accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       className={`w-12 h-12 items-center justify-center rounded-full bg-secondary ${
-        props.children ? "overflow-visible" : "overflow-hidden"
+        children ? "overflow-visible" : "overflow-hidden"
       }`}
-      onPress={props.onPress}
+      onPress={onPress}
       onPressIn={() => TapStateRef.current?.setPressed(true)}
       onPressOut={() => TapStateRef.current?.setPressed(false)}
     >
       <TapState ref={TapStateRef} variant="dark" />
-      {props.children ? (
-        props.children
+      {children ? (
+        children
       ) : (
         <Icon
-          name={props.icon}
-          color={props.color ?? colors["icon-button"]["on-container"]}
+          name={icon}
+          color={color ?? colors["icon-button"]["on-container"]}
           size={24}
         />
       )}

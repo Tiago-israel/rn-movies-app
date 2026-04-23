@@ -9,7 +9,7 @@ import {
   Dimensions,
   ScrollView,
 } from "react-native";
-import * as Haptics from "expo-haptics";
+import { haptics } from "@/lib/haptics";
 import { IconButton } from "./Icon-button";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -40,7 +40,7 @@ export const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   const opacity = useAnimatedValue(0);
 
   const open = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    haptics.light();
     setIsVisible(true);
     requestAnimationFrame(() => {
       Animated.parallel([
@@ -60,7 +60,7 @@ export const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   }, [translateY, opacity]);
 
   const close = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    haptics.light();
     Animated.parallel([
       Animated.spring(translateY, {
         toValue: SCREEN_HEIGHT,

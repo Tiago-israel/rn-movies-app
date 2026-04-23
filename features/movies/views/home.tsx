@@ -30,6 +30,7 @@ import {
 import { getText } from "../localization";
 import { useUserStore } from "../store";
 import type { ServiceType, Genre, SearchResultItem } from "../interfaces";
+import { haptics } from "@/lib/haptics";
 
 // ── Constants ──────────────────────────────────────────────────────
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -202,7 +203,10 @@ export function HomeView(props: HomeProps) {
           <View className="flex-row items-center" style={{ gap: 4 }}>
             <Pressable
               testID="home-header-watchlist"
-              onPress={props.navigateToWatchlist}
+              onPress={() => {
+                haptics.light();
+                props.navigateToWatchlist();
+              }}
               hitSlop={12}
               accessibilityRole="button"
               accessibilityLabel={getText("home_nav_watchlist_a11y")}
@@ -211,7 +215,10 @@ export function HomeView(props: HomeProps) {
             </Pressable>
             <Pressable
               testID="home-header-favorites"
-              onPress={props.navigateToFavorites}
+              onPress={() => {
+                haptics.light();
+                props.navigateToFavorites();
+              }}
               hitSlop={12}
               accessibilityRole="button"
               accessibilityLabel={getText("home_nav_favorites_a11y")}
@@ -238,7 +245,10 @@ export function HomeView(props: HomeProps) {
         <View className="flex-row items-center" style={{ gap: 4 }}>
           <Pressable
             testID="home-header-watchlist"
-            onPress={props.navigateToWatchlist}
+            onPress={() => {
+              haptics.light();
+              props.navigateToWatchlist();
+            }}
             hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel={getText("home_nav_watchlist_a11y")}
@@ -247,7 +257,10 @@ export function HomeView(props: HomeProps) {
           </Pressable>
           <Pressable
             testID="home-header-favorites"
-            onPress={props.navigateToFavorites}
+            onPress={() => {
+              haptics.light();
+              props.navigateToFavorites();
+            }}
             hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel={getText("home_nav_favorites_a11y")}
@@ -261,7 +274,10 @@ export function HomeView(props: HomeProps) {
       <Pressable
         testID="home-open-search"
         className="mx-sm mb-xs flex-row items-center gap-2 rounded-lg bg-secondary px-xs py-2.5"
-        onPress={props.navigateToSearch}
+        onPress={() => {
+          haptics.light();
+          props.navigateToSearch();
+        }}
         accessibilityRole="search"
         accessibilityLabel="Search movies and series"
       >

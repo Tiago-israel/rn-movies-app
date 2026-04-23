@@ -1,5 +1,6 @@
 import { View, Pressable } from "react-native";
 import { Image } from "expo-image";
+import { haptics } from "@/lib/haptics";
 
 export type ItemPosterProps = {
   width?: number;
@@ -15,16 +16,23 @@ export function ItemPoster({
   height = 200,
   borderRadius = "lg",
   recyclingKey,
+  onPress,
   ...props
 }: ItemPosterProps) {
   const radiusClass = borderRadius === "none" ? "" : "rounded-lg";
-  const Component = props.onPress ? Pressable : View;
+  const Component = onPress ? Pressable : View;
+  const handlePress = onPress
+    ? () => {
+        haptics.light();
+        void onPress();
+      }
+    : undefined;
 
   return (
     <Component
       className={`overflow-hidden ${radiusClass}`}
       style={{ width, height }}
-      onPress={props.onPress}
+      onPress={handlePress}
     >
       {props.posterUrl ? (
         <Image

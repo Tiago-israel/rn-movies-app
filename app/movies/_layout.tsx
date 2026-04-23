@@ -1,9 +1,25 @@
 import { useMemo } from "react";
 import { Tabs } from "expo-router";
+import type { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
+import { PlatformPressable } from "@react-navigation/elements";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { Layout, useUserStore } from "@/features/movies";
+import { haptics } from "@/lib/haptics";
 
 const TAB_ICON = 24;
+
+function HapticTabBarButton(props: BottomTabBarButtonProps) {
+  const { onPress, ...rest } = props;
+  return (
+    <PlatformPressable
+      {...rest}
+      onPress={(e) => {
+        haptics.selection();
+        onPress?.(e);
+      }}
+    />
+  );
+}
 
 export default function MoviesLayout() {
   const theme = useUserStore((state) => state.theme);
@@ -31,7 +47,10 @@ export default function MoviesLayout() {
   return (
     <Tabs
       initialRouteName="index"
-      screenOptions={{ headerShown: false }}
+      screenOptions={{
+        headerShown: false,
+        tabBarButton: (props) => <HapticTabBarButton {...props} />,
+      }}
       backBehavior="history"
       layout={(props) => {
         return <Layout>{props.children}</Layout>;

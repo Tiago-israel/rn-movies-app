@@ -1,5 +1,6 @@
 import { Pressable, View } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
+import { haptics } from "@/lib/haptics";
 import { useTheme } from "@/lib/theme-provider";
 import { MovieTheme } from "../theme";
 
@@ -12,7 +13,10 @@ export function WatchlistFAB({ onPress }: WatchlistFABProps) {
   return (
     <View className="absolute bottom-6 right-sm z-50">
       <Pressable
-        onPress={onPress}
+        onPress={() => {
+          haptics.light();
+          onPress();
+        }}
         className="w-14 h-14 rounded-full bg-foreground items-center justify-center"
         style={{
           shadowColor: "#000",

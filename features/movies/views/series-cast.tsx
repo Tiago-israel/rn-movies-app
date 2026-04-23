@@ -10,6 +10,7 @@ import { type ListRenderItemInfo } from "@shopify/flash-list";
 import { NavBar, Text } from "../components";
 import { useSeriesCast } from "../controllers";
 import { Image, List, SkeletonPlaceholder } from "@/components";
+import { haptics } from "@/lib/haptics";
 import { getText } from "../localization";
 
 export type SeriesCastProps = {
@@ -29,7 +30,10 @@ export function SeriesCastView(props: SeriesCastProps) {
       <Pressable
         style={{ width: columnWidth, height: 200, marginBottom: 8 }}
         className="flex-col justify-end rounded-md overflow-hidden"
-        onPress={() => props.goToPerson?.(item.id)}
+        onPress={() => {
+          haptics.light();
+          props.goToPerson?.(item.id);
+        }}
       >
         <Image
           source={{ uri: item.profilePath }}

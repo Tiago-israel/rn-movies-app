@@ -11,7 +11,7 @@ import {
   Dimensions,
 } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
-import * as Haptics from "expo-haptics";
+import { haptics } from "@/lib/haptics";
 import { Image, StarRating, SkeletonPlaceholder } from "@/components";
 import {
   NavBar,
@@ -65,7 +65,7 @@ function WatchProviderItem({ item, index }: WatchProviderItemProps) {
   return (
     <Pressable
       onPress={() => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        haptics.medium();
         Linking.openURL(item.link);
       }}
     >
@@ -123,7 +123,7 @@ export function MovieDetails(props: MovieDetailsProps) {
 
   const onToggleWatchlist = useCallback(() => {
     if (!movie?.id) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.medium();
     if (inWatchlist) {
       removeFromWatchlist(movie.id, "movie");
     } else {
@@ -162,7 +162,7 @@ export function MovieDetails(props: MovieDetailsProps) {
 
   const animateTabChange = useCallback(
     (newIndex: number) => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      haptics.light();
       console.log("animateTabChange", newIndex);
       // Fade out, slide, then fade in
       Animated.sequence([
@@ -509,7 +509,7 @@ export function MovieDetails(props: MovieDetailsProps) {
           {
             name: "share-variant",
             onPress() {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              haptics.light();
               props.onShareMovie(movie?.videoUrl);
             },
           },

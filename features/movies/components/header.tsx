@@ -1,5 +1,6 @@
 import { View, Pressable, Text } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
+import { haptics } from "@/lib/haptics";
 
 export type HeaderProps = {
   title?: string;
@@ -19,7 +20,10 @@ export function Header(props: HeaderProps) {
         {props.onMenuPress ? (
           <Pressable
             hitSlop={40}
-            onPress={props.onMenuPress}
+            onPress={() => {
+              haptics.light();
+              props.onMenuPress?.();
+            }}
             accessibilityRole="button"
             accessibilityLabel="Menu"
           >
@@ -42,7 +46,10 @@ export function Header(props: HeaderProps) {
         {props.onSearchPress ? (
           <Pressable
             hitSlop={40}
-            onPress={props.onSearchPress}
+            onPress={() => {
+              haptics.light();
+              props.onSearchPress?.();
+            }}
             accessibilityRole="button"
             accessibilityLabel="Search"
           >

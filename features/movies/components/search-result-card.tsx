@@ -2,6 +2,7 @@ import { memo, useCallback, useMemo } from "react";
 import { View, Text, Pressable } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import type { SearchResultItem } from "../interfaces";
+import { haptics } from "@/lib/haptics";
 import { getText } from "../localization";
 import { ItemPoster } from "./item-poster";
 
@@ -43,6 +44,7 @@ export const SearchResultCard = memo(function SearchResultCard({
     onAddToWatchlistItem;
 
   const handlePress = useCallback(() => {
+    haptics.light();
     onItemPress?.(item);
   }, [onItemPress, item]);
 

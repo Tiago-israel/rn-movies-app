@@ -1,6 +1,6 @@
 import { useMemo, useCallback } from "react";
 import { KeyboardAvoidingView, Platform, View } from "react-native";
-import * as Haptics from "expo-haptics";
+import { haptics } from "@/lib/haptics";
 import {
   NavBar,
   SearchField,
@@ -67,11 +67,11 @@ export function SearchView(props: SearchViewProps) {
       if (!row) return;
       const key = watchlistEntryKey(row);
       if (watchlistKeys.has(key)) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        haptics.warning();
         return;
       }
       addToWatchlist(row);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      haptics.success();
     },
     [addToWatchlist, watchlistKeys]
   );

@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { useTheme } from "@/lib/theme-provider";
+import { haptics } from "@/lib/haptics";
 import { type ListRenderItemInfo } from "@shopify/flash-list";
 import { List, SkeletonPlaceholder } from "@/components";
 import {
@@ -61,7 +62,10 @@ const PosterCard = memo(function PosterCard({
 }) {
   return (
     <Pressable
-      onPress={onPress}
+      onPress={() => {
+        haptics.light();
+        onPress();
+      }}
       style={({ pressed }) => [
         styles.posterCard,
         {
@@ -105,7 +109,13 @@ function ActiveFilterChip({
       >
         {label}
       </Text>
-      <Pressable onPress={onRemove} hitSlop={6}>
+      <Pressable
+        onPress={() => {
+          haptics.selection();
+          onRemove();
+        }}
+        hitSlop={6}
+      >
         <Icon name="close-circle" size={16} color={accentColor} />
       </Pressable>
     </View>
@@ -499,7 +509,10 @@ export function ViewMoreView(props: ViewMoreProps) {
         pointerEvents="box-none"
       >
         <Pressable
-          onPress={scrollToTop}
+          onPress={() => {
+            haptics.medium();
+            scrollToTop();
+          }}
           style={styles.fabPressable}
           accessibilityLabel="Voltar ao topo"
           accessibilityRole="button"

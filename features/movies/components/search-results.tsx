@@ -11,6 +11,7 @@ import { List } from "@/components";
 import type { ListRenderItemInfo } from "@shopify/flash-list";
 import type { SearchResultItem } from "../interfaces";
 import type { MediaFilterKind, SearchStatus } from "../controllers/use-search-movies";
+import { haptics } from "@/lib/haptics";
 import { getText } from "../localization";
 import { SearchResultCard } from "./search-result-card";
 import { SearchFilterChips } from "./search-filter-chips";
@@ -156,7 +157,10 @@ export const SearchResults = memo(function SearchResults({
               return (
                 <Pressable
                   key={m}
-                  onPress={() => onMediaFilterChange(m)}
+                  onPress={() => {
+                    haptics.selection();
+                    onMediaFilterChange(m);
+                  }}
                   className="px-3 py-1.5 rounded-full border"
                   style={{
                     borderColor: selected
@@ -225,7 +229,10 @@ export const SearchResults = memo(function SearchResults({
           </Text>
           <Pressable
             testID="search-error-retry"
-            onPress={onRetry}
+            onPress={() => {
+              haptics.light();
+              onRetry();
+            }}
             className="px-4 py-2 rounded-lg bg-secondary"
           >
             <Text className="text-secondary-foreground font-medium">

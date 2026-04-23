@@ -1,4 +1,5 @@
 import { View, Text, Pressable } from "react-native";
+import { haptics } from "@/lib/haptics";
 import { useTheme } from "@/lib/theme-provider";
 import { MovieTheme } from "../theme";
 
@@ -35,7 +36,10 @@ export function SearchFilterChips({
           return (
             <Pressable
               key={opt.id}
-              onPress={() => onToggle(opt.id)}
+              onPress={() => {
+                haptics.selection();
+                onToggle(opt.id);
+              }}
               className="px-sm py-1.5 rounded-full border"
               style={{
                 borderColor: selected

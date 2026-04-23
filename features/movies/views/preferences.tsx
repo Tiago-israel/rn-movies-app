@@ -2,6 +2,7 @@ import * as Updates from "expo-updates";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { View, Text, Pressable, ScrollView } from "react-native";
 import { List, Toggle } from "@/components";
+import { haptics } from "@/lib/haptics";
 import { useUserStore } from "../store";
 import { NavBar } from "../components";
 
@@ -34,7 +35,10 @@ export function PreferencesView(props: PreferencesProps) {
           <View className="gap-xs flex-row">
             <Pressable
               className="p-xxs border-2 border-border rounded-sm"
-              onPress={() => setTheme("light")}
+              onPress={() => {
+                haptics.selection();
+                setTheme("light");
+              }}
             >
               <Icon
                 name="white-balance-sunny"
@@ -44,7 +48,10 @@ export function PreferencesView(props: PreferencesProps) {
             </Pressable>
             <Pressable
               className="p-xxs border-2 border-border rounded-sm"
-              onPress={() => setTheme("dark")}
+              onPress={() => {
+                haptics.selection();
+                setTheme("dark");
+              }}
             >
               <Icon
                 name="moon-waxing-crescent"
@@ -73,6 +80,7 @@ export function PreferencesView(props: PreferencesProps) {
               <Pressable
                 className="w-full h-12 flex-row items-center justify-between"
                 onPress={() => {
+                  haptics.selection();
                   setLanguage(item.id as "en" | "pt-BR");
                   Updates.reloadAsync();
                 }}

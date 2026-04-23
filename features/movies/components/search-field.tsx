@@ -5,6 +5,7 @@ import {
   type TextInputProps,
 } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
+import { haptics } from "@/lib/haptics";
 
 export type SearchFieldProps = Omit<
   TextInputProps,
@@ -23,6 +24,7 @@ export function SearchField({
   ...props
 }: SearchFieldProps) {
   function clearText() {
+    haptics.light();
     onChangeText("");
     onClear?.();
   }

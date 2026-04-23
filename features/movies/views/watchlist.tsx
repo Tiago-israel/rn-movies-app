@@ -5,6 +5,7 @@ import { List } from "@/components";
 import { useWatchlist } from "../controllers";
 import { getText } from "../localization";
 import type { WatchlistMediaType } from "../interfaces";
+import { haptics } from "@/lib/haptics";
 import { NavBar, TabsGroup, WatchlistRowItem, WatchlistFAB } from "../components";
 
 export type WatchlistViewProps = {
@@ -54,7 +55,10 @@ function EmptyTab({ tab, onSearch }: EmptyTabProps) {
       </Text>
       <Pressable
         testID="watchlist-empty-search-cta"
-        onPress={onSearch}
+        onPress={() => {
+          haptics.light();
+          onSearch();
+        }}
         className="mt-5 rounded-xl bg-foreground px-5 py-3 flex-row items-center"
         style={{ gap: 8 }}
       >
@@ -122,7 +126,10 @@ export function WatchlistView({
         />
       </View>
       <Pressable
-        onPress={cycleSortOrder}
+        onPress={() => {
+          haptics.selection();
+          cycleSortOrder();
+        }}
         className="flex-row items-center justify-end px-sm pb-2"
         hitSlop={8}
       >

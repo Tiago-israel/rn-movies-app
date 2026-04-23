@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
+import { haptics } from "@/lib/haptics";
 import { Text } from "./text";
 import { ItemPoster } from "./item-poster";
 import type { FavoriteGroup } from "../store/user";
@@ -41,7 +42,10 @@ export function GroupListItem({
       {/* Group header */}
       <Pressable
         style={styles.header}
-        onPress={onToggle}
+        onPress={() => {
+          haptics.selection();
+          onToggle();
+        }}
         accessibilityRole="button"
         accessibilityLabel={`${group.name}, ${items.length} items`}
       >
@@ -70,6 +74,7 @@ export function GroupListItem({
             <Pressable
               onPress={(e) => {
                 e.stopPropagation?.();
+                haptics.light();
                 setConfirmDelete(true);
               }}
               hitSlop={8}
@@ -82,6 +87,7 @@ export function GroupListItem({
               <Pressable
                 onPress={(e) => {
                   e.stopPropagation?.();
+                  haptics.warning();
                   onDelete();
                   setConfirmDelete(false);
                 }}
@@ -92,6 +98,7 @@ export function GroupListItem({
               <Pressable
                 onPress={(e) => {
                   e.stopPropagation?.();
+                  haptics.light();
                   setConfirmDelete(false);
                 }}
                 hitSlop={8}
@@ -118,7 +125,10 @@ export function GroupListItem({
               <Pressable
                 key={item.rankingKey}
                 style={styles.itemRow}
-                onPress={() => onPressItem(item.id, item.mediaType)}
+                onPress={() => {
+                  haptics.light();
+                  onPressItem(item.id, item.mediaType);
+                }}
               >
                 <ItemPoster
                   width={40}
@@ -142,7 +152,10 @@ export function GroupListItem({
                   </Text>
                 </View>
                 <Pressable
-                  onPress={() => onRemoveItem(item.rankingKey)}
+                  onPress={() => {
+                    haptics.selection();
+                    onRemoveItem(item.rankingKey);
+                  }}
                   hitSlop={8}
                   accessibilityLabel={`Remove ${item.title} from group`}
                 >

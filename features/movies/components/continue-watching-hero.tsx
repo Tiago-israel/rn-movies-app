@@ -1,5 +1,6 @@
 import { Pressable, Text, View } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
+import { haptics } from "@/lib/haptics";
 import { AnimatedHero } from "./animated-hero";
 import { ProgressBar } from "./progress-bar";
 import type { WatchlistItem } from "../interfaces";
@@ -71,7 +72,10 @@ export function ContinueWatchingHero({
           style={{ gap: 10 }}
         >
           <Pressable
-            onPress={onResume}
+            onPress={() => {
+              haptics.light();
+              onResume();
+            }}
             className="flex-1 h-11 rounded-lg bg-foreground items-center justify-center flex-row"
             style={{ gap: 6 }}
           >
@@ -80,7 +84,10 @@ export function ContinueWatchingHero({
           </Pressable>
 
           <Pressable
-            onPress={onMarkWatched}
+            onPress={() => {
+              haptics.light();
+              onMarkWatched();
+            }}
             className="flex-1 h-11 rounded-lg bg-secondary border border-border items-center justify-center flex-row"
             style={{ gap: 6 }}
           >

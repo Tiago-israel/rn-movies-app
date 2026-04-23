@@ -10,6 +10,7 @@ import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import type { ListRenderItemInfo } from "@shopify/flash-list";
 import { List } from "@/components";
+import { haptics } from "@/lib/haptics";
 import type { GenericItem } from "../interfaces";
 
 type HeroCarouselProps = {
@@ -43,7 +44,10 @@ export function HeroCarousel({ data, onPressItem }: HeroCarouselProps) {
 
       return (
         <Pressable
-          onPress={() => onPressItem(item.id)}
+          onPress={() => {
+            haptics.light();
+            onPressItem(item.id);
+          }}
           style={{ width }}
           className="overflow-hidden"
           accessibilityRole="button"
@@ -65,6 +69,7 @@ export function HeroCarousel({ data, onPressItem }: HeroCarouselProps) {
 
   const handleBulletPress = useCallback(
     (index: number) => {
+      haptics.selection();
       listRef.current?.scrollToOffset({
         offset: index * width,
         animated: true,

@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import Icon from "@expo/vector-icons/Ionicons";
 import { Image, List, SkeletonPlaceholder } from "@/components";
+import { haptics } from "@/lib/haptics";
 import {
   IconButton,
   NavBar,
@@ -185,7 +186,10 @@ export function PersonDetailsView(props: PersonDetailsViewProps) {
                 renderItem={({ item }) => (
                   <Pressable
                     className="w-[120] h-[200]"
-                    onPress={() => props.goToMovie?.(item.id)}
+                    onPress={() => {
+                      haptics.light();
+                      props.goToMovie?.(item.id);
+                    }}
                   >
                     <Image
                       source={{ uri: item.backdropPath }}

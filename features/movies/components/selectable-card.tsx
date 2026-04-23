@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Animated, Pressable, useAnimatedValue } from "react-native";
+import { haptics } from "@/lib/haptics";
 import { useTheme } from "@/lib/theme-provider";
 import { MovieTheme } from "../theme";
 
@@ -31,6 +32,7 @@ function useSelectableCard(props: SelectableCardProps) {
   }
 
   function onPress() {
+    haptics.selection();
     setChecked(!checked);
     animateBorderColor(!checked);
     props.onPress?.();

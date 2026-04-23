@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { View, Pressable } from "react-native";
 import { TapState, type TapStateRef } from "@/components";
+import { haptics } from "@/lib/haptics";
 import { Text } from "./text";
 import { getText } from "../localization";
 import { IconButton } from "./Icon-button";
@@ -36,7 +37,10 @@ export function MoreOptionsCarousel({
       onPressOut={() => {
         ref.current?.setPressed(false);
       }}
-      onPress={props.onPress}
+      onPress={() => {
+        haptics.light();
+        void props.onPress();
+      }}
     >
       <TapState ref={ref} variant="light" />
       <IconButton icon="plus" />

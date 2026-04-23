@@ -10,6 +10,7 @@ import { type ListRenderItemInfo } from "@shopify/flash-list";
 import { NavBar, Text } from "../components";
 import { useMovieCast } from "../controllers";
 import { Image, List, SkeletonPlaceholder } from "@/components";
+import { haptics } from "@/lib/haptics";
 import { getText } from "../localization";
 
 export type CastProps = {
@@ -29,7 +30,10 @@ export function CastView(props: CastProps) {
       <Pressable
         style={{ height: 200 }}
         className="w-full mb-2 flex-col justify-end rounded-md overflow-hidden"
-        onPress={() => props.goToPerson?.(item.id)}
+        onPress={() => {
+          haptics.light();
+          props.goToPerson?.(item.id);
+        }}
       >
         <Image
           source={{ uri: item.profilePath }}

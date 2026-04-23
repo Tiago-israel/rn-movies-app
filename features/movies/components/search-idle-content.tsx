@@ -8,6 +8,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import type { SearchResultItem } from "../interfaces";
+import { haptics } from "@/lib/haptics";
 import { getText } from "../localization";
 import { SearchResultCard } from "./search-result-card";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
@@ -123,14 +124,23 @@ export const SearchIdleContent = memo(function SearchIdleContent({
                 key={q}
                 className="flex-row items-center bg-secondary rounded-full pl-3 pr-1 py-1.5"
               >
-                <Pressable onPress={() => onSelectRecent(q)} hitSlop={8}>
+                <Pressable
+                  onPress={() => {
+                    haptics.light();
+                    onSelectRecent(q);
+                  }}
+                  hitSlop={8}
+                >
                   <Text className="text-sm text-secondary-foreground pr-1">
                     {q}
                   </Text>
                 </Pressable>
                 <Pressable
                   accessibilityLabel="Remove"
-                  onPress={() => onRemoveRecent(q)}
+                  onPress={() => {
+                    haptics.selection();
+                    onRemoveRecent(q);
+                  }}
                   hitSlop={8}
                 >
                   <Icon name="close" size={18} color="#888" />

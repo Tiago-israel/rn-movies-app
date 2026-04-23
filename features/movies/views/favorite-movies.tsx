@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
-import * as Haptics from "expo-haptics";
+import { haptics } from "@/lib/haptics";
 import DraggableFlatList from "react-native-draggable-flatlist";
 import { useFavoriteMovies } from "../controllers";
 import { getText } from "../localization";
@@ -172,9 +172,12 @@ export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
           }}
           renderItem={({ item, drag, isActive }) => (
             <Pressable
-              onPress={() => props.goToDetails(item.id, item.mediaType)}
+              onPress={() => {
+                haptics.light();
+                props.goToDetails(item.id, item.mediaType);
+              }}
               onLongPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                haptics.medium();
                 drag();
               }}
               disabled={isActive}

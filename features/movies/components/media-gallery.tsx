@@ -11,6 +11,7 @@ import YoutubePlayer from "react-native-youtube-iframe";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { type ListRenderItemInfo } from "@shopify/flash-list";
 import { Image, List } from "@/components";
+import { haptics } from "@/lib/haptics";
 
 export type ImageGalleryProps = {
   images: string[];
@@ -52,6 +53,7 @@ export function MediaGallery(props: ImageGalleryProps) {
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<string>) => {
       function onPress() {
+        haptics.light();
         setSelectedImage(item);
         animateTransition(true);
       }
@@ -78,7 +80,10 @@ export function MediaGallery(props: ImageGalleryProps) {
     >
       <Pressable
         className="w-full h-full items-center justify-center"
-        onPress={() => animateTransition(false)}
+        onPress={() => {
+          haptics.light();
+          animateTransition(false);
+        }}
       >
         <Icon name="play" size={24} color="#fff" />
       </Pressable>

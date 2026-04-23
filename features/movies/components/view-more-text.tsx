@@ -12,6 +12,7 @@ import {
   type ViewProps,
 } from "react-native";
 import { View } from "react-native";
+import { haptics } from "@/lib/haptics";
 import { Text, TextProps } from "./text";
 import { MovieTheme } from "../theme";
 
@@ -35,6 +36,7 @@ export const ViewMoreText = forwardRef(
     const [textShow, setTextShow] = useState(false);
     const [lengthMore, setLengthMore] = useState(false);
     const toggleNumberOfLines = () => {
+      haptics.selection();
       setTextShow((value) => !value);
     };
 

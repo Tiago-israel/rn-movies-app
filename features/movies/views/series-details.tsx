@@ -12,7 +12,7 @@ import {
   Dimensions,
 } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
-import * as Haptics from "expo-haptics";
+import { haptics } from "@/lib/haptics";
 import {
   BottomSheet,
   Image as ExpoImage,
@@ -122,7 +122,7 @@ function WatchProviderItem({ item, index }: WatchProviderItemProps) {
   return (
     <Pressable
       onPress={() => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        haptics.medium();
         Linking.openURL(item.link);
       }}
     >
@@ -262,7 +262,7 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
 
   const onToggleWatchlist = useCallback(() => {
     if (!series?.id) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.medium();
     if (inWatchlist) {
       removeFromWatchlist(series.id, "tv");
     } else {
@@ -334,7 +334,7 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
 
   const animateTabChange = useCallback(
     (newIndex: number) => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      haptics.light();
       Animated.sequence([
         Animated.parallel([
           Animated.timing(fadeAnim, {

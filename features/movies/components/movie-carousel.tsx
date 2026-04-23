@@ -45,7 +45,9 @@ export const MovieCarousel = memo(function MovieCarousel({
             height={itemHeight}
             posterUrl={item.posterPath}
             recyclingKey={String(item.id)}
-            onPress={() => item.id != null && onPressItem(item.id)}
+            onPress={() => {
+              if (item.id != null) void onPressItem(item.id);
+            }}
           />
         </View>
       ))}

@@ -2,7 +2,7 @@ import { memo, useCallback, useRef } from "react";
 import { Pressable, Text, View } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
-import * as Haptics from "expo-haptics";
+import { haptics } from "@/lib/haptics";
 import { Image } from "@/components";
 import { posterUrlFromTmdbPath } from "../helpers/watchlist-storage";
 import { ProgressBar } from "./progress-bar";
@@ -30,13 +30,13 @@ export const WatchlistRowItem = memo(
     const status = STATUS_CONFIG[item.watchStatus];
 
     const handleMarkWatched = useCallback(() => {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      haptics.success();
       swipeRef.current?.close();
       onMarkWatched();
     }, [onMarkWatched]);
 
     const handleRemove = useCallback(() => {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      haptics.warning();
       swipeRef.current?.close();
       onRemove();
     }, [onRemove]);
@@ -92,7 +92,10 @@ export const WatchlistRowItem = memo(
         renderLeftActions={renderLeftActions}
       >
         <Pressable
-          onPress={onPress}
+          onPress={() => {
+            haptics.light();
+            onPress();
+          }}
           className="flex-row items-center bg-background border-b border-border px-sm"
           style={{ paddingVertical: 10 }}
         >

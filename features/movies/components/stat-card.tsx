@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { View, Pressable, Animated, Easing } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
-import * as Haptics from "expo-haptics";
+import { haptics } from "@/lib/haptics";
 import { Text } from "./text";
 
 export type StatCardProps = {
@@ -43,7 +43,7 @@ export function StatCard(props: StatCardProps) {
   }, [props.value, props.animated]);
 
   const handlePress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.medium();
 
     // Scale animation
     Animated.sequence([

@@ -7,6 +7,7 @@ import {
   useAnimatedValue,
   View,
 } from "react-native";
+import { haptics } from "@/lib/haptics";
 import { Text } from "./text";
 
 const TABSGROUP_HEIGHT = 32;
@@ -40,6 +41,7 @@ export const TabItem = forwardRef((props: TabItemProps, ref) => {
         props.onLoad?.(props.index, event.nativeEvent.layout);
       }}
       onPress={() => {
+        haptics.selection();
         props.onPress?.(props.index);
       }}
     >

@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useRef } from "react";
 import { View, Pressable, Animated, Easing, Text } from "react-native";
-import * as Haptics from "expo-haptics";
+import { haptics } from "@/lib/haptics";
 import { ListRenderItemInfo } from "@shopify/flash-list";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { Image, List } from "@/components";
@@ -51,7 +51,7 @@ const CastItem = memo(({ item, index, onPress }: CastItemProps) => {
   }, [index]);
 
   const handlePress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    haptics.light();
 
     // Pulse animation
     Animated.sequence([

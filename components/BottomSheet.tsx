@@ -19,6 +19,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import { haptics } from "@/lib/haptics";
 import { IconButton } from "./IconButton";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -113,7 +114,13 @@ export function BottomSheet({
     >
       <GestureHandlerRootView className="absolute inset-0">
         <View className="absolute inset-0">
-          <Pressable className="absolute inset-0" onPress={animateClose}>
+          <Pressable
+            className="absolute inset-0"
+            onPress={() => {
+              haptics.light();
+              animateClose();
+            }}
+          >
             <Animated.View className="absolute inset-0 bg-black" style={[backdropAnimatedStyle]} />
           </Pressable>
           <Animated.View
