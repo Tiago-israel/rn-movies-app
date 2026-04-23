@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { Pressable, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import * as Haptics from "expo-haptics";
 import DraggableFlatList from "react-native-draggable-flatlist";
@@ -32,6 +33,7 @@ type FavoriteEntry = {
 };
 
 export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
+  const insets = useSafeAreaInsets();
   const {
     drawerRef,
     favoriteMovies,
@@ -168,7 +170,7 @@ export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
             </View>
           </Pressable>
         )}
-        contentContainerStyle={{ paddingBottom: 24 }}
+        contentContainerStyle={{ paddingBottom: 100 + insets.bottom }}
         showsVerticalScrollIndicator={false}
       />
       <Drawer ref={drawerRef} direction="right">
