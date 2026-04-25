@@ -1,5 +1,7 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import {
+  Platform,
   Pressable,
   ScrollView,
   View,
@@ -26,11 +28,27 @@ import {
   useTrendingHome,
   TRENDING_HOME_QUERY_KEY,
   useHomeGenres,
+  useHomeScrollJankTelemetry,
+  HOME_SESSION_ID,
 } from "../controllers";
+import { useHomeScrollPosition } from "@/hooks/use-home-scroll-position";
 import { getText } from "../localization";
 import { useUserStore } from "../store";
 import type { ServiceType, Genre, SearchResultItem } from "../interfaces";
 import { haptics } from "@/lib/haptics";
+import {
+  getHomeFirstContentElapsedMs,
+  markHomeFirstContentAt,
+  startHomeFirstContentTimer,
+} from "../services/home-first-content-timer";
+import {
+  trackHomeDiscoveryCompleted,
+  trackHomeFirstUsefulContent,
+} from "../services/home-performance-telemetry";
+import {
+  isHomeRenderSuccessRateHealthy,
+  recordHomeRenderOutcome,
+} from "../services/home-render-success-rate";
 
 // ── Constants ──────────────────────────────────────────────────────
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -119,6 +137,11 @@ function HomeSkeleton() {
 
 // ── Main component ─────────────────────────────────────────────────
 export function HomeView(props: HomeProps) {
+  const {
+    navigateToMovieDetails,
+    navigateToSeriesDetails,
+    navigateToGenreDiscover,
+  } = props;
   const language = useUserStore((s) => s.language);
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
@@ -141,10 +164,70 @@ export function HomeView(props: HomeProps) {
   } = useTVSeriesHome();
 
   // ── Data: Shared ──
-  const { trendingItems, trendingLoading } = useTrendingHome();
+  const { trendingItems, trendingLoading, trendingError, refetchTrending } =
+    useTrendingHome();
   const { data: movieGenres = [] } = useHomeGenres("movie");
 
-  const isLoading = isMoviesLoading && isSeriesLoading;
+  const { scrollRef, onScroll: onScrollPosition } = useHomeScrollPosition();
+  const { onScroll: onJankScroll } = useHomeScrollJankTelemetry(HOME_SESSION_ID);
+  const onMainScroll = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      onScrollPosition(e);
+      onJankScroll(e);
+    },
+    [onScrollPosition, onJankScroll]
+  );
+
+  const firstContentTrackedRef = useRef(false);
+  const discoveryCompletedRef = useRef(false);
+
+  const hasUsefulContent = useMemo(
+    () =>
+      nowPlayingMovies.length > 0 ||
+      popularMovies.length > 0 ||
+      topRatedMovies.length > 0 ||
+      upcomingMovies.length > 0 ||
+      onTheAir.length > 0 ||
+      popularSeries.length > 0 ||
+      topRatedSeries.length > 0 ||
+      trendingItems.length > 0,
+    [
+      nowPlayingMovies.length,
+      popularMovies.length,
+      topRatedMovies.length,
+      upcomingMovies.length,
+      onTheAir.length,
+      popularSeries.length,
+      topRatedSeries.length,
+      trendingItems.length,
+    ]
+  );
+
+  useEffect(() => {
+    startHomeFirstContentTimer();
+  }, []);
+
+  useEffect(() => {
+    if (!hasUsefulContent || firstContentTrackedRef.current) return;
+    markHomeFirstContentAt();
+    const elapsed = getHomeFirstContentElapsedMs();
+    if (elapsed !== null) {
+      trackHomeFirstUsefulContent({
+        sessionId: HOME_SESSION_ID,
+        timeFromAppOpenMs: elapsed,
+      });
+      firstContentTrackedRef.current = true;
+      recordHomeRenderOutcome(true);
+    }
+  }, [hasUsefulContent]);
+
+  useEffect(() => {
+    if (isMoviesLoading || isSeriesLoading || trendingLoading) return;
+    if (!hasUsefulContent) {
+      recordHomeRenderOutcome(false);
+    }
+    isHomeRenderSuccessRateHealthy();
+  }, [hasUsefulContent, isMoviesLoading, isSeriesLoading, trendingLoading]);
 
   // ── Pull-to-refresh ──
   const onRefresh = useCallback(async () => {
@@ -170,30 +253,53 @@ export function HomeView(props: HomeProps) {
   }, [queryClient, language]);
 
   // ── Navigation callbacks ──
+  const onHeroMoviePress = useCallback(
+    (movieId: number) => {
+      if (!discoveryCompletedRef.current) {
+        discoveryCompletedRef.current = true;
+        trackHomeDiscoveryCompleted({
+          sessionId: HOME_SESSION_ID,
+          timeFromAppOpenMs: getHomeFirstContentElapsedMs() ?? 0,
+          firstCarouselId: "home-hero-now-playing",
+        });
+      }
+      navigateToMovieDetails(movieId);
+    },
+    [navigateToMovieDetails]
+  );
+
   const onTrendingPress = useCallback(
     (item: SearchResultItem) => {
+      if (!discoveryCompletedRef.current) {
+        discoveryCompletedRef.current = true;
+        trackHomeDiscoveryCompleted({
+          sessionId: HOME_SESSION_ID,
+          timeFromAppOpenMs: getHomeFirstContentElapsedMs() ?? 0,
+          firstCarouselId: "home-trending",
+        });
+      }
       if (item.mediaType === "movie") {
-        props.navigateToMovieDetails(item.id);
+        navigateToMovieDetails(item.id);
       } else {
-        props.navigateToSeriesDetails(item.id);
+        navigateToSeriesDetails(item.id);
       }
     },
-    [props.navigateToMovieDetails, props.navigateToSeriesDetails]
+    [navigateToMovieDetails, navigateToSeriesDetails]
   );
 
   const onGenrePress = useCallback(
     (genre: Genre) => {
-      props.navigateToGenreDiscover({
+      navigateToGenreDiscover({
         catalog: "movie",
         genreId: genre.id,
         title: genre.name,
       });
     },
-    [props.navigateToGenreDiscover]
+    [navigateToGenreDiscover]
   );
 
   // ── Loading state ──
-  if (isLoading) {
+  if (isMoviesLoading && isSeriesLoading && trendingLoading) {
     return (
       <View className="flex-1 bg-background" testID="home-root">
         <View className="px-sm pt-xs pb-xxs flex-row items-center justify-between">
@@ -289,6 +395,10 @@ export function HomeView(props: HomeProps) {
 
       {/* ── Scrollable content ── */}
       <ScrollView
+        ref={scrollRef}
+        onScroll={onMainScroll}
+        scrollEventThrottle={16}
+        removeClippedSubviews={Platform.OS === "android"}
         bounces
         nestedScrollEnabled
         refreshControl={
@@ -301,7 +411,7 @@ export function HomeView(props: HomeProps) {
         <AnimatedSection delay={0}>
           <HeroCarousel
             data={nowPlayingMovies}
-            onPressItem={props.navigateToMovieDetails}
+            onPressItem={onHeroMoviePress}
           />
         </AnimatedSection>
 
@@ -313,6 +423,10 @@ export function HomeView(props: HomeProps) {
           <TrendingHomeRow
             items={trendingItems}
             loading={trendingLoading}
+            error={trendingError}
+            onRetry={() => {
+              void refetchTrending();
+            }}
             onSelectItem={onTrendingPress}
           />
         </AnimatedSection>

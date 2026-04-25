@@ -1,50 +1,108 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+- Version change: N/A -> 1.0.0
+- Modified principles:
+  - Placeholder Principle 1 -> I. Mobile UX & Performance First (NON-NEGOTIABLE)
+  - Placeholder Principle 2 -> II. Clear Server State vs Client State Boundaries
+  - Placeholder Principle 3 -> III. Type Safety Across Navigation, Data, and UI
+  - Placeholder Principle 4 -> IV. Risk-Based Testing Gates
+  - Placeholder Principle 5 -> V. Accessibility, Localization, and Failure Resilience by Default
+- Added sections:
+  - Technical Constraints & Standards
+  - Workflow & Quality Gates
+- Removed sections:
+  - None
+- Templates requiring updates:
+  - ✅ .specify/templates/plan-template.md (Constitution Check placeholder already compatible)
+  - ✅ .specify/templates/spec-template.md (mandatory scenarios/requirements already compatible)
+  - ✅ .specify/templates/tasks-template.md (test tasks optional wording compatible)
+  - ⚠ pending .specify/templates/commands/*.md (directory not present in repository)
+- Follow-up TODOs:
+  - None
+-->
+# RN Movies App Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Mobile UX & Performance First (NON-NEGOTIABLE)
+Every feature MUST protect smooth interactions and perceived speed on mobile.
+Changes to list rendering, animations, navigation transitions, and media-heavy
+screens MUST avoid avoidable re-renders and unnecessary work on the JS thread.
+Any change that risks frame drops MUST include a mitigation plan and validation.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Clear Server State vs Client State Boundaries
+Remote data MUST be fetched and managed through React Query in feature services
+and controllers, with consistent loading, error, and empty-state behavior.
+UI-only and device-local state MUST remain in local state or Zustand stores.
+Duplicating the same domain data across independent stores is prohibited unless
+there is a documented synchronization strategy.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Type Safety Across Navigation, Data, and UI
+TypeScript types MUST define API responses, domain models, component contracts,
+and typed routes. Use of `any` is prohibited unless explicitly justified in the
+feature artifacts and constrained to integration boundaries. Runtime transforms
+from API payload to UI-facing models MUST be explicit and type-safe.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Risk-Based Testing Gates
+Unit tests MUST cover non-trivial business logic, parsing/mapping logic, and
+state transitions. E2E coverage with Maestro MUST be added or updated whenever
+critical user journeys are impacted (discovery, details, favorites/watchlist,
+search, and playback-related flows). Features are not complete until relevant
+tests pass for the declared risk level of the change.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Accessibility, Localization, and Failure Resilience by Default
+User-facing text MUST come from localization resources, and new screens MUST
+ship with at least `pt-BR` and `en` parity for introduced copy. Interactive
+elements MUST expose accessible labels/roles where applicable. Network-driven
+screens MUST provide graceful behavior for loading, offline, error, and empty
+states instead of silent failures.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Technical Constraints & Standards
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- Expo and React Native are the source of truth for runtime architecture.
+- Routing MUST use Expo Router conventions with typed routes enabled.
+- HTTP integration MUST live in dedicated service/repository layers rather than
+  direct request calls from view components.
+- Persistent user data (for example watchlist/favorites/history preferences)
+  MUST use established repository/helper abstractions for consistency.
+- Linting MUST pass before merge; unresolved lint violations are not allowed.
+- Platform plugins and native capabilities MUST be introduced through explicit
+  Expo config updates and documented feature rationale.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Workflow & Quality Gates
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+- Every feature starts from `/speckit-specify` with independent, prioritized
+  user stories and measurable acceptance scenarios.
+- `/speckit-plan` MUST include a Constitution Check with explicit evidence for
+  how each applicable principle is satisfied.
+- `/speckit-tasks` MUST map tasks to user stories and include test work when
+  required by risk, requirements, or regression surface.
+- Pull requests MUST include: scope summary, test evidence (`npm run lint`,
+  relevant unit tests, and Maestro runs when journey-critical paths change),
+  and explicit notes on localization and failure-state handling when applicable.
+- Any intentional exception to this constitution MUST be documented in the
+  feature plan and approved during review with a defined follow-up.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution overrides informal development habits for this repository.
+All feature artifacts (`spec.md`, `plan.md`, `tasks.md`) and pull requests MUST
+demonstrate compliance.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+Amendment process:
+- Propose amendment with rationale and impacted principles/sections.
+- Classify version bump using semantic versioning for governance documents.
+- Update dependent templates and guidance artifacts in `.specify/templates/`.
+- Record migration or adoption steps for in-flight work when required.
+
+Versioning policy:
+- MAJOR: Incompatible governance changes or principle removals/redefinitions.
+- MINOR: New principle/section or materially expanded required practices.
+- PATCH: Clarifications, wording improvements, or non-semantic refinements.
+
+Compliance review expectations:
+- Reviewers MUST verify constitution compliance before approving implementation.
+- If non-compliance is intentional, the review MUST capture explicit exception
+  rationale, risk, owner, and follow-up timeline.
+
+**Version**: 1.0.0 | **Ratified**: 2026-04-25 | **Last Amended**: 2026-04-25

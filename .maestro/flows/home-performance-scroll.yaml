@@ -1,0 +1,18 @@
+appId: com.tico77.rnapp
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "home-root"
+    timeout: 90000
+- swipe:
+    from: "50%, 70%"
+    to: "50%, 30%"
+- swipe:
+    from: "50%, 70%"
+    to: "50%, 30%"
+- swipe:
+    from: "50%, 70%"
+    to: "50%, 30%"
+- assertVisible:
+    id: "home-root"
