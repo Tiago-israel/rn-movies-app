@@ -1,5 +1,6 @@
 import { memo, useCallback } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { Pressable, View } from "react-native";
+import { List } from "@/components";
 import { haptics } from "@/lib/haptics";
 import type { Genre } from "../interfaces";
 import { Text } from "./text";
@@ -9,14 +10,17 @@ export type HomeGenreChipsProps = {
   onSelectGenre: (genre: Genre) => void;
 };
 
+const ChipSeparator = memo(function ChipSeparator() {
+  return <View className="w-2" />;
+});
+
 export const HomeGenreChips = memo(function HomeGenreChips({
   genres,
   onSelectGenre,
 }: HomeGenreChipsProps) {
-  const renderChip = useCallback(
-    (g: Genre) => (
+  const renderItem = useCallback(
+    ({ item: g }: { item: Genre }) => (
       <Pressable
-        key={g.id}
         accessibilityRole="button"
         accessibilityLabel={g.name}
         onPress={() => {
@@ -24,7 +28,7 @@ export const HomeGenreChips = memo(function HomeGenreChips({
           onSelectGenre(g);
         }}
         style={{ flexShrink: 0 }}
-        className="mr-2 px-3 py-1.5 rounded-full border border-border bg-overlay active:opacity-80"
+        className="px-3 py-1.5 rounded-full border border-border bg-overlay active:opacity-80"
       >
         <Text color="foreground" fontSize={13} fontWeight={600} numberOfLines={1}>
           {g.name}
@@ -34,15 +38,20 @@ export const HomeGenreChips = memo(function HomeGenreChips({
     [onSelectGenre]
   );
 
+  const keyExtractor = useCallback((g: Genre) => String(g.id), []);
+
   if (!genres.length) return null;
 
   return (
-    <ScrollView
+    <List<Genre>
       horizontal
       showsHorizontalScrollIndicator={false}
+      data={genres}
+      keyExtractor={keyExtractor}
+      renderItem={renderItem}
+      ItemSeparatorComponent={ChipSeparator}
       contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 8 }}
-    >
-      <View className="flex-row">{genres.map(renderChip)}</View>
-    </ScrollView>
+      estimatedItemSize={100}
+    />
   );
 });

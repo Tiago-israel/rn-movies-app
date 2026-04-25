@@ -4,6 +4,7 @@ import {
   View,
   Dimensions,
   RefreshControl,
+  Text,
 } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -20,11 +21,11 @@ import {
   useHomeGenres,
 } from "../controllers";
 import { SkeletonPlaceholder } from "@/components";
-import { ServiceType } from "../interfaces";
 import { getText } from "../localization";
-import type { Genre } from "../interfaces";
-import type { SearchResultItem } from "../interfaces";
+import { ServiceType, type Genre, type SearchResultItem } from "../interfaces";
 import { useUserStore } from "../store";
+import { getHomeStatusA11yLabel, HOME_STATUS_A11Y_ROLE } from "../constants/home-status-a11y";
+import { getHomeStatusMessage } from "../constants/home-status-messages";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTENT_WIDTH = SCREEN_WIDTH - 40;
@@ -49,7 +50,8 @@ export function HomeSeriesView(props: HomeSeriesProps) {
   const { airingToday, onTheAir, popular, topRated, isLoading } =
     useTVSeriesHome();
 
-  const { trendingItems, trendingLoading } = useTrendingHome();
+  const { trendingItems, trendingLoading, trendingError, refetchTrending } =
+    useTrendingHome();
   const { data: homeGenres = [] } = useHomeGenres("tv");
 
   const onRefresh = useCallback(async () => {
@@ -160,8 +162,20 @@ export function HomeSeriesView(props: HomeSeriesProps) {
       <TrendingHomeRow
         items={trendingItems}
         loading={trendingLoading}
+        error={trendingError}
+        onRetry={() => {
+          void refetchTrending();
+        }}
         onSelectItem={onTrendingPress}
       />
+      {!trendingLoading && !trendingItems.length && !trendingError ? (
+        <Text
+          className="px-5 pb-4 text-muted-foreground"
+          accessibilityRole={HOME_STATUS_A11Y_ROLE}
+        >
+          {getHomeStatusA11yLabel("empty")}
+        </Text>
+      ) : null}
       <HomeTitle icon={{ name: "tv", color: "#2980b9" }}>
         {getText("tv_series_home_on_the_air")}
       </HomeTitle>
@@ -195,6 +209,11 @@ export function HomeSeriesView(props: HomeSeriesProps) {
           getText("tv_series_home_top_rated")
         )}
       />
+      {!onTheAir.length && !popular.length && !topRated.length ? (
+        <Text className="px-5 text-muted-foreground pb-10">
+          {getHomeStatusMessage("empty")}
+        </Text>
+      ) : null}
     </ScrollView>
   );
 }

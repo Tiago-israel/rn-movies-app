@@ -1,4 +1,5 @@
 export * from "./use-favorite-movies";
+export * from "./home-block-state-mapper";
 export * from "./use-movie-cast";
 export * from "./use-movie-details";
 export * from "./use-movie-home";

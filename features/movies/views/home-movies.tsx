@@ -4,6 +4,7 @@ import {
   View,
   Dimensions,
   RefreshControl,
+  Text,
 } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -21,10 +22,10 @@ import {
 } from "../components";
 import { SkeletonPlaceholder } from "@/components";
 import { getText } from "../localization";
-import { ServiceType } from "../interfaces";
-import type { Genre } from "../interfaces";
-import type { SearchResultItem } from "../interfaces";
+import { ServiceType, type Genre, type SearchResultItem } from "../interfaces";
 import { useUserStore } from "../store";
+import { getHomeStatusA11yLabel, HOME_STATUS_A11Y_ROLE } from "../constants/home-status-a11y";
+import { getHomeStatusMessage } from "../constants/home-status-messages";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTENT_WIDTH = SCREEN_WIDTH - 40;
@@ -54,7 +55,8 @@ export function HomeMoviesView(props: HomeMoviesProps) {
     isLoading,
   } = useMovieHome();
 
-  const { trendingItems, trendingLoading } = useTrendingHome();
+  const { trendingItems, trendingLoading, trendingError, refetchTrending } =
+    useTrendingHome();
   const { data: homeGenres = [] } = useHomeGenres("movie");
 
   const onRefresh = useCallback(async () => {
@@ -166,8 +168,20 @@ export function HomeMoviesView(props: HomeMoviesProps) {
       <TrendingHomeRow
         items={trendingItems}
         loading={trendingLoading}
+        error={trendingError}
+        onRetry={() => {
+          void refetchTrending();
+        }}
         onSelectItem={onTrendingPress}
       />
+      {!trendingLoading && !trendingItems.length && !trendingError ? (
+        <Text
+          className="px-5 pb-4 text-muted-foreground"
+          accessibilityRole={HOME_STATUS_A11Y_ROLE}
+        >
+          {getHomeStatusA11yLabel("empty")}
+        </Text>
+      ) : null}
       <HomeTitle icon={{ name: "trophy", color: "#f1c40f" }}>
         {getText("movie_home_top_rated")}
       </HomeTitle>
@@ -201,6 +215,11 @@ export function HomeMoviesView(props: HomeMoviesProps) {
           getText("movie_home_upcoming")
         )}
       />
+      {!popularMovies.length && !topRatedMovies.length && !upcomingMovies.length ? (
+        <Text className="px-5 text-muted-foreground pb-10">
+          {getHomeStatusMessage("empty")}
+        </Text>
+      ) : null}
     </ScrollView>
   );
 }

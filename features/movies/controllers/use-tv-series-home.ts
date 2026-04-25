@@ -8,6 +8,15 @@ import {
 } from "../constants/query-stale";
 import { TVSeriesService } from "../services";
 
+const HOME_CACHE_MS = 30 * 60 * 1000;
+
+const homeCache = {
+  gcTime: HOME_CACHE_MS,
+  refetchOnMount: false as const,
+  refetchOnWindowFocus: false as const,
+  placeholderData: <T,>(p: T | undefined) => p,
+};
+
 export function useTVSeriesHome() {
   const tvSeriesService = useRef(new TVSeriesService()).current;
 
@@ -18,6 +27,7 @@ export function useTVSeriesHome() {
   const { data: airingToday = [], isFetching: isAiringTodayFetching } = useQuery({
     queryKey: ["airingToday"],
     staleTime: STALE_NOW_PLAYING_MS,
+    ...homeCache,
     queryFn: async ({ signal }) => {
       const { results = [] } = await tvSeriesService.getAiringToday(1, {
         signal,
@@ -28,9 +38,14 @@ export function useTVSeriesHome() {
 
   const isLoading = isAiringTodayFetching && airingToday.length === 0;
 
-  const { data: onTheAir = [] } = useQuery({
+  const {
+    data: onTheAir = [],
+    isError: isOnTheAirError,
+    refetch: refetchOnTheAir,
+  } = useQuery({
     queryKey: ["onTheAir"],
     staleTime: STALE_CATALOG_MEDIUM_MS,
+    ...homeCache,
     queryFn: async ({ signal }) => {
       const { results = [] } = await tvSeriesService.getOnTheAir(1, {
         signal,
@@ -39,9 +54,14 @@ export function useTVSeriesHome() {
     },
   });
 
-  const { data: popular = [] } = useQuery({
+  const {
+    data: popular = [],
+    isError: isPopularError,
+    refetch: refetchPopular,
+  } = useQuery({
     queryKey: ["popular"],
     staleTime: STALE_CATALOG_DEFAULT_MS,
+    ...homeCache,
     queryFn: async ({ signal }) => {
       const { results = [] } = await tvSeriesService.getPopular(1, {
         signal,
@@ -50,9 +70,14 @@ export function useTVSeriesHome() {
     },
   });
 
-  const { data: topRated = [] } = useQuery({
+  const {
+    data: topRated = [],
+    isError: isTopRatedError,
+    refetch: refetchTopRated,
+  } = useQuery({
     queryKey: ["topRated"],
     staleTime: STALE_CATALOG_SLOW_MS,
+    ...homeCache,
     queryFn: async ({ signal }) => {
       const { results = [] } = await tvSeriesService.getTopRated(1, {
         signal,
@@ -67,5 +92,11 @@ export function useTVSeriesHome() {
     popular,
     topRated,
     isLoading,
+    isOnTheAirError,
+    isPopularError,
+    isTopRatedError,
+    refetchOnTheAir,
+    refetchPopular,
+    refetchTopRated,
   };
 }

@@ -1,50 +1,54 @@
+import { useCallback } from "react";
 import { router } from "expo-router";
 import { HomeView } from "@/features";
 import { ServiceType } from "@/features/movies/interfaces";
 
+/**
+ * Navegacao com callbacks estaveis: limita re-renders do HomeView na volta de detalhes
+ * (cache do React Query + offset de scroll em `useHomeScrollPosition` preserva continuidade).
+ */
 export default function MoviesHome() {
-  function goToMovieDetails(movieId: number) {
+  const goToMovieDetails = useCallback((movieId: number) => {
     router.push(`/movies/${movieId}`);
-  }
+  }, []);
 
-  function goToSeriesDetails(seriesId: number) {
+  const goToSeriesDetails = useCallback((seriesId: number) => {
     router.push(`/movies/series/${seriesId}`);
-  }
+  }, []);
 
-  function goToViewMore(type: ServiceType, title: string) {
-    return function () {
+  const goToViewMore = useCallback((type: ServiceType, title: string) => {
+    return function goToList() {
       router.push({ pathname: `/movies/view-more`, params: { type, title } });
     };
-  }
+  }, []);
 
-  function goToSearch() {
+  const goToSearch = useCallback(() => {
     router.push("/movies/search");
-  }
+  }, []);
 
-  function goToWatchlist() {
+  const goToWatchlist = useCallback(() => {
     router.push("/movies/watchlist");
-  }
+  }, []);
 
-  function goToFavorites() {
+  const goToFavorites = useCallback(() => {
     router.push("/movies/favorites");
-  }
+  }, []);
 
-  function goToGenreDiscover(args: {
-    catalog: "movie" | "tv";
-    genreId: number;
-    title: string;
-  }) {
-    const type: ServiceType =
-      args.catalog === "movie" ? "movies.popular" : "tv.popular";
-    router.push({
-      pathname: "/movies/view-more",
-      params: {
-        type,
-        title: args.title,
-        genreIds: String(args.genreId),
-      },
-    });
-  }
+  const goToGenreDiscover = useCallback(
+    (args: { catalog: "movie" | "tv"; genreId: number; title: string }) => {
+      const type: ServiceType =
+        args.catalog === "movie" ? "movies.popular" : "tv.popular";
+      router.push({
+        pathname: "/movies/view-more",
+        params: {
+          type,
+          title: args.title,
+          genreIds: String(args.genreId),
+        },
+      });
+    },
+    []
+  );
 
   return (
     <HomeView
