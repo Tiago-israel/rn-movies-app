@@ -11,10 +11,12 @@ import {
   Easing,
   Dimensions,
 } from "react-native";
+import { router } from "expo-router";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { haptics } from "@/lib/haptics";
 import {
   BottomSheet,
+  BottomSheetScrollView,
   Image as ExpoImage,
   StarRating,
   SkeletonPlaceholder,
@@ -29,9 +31,8 @@ import {
   StatCard,
   AnimatedHero,
   CastList,
-  Modal,
+  PersonModal,
 } from "../components";
-import type { ModalRef } from "../components";
 import { useSeriesDetails } from "../controllers";
 import {
   watchlistEntryKey,
@@ -65,7 +66,7 @@ const CONTENT_WIDTH = SCREEN_WIDTH - 40;
 const TAB_ITEMS = [
   { title: "Overview", testID: "series-tab-overview" },
   { title: "Episodes", testID: "series-tab-episodes" },
-  { title: "Reviews", testID: "series-tab-reviews" },
+  { title: "Cast", testID: "series-tab-cast" },
 ];
 
 // Scroll options
@@ -147,11 +148,36 @@ type EpisodeItemProps = {
   item: Episode;
   index: number;
   posterFallback?: string;
+  language: "en" | "pt-BR";
+  onPress: (episode: Episode) => void;
 };
 
-function EpisodeItem({ item, index, posterFallback }: EpisodeItemProps) {
+function formatEpisodeAirDate(airDate: string, language: "en" | "pt-BR"): string {
+  if (!airDate) return "";
+  const [yearStr, monthStr, dayStr] = airDate.split("-");
+  const year = Number(yearStr);
+  const month = Number(monthStr);
+  const day = Number(dayStr);
+  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+    return airDate;
+  }
+  const safeDate = new Date(year, month - 1, day);
+  return new Intl.DateTimeFormat(language).format(safeDate);
+}
+
+function EpisodeItem({
+  item,
+  index,
+  posterFallback,
+  language,
+  onPress,
+}: EpisodeItemProps) {
   const slideAnim = useRef(new Animated.Value(30)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
+  const formattedAirDate = useMemo(
+    () => formatEpisodeAirDate(item.airDate, language),
+    [item.airDate, language],
+  );
 
   useEffect(() => {
     const staggerIndex = Math.min(index, 15);
@@ -176,40 +202,42 @@ function EpisodeItem({ item, index, posterFallback }: EpisodeItemProps) {
   }, [index]);
 
   return (
-    <Animated.View
-      className="flex-row rounded-lg overflow-hidden bg-card mx-5 mb-3 min-h-[100px] border border-border"
-      style={{
-        transform: [{ translateY: slideAnim }],
-        opacity: opacityAnim,
-      }}
-    >
-      <View style={EPISODE_IMAGE_CONTAINER_STYLE}>
-        <ExpoImage
-          source={{ uri: item.stillPath || posterFallback }}
-          style={EPISODE_STILL_IMAGE_STYLE}
-          contentFit="cover"
-        />
-      </View>
-      <View className="flex-1 p-xs justify-between min-w-0 gap-2">
-        <Text
-          numberOfLines={2}
-          className="text-foreground text-sm font-bold"
-        >
-          E{item.episodeNumber} · {item.name}
-        </Text>
-        {item.airDate ? (
-          <Text className="text-card-foreground text-xs">{item.airDate}</Text>
-        ) : null}
-        {item.voteAverage > 0 && (
-          <View className="flex-row items-center gap-1">
-            <Icon name="star" size={12} color={ICON_RATING_COLOR} />
-            <Text className="text-card-foreground text-xs">
-              {item.voteAverage.toFixed(1)}
-            </Text>
-          </View>
-        )}
-      </View>
-    </Animated.View>
+    <Pressable onPress={() => onPress(item)}>
+      <Animated.View
+        className="flex-row rounded-lg overflow-hidden bg-card mx-5 mb-3 min-h-[100px] border border-border"
+        style={{
+          transform: [{ translateY: slideAnim }],
+          opacity: opacityAnim,
+        }}
+      >
+        <View style={EPISODE_IMAGE_CONTAINER_STYLE}>
+          <ExpoImage
+            source={{ uri: item.stillPath || posterFallback }}
+            style={EPISODE_STILL_IMAGE_STYLE}
+            contentFit="cover"
+          />
+        </View>
+        <View className="flex-1 p-xs justify-between min-w-0 gap-2">
+          <Text
+            numberOfLines={2}
+            className="text-foreground text-sm font-bold"
+          >
+            E{item.episodeNumber} · {item.name}
+          </Text>
+          {formattedAirDate ? (
+            <Text className="text-card-foreground text-xs">{formattedAirDate}</Text>
+          ) : null}
+          {item.voteAverage > 0 && (
+            <View className="flex-row items-center gap-1">
+              <Icon name="star" size={12} color={ICON_RATING_COLOR} />
+              <Text className="text-card-foreground text-xs">
+                {item.voteAverage.toFixed(1)}
+              </Text>
+            </View>
+          )}
+        </View>
+      </Animated.View>
+    </Pressable>
   );
 }
 
@@ -225,10 +253,11 @@ const episodeKeyExtractor = (item: Episode) => String(item.id);
 
 export function SeriesDetailsView(props: SeriesDetailsProps) {
   const scrollViewRef = useRef<ScrollView>(null);
-  const modalRef = useRef<ModalRef>(null);
+  const [selectedCastId, setSelectedCastId] = useState<number | null>(null);
   const [selectedSeason, setSelectedSeason] = useState(1);
   const [selectedTab, setSelectedTab] = useState(0);
   const [episodesSheetVisible, setEpisodesSheetVisible] = useState(false);
+  const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>(null);
 
   // Tab content animation
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -250,6 +279,28 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
   const watchlistItems = useUserStore((s) => s.watchlistItems);
   const addToWatchlist = useUserStore((s) => s.addToWatchlist);
   const removeFromWatchlist = useUserStore((s) => s.removeFromWatchlist);
+  const language = useUserStore((s) => s.language);
+  const episodeDetailsLabels = useMemo(
+    () =>
+      language === "pt-BR"
+        ? {
+            title: "Detalhes do episódio",
+            season: "Temporada",
+            episode: "Episódio",
+            airDate: "Data",
+            rating: "Nota",
+            descriptionFallback: "Sem descrição disponível para este episódio.",
+          }
+        : {
+            title: "Episode details",
+            season: "Season",
+            episode: "Episode",
+            airDate: "Air date",
+            rating: "Rating",
+            descriptionFallback: "No description available for this episode.",
+          },
+    [language],
+  );
 
   // -----------------------------------------------------------------------
   // Watchlist
@@ -379,6 +430,11 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
 
   const handleOpenEpisodesSheet = useCallback(() => setEpisodesSheetVisible(true), []);
   const handleCloseEpisodesSheet = useCallback(() => setEpisodesSheetVisible(false), []);
+  const handleOpenEpisodeDetails = useCallback((episode: Episode) => {
+    haptics.light();
+    setSelectedEpisode(episode);
+  }, []);
+  const handleCloseEpisodeDetails = useCallback(() => setSelectedEpisode(null), []);
   const handleShareSeries = useCallback(
     () => props.onShareSeries(series?.videoUrl),
     [props.onShareSeries, series?.videoUrl],
@@ -426,9 +482,11 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
         item={item}
         index={index}
         posterFallback={series?.posterPath}
+        language={language}
+        onPress={handleOpenEpisodeDetails}
       />
     ),
-    [series?.posterPath],
+    [series?.posterPath, language, handleOpenEpisodeDetails],
   );
 
   // -----------------------------------------------------------------------
@@ -570,6 +628,7 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
             onClose={handleCloseEpisodesSheet}
             title="Escolher temporada"
             heightRatio={0.6}
+            enableContentDrag
           >
             <List
               showsVerticalScrollIndicator={false}
@@ -589,47 +648,59 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
             showsVerticalScrollIndicator={false}
             renderItem={renderEpisodeItem}
           />
+
+          <BottomSheet
+            visible={selectedEpisode != null}
+            onClose={handleCloseEpisodeDetails}
+            title={episodeDetailsLabels.title}
+            heightRatio={0.75}
+            enableContentDrag
+          >
+            {selectedEpisode ? (
+              <BottomSheetScrollView
+                contentContainerStyle={{ paddingBottom: 40 }}
+              >
+                <ExpoImage
+                  source={{
+                    uri: selectedEpisode.stillPath || series?.posterPath || undefined,
+                  }}
+                  style={{ width: "100%", height: 180, borderRadius: 12, marginBottom: 14 }}
+                  contentFit="cover"
+                />
+                <Text className="text-foreground text-lg font-bold mb-2">
+                  E{selectedEpisode.episodeNumber} · {selectedEpisode.name}
+                </Text>
+                <View className="flex-row flex-wrap gap-2 mb-3">
+                  <Pill>{`${episodeDetailsLabels.season} ${selectedSeason}`}</Pill>
+                  <Pill>{`${episodeDetailsLabels.episode} ${selectedEpisode.episodeNumber}`}</Pill>
+                  {selectedEpisode.airDate ? (
+                    <Pill>
+                      {`${episodeDetailsLabels.airDate} ${formatEpisodeAirDate(selectedEpisode.airDate, language)}`}
+                    </Pill>
+                  ) : null}
+                  {selectedEpisode.voteAverage > 0 ? (
+                    <Pill>{`${episodeDetailsLabels.rating} ${selectedEpisode.voteAverage.toFixed(1)}`}</Pill>
+                  ) : null}
+                </View>
+                <Text className="text-card-foreground text-sm leading-6">
+                  {selectedEpisode.overview?.trim() || episodeDetailsLabels.descriptionFallback}
+                </Text>
+              </BottomSheetScrollView>
+            ) : null}
+          </BottomSheet>
         </>
       )}
     </View>
   );
 
-  const renderReviewsTab = () => (
-    <View>
-      {/* Review Card */}
-      <View className="px-5 mb-6">
-        <Pressable
-          onPress={() => props.onPressReview?.()}
-          className="border-2 border-border rounded-lg p-4 mb-4"
-        >
-          <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-foreground font-bold text-lg">
-              {series?.voteAverageStr}
-            </Text>
-            <StarRating rating={series?.voteAverage} color={ICON_RATING_COLOR} size={18} />
-          </View>
-          <Text className="text-muted-foreground text-sm">
-            Based on {series?.voteCount?.toLocaleString()} reviews
-          </Text>
-          <View className="flex-row items-center mt-3">
-            <Text className="text-foreground text-sm">View all reviews</Text>
-            <Icon name="chevron-right" size={20} color="#666" />
-          </View>
-        </Pressable>
-      </View>
-
-      {/* Cast Section */}
-      <View className="px-5">
-        <Text className="text-foreground font-bold text-lg mb-3">
-          {getText("movie_details_cast_title")}
-        </Text>
-        <CastList
-          cast={cast as any}
-          onPressCast={() => {
-            modalRef.current?.open();
-          }}
-        />
-      </View>
+  const renderCastTab = () => (
+    <View className="px-5">
+      <CastList
+        cast={cast as any}
+        onPressCast={(castId: number) => {
+          setSelectedCastId(castId);
+        }}
+      />
     </View>
   );
 
@@ -640,7 +711,7 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
       case 1:
         return renderEpisodesTab();
       case 2:
-        return renderReviewsTab();
+        return renderCastTab();
       default:
         return renderOverviewTab();
     }
@@ -773,16 +844,18 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
       </ScrollView>
 
       {/* Modal for Cast Details */}
-      <Modal ref={modalRef}>
-        <View className="py-4">
-          <Text className="text-foreground font-bold text-xl mb-4">
-            Cast Member Details
-          </Text>
-          <Text className="text-muted-foreground">
-            Detailed information about the cast member would appear here...
-          </Text>
-        </View>
-      </Modal>
+      <PersonModal
+        personId={selectedCastId}
+        onClose={() => setSelectedCastId(null)}
+        onPressMovie={(movieId) => {
+          setSelectedCastId(null);
+          router.push(`/movies/${movieId}`);
+        }}
+        onPressSeries={(seriesId) => {
+          setSelectedCastId(null);
+          props.onPressRecommendation?.(seriesId);
+        }}
+      />
     </View>
   );
 }

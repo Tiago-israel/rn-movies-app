@@ -14,6 +14,7 @@
     "e2e:android": "node ./scripts/run-maestro.cjs test .maestro/smoke",
     "e2e:android:flows": "node ./scripts/run-maestro.cjs test .maestro/flows",
     "e2e:android:all": "node ./scripts/run-maestro.cjs test .maestro",
+    "apk:local": "cd android && gradlew.bat assembleRelease",
     "postinstall": "patch-package"
   },
   "jest": {

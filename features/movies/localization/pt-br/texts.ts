@@ -58,4 +58,5 @@ export const ptBRTexts = {
   search_add_watchlist_a11y: "Adicionar à lista",
   search_in_watchlist_a11y: "Já na lista",
   favorites_title: "Favoritos",
+  favorites_count: "%{count} favoritos",
 };

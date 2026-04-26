@@ -9,6 +9,7 @@ export * from './movie-review.response';
 export * from './movie-video.response';
 export * from './paginated-result.response';
 export * from './person-movie-credits.response';
+export * from './person-tv-credits.response';
 export * from './person.response';
 export * from './tv-series-list-item.response';
 export * from './tv-series-details.response';

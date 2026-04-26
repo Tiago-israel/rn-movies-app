@@ -29,6 +29,7 @@ export * from './modal';
 export * from './stat-card';
 export * from './animated-hero';
 export * from './cast-list';
+export * from './person-modal';
 export * from './progress-bar';
 export * from './continue-watching-hero';
 export * from './watchlist-row-item';

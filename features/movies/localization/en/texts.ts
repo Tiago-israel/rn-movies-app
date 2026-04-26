@@ -58,4 +58,5 @@ export const usTexts = {
   search_add_watchlist_a11y: "Add to watchlist",
   search_in_watchlist_a11y: "Already in watchlist",
   favorites_title: "Favorites",
+  favorites_count: "%{count} favorites",
 };

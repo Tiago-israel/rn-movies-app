@@ -6,6 +6,7 @@ import {
   MediaItem,
   Person,
   PersonMovieCreditsResponse,
+  PersonTvCreditsResponse,
   PersonResponse,
   SocialMedia,
 } from "../interfaces";
@@ -61,6 +62,32 @@ export class PeopleService {
       id: item.id,
       backdropPath: `${movieDBBaseImageUrl}${item.poster_path}`,
     }));
+  }
+
+  async getTvCredits(
+    id: number
+  ): Promise<Array<{ id: number; name: string; posterPath: string }>> {
+    const { cast = [], crew = [] } =
+      await this.httpClient.get<PersonTvCreditsResponse>(
+        `person/${id}/tv_credits?language=${this.language}`,
+        {
+          headers: this.headers,
+        }
+      );
+
+    // Deduplicate by id (a person can appear in both cast and crew)
+    const seen = new Set<number>();
+    return [...cast, ...crew]
+      .filter((item) => {
+        if (seen.has(item.id)) return false;
+        seen.add(item.id);
+        return true;
+      })
+      .map((item) => ({
+        id: item.id,
+        name: item.name,
+        posterPath: `${movieDBBaseImageUrl}${item.poster_path}`,
+      }));
   }
 
   async getExternalIds(

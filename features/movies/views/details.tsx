@@ -10,6 +10,7 @@ import {
   Easing,
   Dimensions,
 } from "react-native";
+import { router } from "expo-router";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { haptics } from "@/lib/haptics";
 import { Image, StarRating, SkeletonPlaceholder } from "@/components";
@@ -19,10 +20,10 @@ import {
   MovieCarousel,
   MediaGallery,
   TabsGroup,
-  Modal,
   StatCard,
   AnimatedHero,
   CastList,
+  PersonModal,
 } from "../components";
 import { useMovieDetails } from "../controllers";
 import {
@@ -93,7 +94,7 @@ type MovieDetailsProps = {
 
 export function MovieDetails(props: MovieDetailsProps) {
   const scrollViewRef = useRef<any>(null);
-  const modalRef = useRef<any>(null);
+  const [selectedCastId, setSelectedCastId] = useState<number | null>(null);
   const [selectedTab, setSelectedTab] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -443,7 +444,7 @@ export function MovieDetails(props: MovieDetailsProps) {
       <CastList
         cast={cast}
         onPressCast={(castId: number) => {
-          modalRef.current?.open();
+          setSelectedCastId(castId);
         }}
       />
     </View>
@@ -574,16 +575,18 @@ export function MovieDetails(props: MovieDetailsProps) {
       </ScrollView>
 
       {/* Modal for Cast Details */}
-      <Modal ref={modalRef}>
-        <View className="py-4">
-          <Text className="text-foreground font-bold text-xl mb-4">
-            Cast Member Details
-          </Text>
-          <Text className="text-muted-foreground">
-            Detailed information about the cast member would appear here...
-          </Text>
-        </View>
-      </Modal>
+      <PersonModal
+        personId={selectedCastId}
+        onClose={() => setSelectedCastId(null)}
+        onPressMovie={(movieId) => {
+          setSelectedCastId(null);
+          props.onPressRecommendation?.(movieId);
+        }}
+        onPressSeries={(seriesId) => {
+          setSelectedCastId(null);
+          router.push(`/movies/series/${seriesId}`);
+        }}
+      />
     </View>
   );
 }

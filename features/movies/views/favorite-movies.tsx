@@ -133,6 +133,7 @@ export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
   }, [allEntries]);
 
   const selectedTabIndex = activeTab === "ungrouped" ? 0 : 1;
+  const totalFavorites = allEntries.length;
 
   return (
     <View
@@ -147,6 +148,11 @@ export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
           { name: "plus", onPress: () => drawerRef.current?.open() },
         ]}
       />
+      <View style={styles.counterContainer}>
+        <Text className="text-muted-foreground text-xs">
+          {getText("favorites_count", { count: totalFavorites })}
+        </Text>
+      </View>
 
       {/* Tab bar */}
       <View style={styles.tabContainer}>
@@ -407,9 +413,14 @@ export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
 }
 
 const styles = StyleSheet.create({
+  counterContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 8,
+  },
   tabContainer: {
     paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingTop: 8,
+    paddingBottom: 12,
   },
   itemRow: {
     flexDirection: "row",
