@@ -16,5 +16,6 @@ export * from "./generic-item";
 export * from "./paginated-result";
 export * from "./service-type";
 export * from "./provider";
+export * from "./tv-series-details";
 export * from "./watchlist-item";
 export * from "./search-result";
