@@ -1,11 +1,11 @@
-import { Image, List, StarRating } from "@/components";
+import { Image, List, StarRating, SkeletonPlaceholder } from "@/components";
 import { useMovieReview } from "../controllers";
 import { MovieReview } from "../interfaces";
-import { ScrollViewProps } from "react-native";
-import { NavBar, Box, Text, ViewMoreText } from "../components";
+import { NavBar, Text, ViewMoreText } from "../components";
 import { useTheme } from "@/lib/theme-provider";
 import { MovieTheme } from "../theme";
 import { useMemo } from "react";
+import { View, ScrollView } from "react-native";
 
 export type MovieReviewsViewProps = {
   movieId: number;
@@ -20,11 +20,11 @@ export type AvatarProps = {
 function Avatar(props: AvatarProps) {
   const theme = useTheme<MovieTheme>();
 
-  const ramdomColor = useMemo(() => {
-    const colors = Object.values(theme.colors.alternatives);
+  const randomColor = useMemo(() => {
+    const colors = Object.values(theme.colors.palette);
     const randomIndex = Math.floor(Math.random() * colors.length);
     return colors[randomIndex];
-  },[theme.colors.alternatives])
+  }, [theme.colors.palette]);
 
   if (props.urlImage) {
     return (
@@ -36,59 +36,89 @@ function Avatar(props: AvatarProps) {
   }
 
   return (
-    <Box
-      width={32}
-      height={32}
-      borderRadius="full"
-      alignItems="center"
-      justifyContent="center"
-      backgroundColor={ramdomColor}
+    <View
+      className="w-8 h-8 rounded-full items-center justify-center"
+      style={{ backgroundColor: randomColor }}
     >
-      <Box as="Text" color="#fff">
-        {`${props.initials}`.toUpperCase()}
-      </Box>
-    </Box>
+      <Text className="text-white">{props.initials?.toUpperCase() ?? ""}</Text>
+    </View>
   );
 }
 
 function CommentItem(info: { item: MovieReview; index: number }) {
   return (
-    <Box
-      width="100%"
-      alignItems="flex-start"
-      flexDirection="row"
-      gap="xs"
-      p="sm"
-    >
+    <View className="w-full items-start flex-row gap-xs p-sm">
       <Avatar
         urlImage={info.item.avatar}
         initials={info.item.userName.slice(0, 2)}
       />
-      <Box flexDirection="column" flex={1}>
-        <Box flexDirection="row" alignItems="center" gap={"xxs"}>
-          <Text fontSize={14} color="onSurface" fontWeight={700}>
+      <View className="flex-col flex-1">
+        <View className="flex-row items-center gap-xxs">
+          <Text fontSize={14} color="foreground" fontWeight={700}>
             {info.item.userName}
           </Text>
-          <Text fontSize={14} as="Text" color="#7f8c8d">
+          <Text fontSize={14} className="text-palette-asbestos">
             {info.item.createdAt}
           </Text>
-        </Box>
-        <Box py="xxs">
+        </View>
+        <View className="py-xxs">
           <StarRating rating={info.item.rating} />
-        </Box>
-        <ViewMoreText fontSize={16} numberOfLines={3} color="onSurface">
+        </View>
+        <ViewMoreText fontSize={16} numberOfLines={3} color="foreground">
           {info.item.content}
         </ViewMoreText>
-      </Box>
-    </Box>
+      </View>
+    </View>
   );
 }
 
+function ReviewRowSeparator() {
+  return <View className="w-full h-px bg-separator" />;
+}
+
 export function MovieReviewsView(props: MovieReviewsViewProps) {
-  const { movieReviews } = useMovieReview(props.movieId);
+  const { movieReviews, isLoading } = useMovieReview(props.movieId);
+
+  if (isLoading) {
+    return (
+      <View className="w-full h-full bg-background">
+        <NavBar
+          onPressLeading={props.goBack}
+          onPressTrailing={props.goBack}
+          title="comments"
+        />
+        <ScrollView
+          contentContainerStyle={{ padding: 20 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {[1, 2, 3, 4, 5].map((i) => (
+            <View key={i} style={{ marginBottom: 24 }}>
+              <View style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}>
+                <SkeletonPlaceholder width={32} height={32} borderRadius={999} />
+                <View style={{ flex: 1 }}>
+                  <SkeletonPlaceholder
+                    width="80%"
+                    height={16}
+                    style={{ marginBottom: 8 }}
+                  />
+                  <SkeletonPlaceholder width={120} height={14} />
+                </View>
+              </View>
+              <SkeletonPlaceholder
+                width="100%"
+                height={40}
+                style={{ marginBottom: 8 }}
+              />
+              <SkeletonPlaceholder width="70%" height={16} />
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  }
 
   return (
-    <Box width="100%" height="100%" backgroundColor="surface">
+    <View className="w-full h-full bg-background">
       <NavBar
         onPressLeading={props.goBack}
         onPressTrailing={props.goBack}
@@ -100,10 +130,8 @@ export function MovieReviewsView(props: MovieReviewsViewProps) {
         keyExtractor={(item, index) => `${item.userName}-${index}`}
         estimatedItemSize={70}
         renderItem={CommentItem}
-        ItemSeparatorComponent={() => (
-          <Box width="100%" height={1} backgroundColor="#bdc3c7" />
-        )}
+        ItemSeparatorComponent={ReviewRowSeparator}
       />
-    </Box>
+    </View>
   );
 }

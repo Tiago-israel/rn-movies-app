@@ -1,38 +1,45 @@
 import { useMemo } from "react";
-import { Platform, useWindowDimensions } from "react-native";
 import { Tabs } from "expo-router";
+import type { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
+import { PlatformPressable } from "@react-navigation/elements";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { Layout, useUserStore } from "@/features/movies";
-import { Box } from "@/lib";
+import { haptics } from "@/lib/haptics";
+
+const TAB_ICON = 24;
+
+function HapticTabBarButton(props: BottomTabBarButtonProps) {
+  const { onPress, ...rest } = props;
+  return (
+    <PlatformPressable
+      {...rest}
+      onPress={(e) => {
+        haptics.selection();
+        onPress?.(e);
+      }}
+    />
+  );
+}
 
 export default function MoviesLayout() {
-  const { width } = useWindowDimensions();
   const theme = useUserStore((state) => state.theme);
 
   const tabStyle = useMemo(() => {
     return {
-      color: theme === "light" ? "#ccc" : "#ccc",
-      activeColor: theme === "light" ? "#2980b9" : "#2980b9",
       background: theme === "light" ? "#ecf0f1" : "#101218",
     };
   }, [theme]);
 
   const tabBarStyle: any = useMemo(() => {
     return {
-      // tabBarInactiveTintColor: tabStyle.color,
-      // tabBarActiveTintColor: tabStyle.activeColor,
-      // tabBarInactiveBackgroundColor: tabStyle.background,
-      // tabBarActiveBackgroundColor: tabStyle.background,
       tabBarShowLabel: false,
+      tabBarActiveTintColor: "#f1c40f",
+      tabBarInactiveTintColor: "#7f8c8d",
       tabBarStyle: {
-        borderRadius: 20,
-        width: width - 40,
-        bottom: 20,
         backgroundColor: tabStyle.background,
-        borderColor: "#fff",
-        borderWidth: 2,
-        position: "absolute",
-        start: 20
+        paddingTop: 12,
+        borderTopColor: "rgba(127, 140, 141, 0.25)",
+        borderTopWidth: 1,
       },
     };
   }, [tabStyle]);
@@ -40,41 +47,42 @@ export default function MoviesLayout() {
   return (
     <Tabs
       initialRouteName="index"
-      screenOptions={{ headerShown: false, }}
+      screenOptions={{
+        headerShown: false,
+        tabBarButton: (props) => <HapticTabBarButton {...props} />,
+      }}
       backBehavior="history"
-      safeAreaInsets={{ bottom: 0 }}
       layout={(props) => {
         return <Layout>{props.children}</Layout>;
       }}
     >
       <Tabs.Screen
         name="index"
-        
         options={{
           ...tabBarStyle,
-
-          // tabBarItemStyle: {
-          //   justifyContent: "center",
-          //   alignItems: "center",
-          //   isolation: "isolate",
-          //   borderRadius: 20,
-          // },
-          
-          tabBarLabelStyle:{
-            display: 'none'
-          },
-          tabBarIcon: (props) => (
-            <Icon name="home" color={props.color} size={24} />
+          title: "Home",
+          tabBarAccessibilityLabel: "Home",
+          tabBarIcon: ({ color, focused }) => (
+            <Icon
+              name={focused ? "home" : "home-outline"}
+              color={color}
+              size={TAB_ICON}
+            />
           ),
         }}
       />
-
       <Tabs.Screen
-        name="search"
+        name="watchlist"
         options={{
           ...tabBarStyle,
-          tabBarIcon: (props) => (
-            <Icon name="magnify" color={props.color} size={24} />
+          title: "Watchlist",
+          tabBarAccessibilityLabel: "Watchlist",
+          tabBarIcon: ({ color, focused }) => (
+            <Icon
+              name={focused ? "bookmark" : "bookmark-outline"}
+              color={color}
+              size={TAB_ICON}
+            />
           ),
         }}
       />
@@ -82,8 +90,14 @@ export default function MoviesLayout() {
         name="favorites"
         options={{
           ...tabBarStyle,
-          tabBarIcon: (props) => (
-            <Icon name="heart" color={props.color} size={24} />
+          title: "Favorites",
+          tabBarAccessibilityLabel: "Favorites",
+          tabBarIcon: ({ color, focused }) => (
+            <Icon
+              name={focused ? "heart" : "heart-outline"}
+              color={color}
+              size={TAB_ICON}
+            />
           ),
         }}
       />
@@ -91,13 +105,60 @@ export default function MoviesLayout() {
         name="preferences"
         options={{
           ...tabBarStyle,
-          tabBarIcon: (props) => (
-            <Icon name="cog-outline" color={props.color} size={24} />
+          title: "Config",
+          tabBarAccessibilityLabel: "Settings",
+          tabBarIcon: ({ color, focused }) => (
+            <Icon
+              name={focused ? "cog" : "cog-outline"}
+              color={color}
+              size={TAB_ICON}
+            />
           ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="search"
+        options={{
+          href: null,
+          headerShown: false,
+          tabBarStyle: { display: "none" },
         }}
       />
       <Tabs.Screen
         name="[id]/index"
+        options={{
+          ...tabBarStyle,
+          href: null,
+          tabBarStyle: { display: "none" },
+        }}
+      />
+      <Tabs.Screen
+        name="series/[id]/index"
+        options={{
+          ...tabBarStyle,
+          href: null,
+          tabBarStyle: { display: "none" },
+        }}
+      />
+      <Tabs.Screen
+        name="series/[id]/cast/[id]"
+        options={{
+          ...tabBarStyle,
+          href: null,
+          tabBarStyle: { display: "none" },
+        }}
+      />
+      <Tabs.Screen
+        name="series/[id]/people/[personId]"
+        options={{
+          ...tabBarStyle,
+          href: null,
+          tabBarStyle: { display: "none" },
+        }}
+      />
+      <Tabs.Screen
+        name="series/[id]/reviews/[id]"
         options={{
           ...tabBarStyle,
           href: null,

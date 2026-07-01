@@ -1,13 +1,28 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ViewMoreView } from "@/features";
-import { ServiceType } from "@/features/movies/interfaces";
+import { GenericItem, ServiceType } from "@/features/movies/interfaces";
 
 export default function ViewMore() {
   const router = useRouter();
-  const { type, title } = useLocalSearchParams();
+  const { type, title, genreIds } = useLocalSearchParams();
+  const genreIdsParam =
+    typeof genreIds === "string"
+      ? genreIds
+      : Array.isArray(genreIds)
+        ? genreIds[0]
+        : undefined;
 
   function goBack() {
     router.back();
+  }
+
+  function onPressItem(item: GenericItem) {
+    const isMovie = (type as string)?.startsWith("movies.");
+    if (isMovie) {
+      router.push(`/movies/${item.id}`);
+    } else {
+      router.push(`/movies/series/${item.id}`);
+    }
   }
 
   return (
@@ -15,6 +30,8 @@ export default function ViewMore() {
       type={type as ServiceType}
       title={title as string}
       goBack={goBack}
+      onPressItem={onPressItem}
+      initialGenreIdsParam={genreIdsParam}
     />
   );
 }

@@ -1,9 +1,16 @@
-import { useCallback, useEffect, useMemo } from "react";
-import { useWindowDimensions } from "react-native";
+import { useCallback, useMemo } from "react";
+import {
+  useWindowDimensions,
+  Pressable,
+  View,
+  Text as RNText,
+  ScrollView,
+} from "react-native";
 import { type ListRenderItemInfo } from "@shopify/flash-list";
-import { Box, NavBar, Text } from "../components";
+import { NavBar, Text } from "../components";
 import { useMovieCast } from "../controllers";
-import { Image, List } from "@/components";
+import { Image, List, SkeletonPlaceholder } from "@/components";
+import { haptics } from "@/lib/haptics";
 import { getText } from "../localization";
 
 export type CastProps = {
@@ -14,52 +21,85 @@ export type CastProps = {
 
 export function CastView(props: CastProps) {
   const numColumns = 3;
-  const { cast } = useMovieCast(props.movieId);
+  const { cast, isLoading } = useMovieCast(props.movieId);
   const { width } = useWindowDimensions();
   const columnWidth = useMemo(() => (width - 40 - 2 * 8) / numColumns, [width]);
 
   const renderItem = useCallback(
-    ({ item }: ListRenderItemInfo<(typeof cast)[0]>) => {
-      return (
-        <Box
-          as="Pressable"
-          width={columnWidth}
-          height={200}
-          marginBottom={8}
-          flexDirection="column"
-          justifyContent="flex-end"
-          borderRadius="md"
-          overflow="hidden"
-          onPress={() => props.goToPerson?.(item.id)}
+    ({ item }: ListRenderItemInfo<(typeof cast)[0]>) => (
+      <Pressable
+        style={{ height: 200 }}
+        className="w-full mb-2 flex-col justify-end rounded-md overflow-hidden"
+        onPress={() => {
+          haptics.light();
+          props.goToPerson?.(item.id);
+        }}
+      >
+        <Image
+          source={{ uri: item.profilePath }}
+          placeholder={require("../assets/user.png")}
+          contentFit="cover"
+          placeholderContentFit="contain"
+          style={{
+            width: columnWidth,
+            height: 200,
+            borderRadius: 20,
+            position: "absolute",
+          }}
+        />
+        <View
+          className="w-full gap-0.5 flex-col"
+          style={{ backgroundColor: "rgba(0,0,0,0.9)" }}
         >
-          <Image
-            source={{ uri: item.profilePath }}
-            placeholder={require("../assets/user.png")}
-            contentFit="cover"
-            placeholderContentFit="contain"
-            style={{
-              width: columnWidth,
-              height: 200,
-              borderRadius: 20,
-              position: "absolute",
-            }}
-          />
-          <Box width="100%" backgroundColor="rgba(0,0,0,0.9)" gap={2}>
-            <Text color="onPrimary" textAlign="center">
-              {item.name}
-            </Text>
-            <Text color="#c2c2c2" textAlign="center" numberOfLines={1}>
-              {item.character}
-            </Text>
-          </Box>
-        </Box>
-      );
-    },
-    []
+          <Text color="primary-foreground" style={{ textAlign: "center" }}>
+            {item.name}
+          </Text>
+          <RNText
+            className="text-base"
+            style={{ color: "#c2c2c2", textAlign: "center" }}
+            numberOfLines={1}
+          >
+            {item.character}
+          </RNText>
+        </View>
+      </Pressable>
+    ),
+    [columnWidth, props.goToPerson]
   );
 
+  if (isLoading) {
+    const skeletonItems = Array.from({ length: 9 }, (_, i) => i);
+    return (
+      <View className="w-full h-full bg-background">
+        <NavBar
+          onPressLeading={props.goBack}
+          onPressTrailing={props.goBack}
+          title={getText("movie_details_cast_title")}
+        />
+        <ScrollView
+          contentContainerStyle={{
+            padding: 20,
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: 8,
+          }}
+        >
+          {skeletonItems.map((i) => (
+            <SkeletonPlaceholder
+              key={i}
+              width={columnWidth}
+              height={200}
+              borderRadius={20}
+              style={{ marginBottom: 8 }}
+            />
+          ))}
+        </ScrollView>
+      </View>
+    );
+  }
+
   return (
-    <Box width="100%" height="100%" backgroundColor="surface">
+    <View className="w-full h-full bg-background">
       <NavBar
         onPressLeading={props.goBack}
         onPressTrailing={props.goBack}
@@ -73,6 +113,6 @@ export function CastView(props: CastProps) {
         keyExtractor={(item) => `${item.id}`}
         renderItem={renderItem}
       />
-    </Box>
+    </View>
   );
 }

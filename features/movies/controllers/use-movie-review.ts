@@ -5,7 +5,7 @@ import { MoviesService } from "../services";
 export function useMovieReview(movieId: number) {
   const moviesService = useRef(new MoviesService()).current;
 
-  const { data: movieReviews } = useQuery({
+  const { data: movieReviews, isFetching: isReviewsFetching } = useQuery({
     initialData: [],
     queryKey: ["movieReviews", movieId],
     queryFn: async () => {
@@ -14,5 +14,6 @@ export function useMovieReview(movieId: number) {
     },
   });
 
-  return { movieReviews };
+  const isLoading = isReviewsFetching && movieReviews.length === 0;
+  return { movieReviews, isLoading };
 }

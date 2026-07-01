@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Option 3 – Watch Progress View (Innovative)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #e8e8e8;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 30px 20px 60px; min-height: 100vh;
+  }
+  h1 { font-size: 20px; color: #333; margin-bottom: 6px; text-align: center; }
+  .subtitle { font-size: 13px; color: #666; margin-bottom: 24px; text-align: center; max-width: 540px; }
+  .legend { display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; justify-content: center; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #333; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 2px; }
+
+  .phone-wrap { display: flex; flex-direction: column; align-items: center; }
+  .phone {
+    width: 375px; background: #fff;
+    border: 3px solid #333; border-radius: 40px;
+    overflow: hidden; box-shadow: 4px 4px 0 #999;
+  }
+  .phone-notch { width: 120px; height: 28px; background: #333; border-radius: 0 0 18px 18px; margin: 0 auto; }
+  .phone-screen { padding: 0 0 28px; position: relative; }
+
+  .badge-reuse {
+    position: absolute; top: -8px; right: -8px;
+    background: #4CAF50; color: #fff;
+    padding: 2px 6px; border-radius: 3px;
+    font-size: 9px; font-family: Arial, sans-serif; font-weight: bold; z-index: 20; white-space: nowrap;
+  }
+  .badge-new {
+    position: absolute; top: -8px; right: -8px;
+    background: #FF9800; color: #fff;
+    padding: 2px 6px; border-radius: 3px;
+    font-size: 9px; font-family: Arial, sans-serif; font-weight: bold; z-index: 20; white-space: nowrap;
+  }
+  .rel { position: relative; display: inline-block; }
+  .rel-block { position: relative; display: block; }
+
+  /* NavBar */
+  .navbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; border-bottom: 2px solid #ccc; background: #fff;
+  }
+  .nav-back { width: 32px; height: 32px; border: 2px solid #999; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #333; }
+  .nav-title { font-size: 15px; font-weight: bold; color: #333; }
+  .nav-icon { width: 32px; height: 32px; border: 2px solid #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #333; }
+
+  /* Hero progress card */
+  .hero-section { padding: 12px 16px 0; position: relative; }
+  .hero-card {
+    border: 2px solid #333; border-radius: 14px;
+    overflow: hidden; background: #f5f5f5; position: relative;
+  }
+  .hero-backdrop {
+    width: 100%; height: 130px; background: #ccc;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; position: relative;
+  }
+  .hero-overlay {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.55);
+    padding: 6px 10px 0;
+  }
+  .hero-title { color: #fff; font-size: 13px; font-weight: bold; }
+  .hero-meta { color: #ddd; font-size: 9px; }
+  .progress-bar-wrap { padding: 6px 10px 10px; background: #f5f5f5; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 9px; color: #555; margin-bottom: 4px; }
+  .progress-track { height: 6px; background: #ddd; border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #333; border-radius: 3px; width: 62%; }
+  .hero-actions { display: flex; gap: 8px; padding: 0 10px 10px; }
+  .hero-btn {
+    flex: 1; border: 2px solid #333; border-radius: 8px;
+    padding: 6px; text-align: center; font-size: 10px;
+    font-family: inherit; color: #333; background: #fff;
+  }
+  .hero-btn.primary { background: #333; color: #fff; }
+
+  /* Tabs */
+  .tabs-wrap { padding: 10px 16px 4px; }
+  .tabs { display: flex; border: 2px solid #ccc; border-radius: 20px; overflow: hidden; }
+  .tab-item { flex: 1; text-align: center; padding: 6px 0; font-size: 11px; color: #666; }
+  .tab-item.active { background: #333; color: #fff; border-radius: 18px; font-weight: bold; }
+
+  /* List items (row style) */
+  .list-item-row {
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid #eee; padding: 8px 16px;
+    position: relative;
+  }
+  .list-thumb {
+    width: 52px; height: 74px; background: #ddd;
+    border-radius: 6px; border: 1px solid #ccc;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .list-info { flex: 1; min-width: 0; }
+  .list-title { font-size: 11px; font-weight: bold; color: #333; }
+  .list-meta { font-size: 9px; color: #888; margin-top: 2px; }
+  .list-progress-wrap { margin-top: 5px; }
+  .list-progress-track { height: 4px; background: #e0e0e0; border-radius: 2px; }
+  .list-progress-fill { height: 100%; background: #555; border-radius: 2px; }
+  .list-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .list-status-chip {
+    font-size: 8px; border-radius: 10px; padding: 2px 7px;
+    border: 1.5px solid #999; color: #666;
+  }
+  .status-watching { border-color: #333; color: #333; background: #eee; }
+  .status-done { border-color: #666; background: #666; color: #fff; }
+  .status-saved { border-color: #aaa; background: transparent; color: #888; }
+  .swipe-hint {
+    font-size: 8px; color: #bbb; margin-top: 2px; text-align: right;
+  }
+
+  /* Section header */
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px 4px;
+  }
+  .section-title { font-size: 12px; font-weight: bold; color: #333; }
+  .section-meta { font-size: 9px; color: #888; }
+
+  /* FAB */
+  .fab {
+    position: absolute; bottom: 16px; right: 16px;
+    width: 46px; height: 46px; background: #333; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 22px; font-weight: bold;
+    border: 2px solid #000; box-shadow: 2px 2px 0 #555; z-index: 10;
+  }
+
+  /* Swipe indicator row */
+  .swipe-row {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 16px 6px; font-size: 9px; color: #bbb;
+  }
+  .swipe-arrow { font-size: 12px; }
+
+  .divider { height: 1px; background: #e8e8e8; margin: 0 16px; }
+</style>
+</head>
+<body>
+
+<h1>Option 3 – Watch Progress View</h1>
+<p class="subtitle">Innovative approach: Immersive "Continue Watching" hero at the top with episode/movie progress bar. Row-list style with swipe-to-mark-done gesture, per-item progress, and floating action button — new interactive patterns.</p>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#4CAF50"></div> [REUSE] Existing component</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#FF9800"></div> [NEW] New component</div>
+</div>
+
+<div class="phone-wrap">
+  <div class="phone">
+    <div class="phone-notch"></div>
+    <div class="phone-screen">
+
+      <!-- NavBar -->
+      <!-- REUSABLE: NavBar from features/movies/components/navbar.tsx -->
+      <div class="rel-block">
+        <span class="badge-reuse" style="top:4px;right:4px;">[REUSE] NavBar</span>
+        <div class="navbar">
+          <div class="nav-back">←</div>
+          <span class="nav-title">Watchlist</span>
+          <div style="display:flex;gap:8px;">
+            <div class="nav-icon">🔍</div>
+            <div class="nav-icon">⇅</div>
+            <div class="nav-icon">⋮</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Continue Watching Card -->
+      <!-- NEW: ContinueWatchingHero -->
+      <div class="hero-section rel-block">
+        <span class="badge-new">[NEW] ContinueWatchingHero</span>
+        <div style="font-size:10px;color:#666;font-weight:bold;margin-bottom:6px;padding-left:2px;">▶ Continue Watching</div>
+        <div class="hero-card">
+          <!-- REUSABLE: AnimatedHero from features/movies/components/animated-hero.tsx -->
+          <div class="rel-block">
+            <span class="badge-reuse" style="top:4px;right:4px;">[REUSE] AnimatedHero</span>
+            <div class="hero-backdrop">
+              🎬
+              <div class="hero-overlay">
+                <div class="hero-title">Shogun (2024)</div>
+                <div class="hero-meta">Episode 5 of 10  •  Series</div>
+              </div>
+            </div>
+          </div>
+          <!-- NEW: ProgressBar -->
+          <div class="progress-bar-wrap rel-block">
+            <span class="badge-new" style="top:-6px;right:0;">[NEW] ProgressBar</span>
+            <div class="progress-label">
+              <span>62% watched</span>
+              <span>~38 min left</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill"></div>
+            </div>
+          </div>
+          <div class="hero-actions">
+            <!-- REUSABLE: Button from features/movies/components/button.tsx -->
+            <div class="rel" style="flex:1;">
+              <span class="badge-reuse" style="top:-4px;left:0;right:auto;">[REUSE] Button</span>
+              <div class="hero-btn primary">▶ Resume</div>
+            </div>
+            <div class="hero-btn" style="flex:1;">✓ Mark Watched</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <!-- REUSABLE: TabsGroup from features/movies/components/tab.tsx -->
+      <div class="tabs-wrap rel-block">
+        <span class="badge-reuse" style="top:4px;right:4px;">[REUSE] TabsGroup</span>
+        <div class="tabs">
+          <div class="tab-item active">In Progress</div>
+          <div class="tab-item">Saved</div>
+          <div class="tab-item">Watched</div>
+        </div>
+      </div>
+
+      <!-- Swipe hint -->
+      <div class="swipe-row">
+        <span class="swipe-arrow">←</span>
+        <span>Swipe left to mark as watched · Swipe right to remove</span>
+        <span class="swipe-arrow">→</span>
+      </div>
+
+      <!-- ── In Progress List ── -->
+      <div class="section-header">
+        <span class="section-title">In Progress  <span style="color:#999;font-weight:normal;">(3)</span></span>
+      </div>
+
+      <!-- REUSABLE: List from components/List.tsx -->
+      <!-- NEW: WatchlistRowItem -->
+      <div class="rel-block">
+        <span class="badge-reuse" style="top:0;right:4px;">[REUSE] List (FlashList)</span>
+
+        <!-- Row 1 -->
+        <div class="list-item-row rel-block">
+          <span class="badge-new" style="top:4px;right:4px;">[NEW] WatchlistRowItem</span>
+          <div class="list-thumb">🎬</div>
+          <div class="list-info">
+            <div class="list-title">Severance — S2</div>
+            <div class="list-meta">Ep 3 of 10  •  Drama</div>
+            <div class="list-progress-wrap">
+              <div class="list-progress-track">
+                <div class="list-progress-fill" style="width:30%"></div>
+              </div>
+            </div>
+            <div class="list-meta" style="margin-top:3px;">30% complete</div>
+          </div>
+          <div class="list-right">
+            <div class="list-status-chip status-watching">▶ Watching</div>
+            <div class="swipe-hint">← swipe</div>
+          </div>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="list-item-row">
+          <div class="list-thumb">🎬</div>
+          <div class="list-info">
+            <div class="list-title">The Bear — S3</div>
+            <div class="list-meta">Ep 1 of 10  •  Comedy/Drama</div>
+            <div class="list-progress-wrap">
+              <div class="list-progress-track">
+                <div class="list-progress-fill" style="width:10%"></div>
+              </div>
+            </div>
+            <div class="list-meta" style="margin-top:3px;">10% complete</div>
+          </div>
+          <div class="list-right">
+            <div class="list-status-chip status-watching">▶ Watching</div>
+            <div class="swipe-hint">← swipe</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ── Saved / Want to Watch ── -->
+        <div class="section-header">
+          <span class="section-title">Saved  <span style="color:#999;font-weight:normal;">(22)</span></span>
+          <span style="font-size:9px;color:#666;border-bottom:1px solid #666;">See all →</span>
+        </div>
+
+        <!-- Row 3 -->
+        <div class="list-item-row">
+          <div class="list-thumb">🎬</div>
+          <div class="list-info">
+            <div class="list-title">Dune: Part Two</div>
+            <div class="list-meta">Movie  •  8.5★  •  2h 46m</div>
+          </div>
+          <div class="list-right">
+            <div class="list-status-chip status-saved">📌 Saved</div>
+            <!-- NEW: StarRating mini -->
+            <div style="font-size:9px;color:#888;">Rate it?</div>
+          </div>
+        </div>
+
+        <!-- Row 4 -->
+        <div class="list-item-row">
+          <div class="list-thumb">🎬</div>
+          <div class="list-info">
+            <div class="list-title">Oppenheimer</div>
+            <div class="list-meta">Movie  •  8.3★  •  3h 1m</div>
+          </div>
+          <div class="list-right">
+            <div class="list-status-chip status-saved">📌 Saved</div>
+            <div style="font-size:9px;color:#888;">Rate it?</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ── Recently Watched ── -->
+        <div class="section-header">
+          <span class="section-title">Recently Watched  <span style="color:#999;font-weight:normal;">(17)</span></span>
+        </div>
+
+        <!-- Row 5 -->
+        <div class="list-item-row">
+          <div class="list-thumb">🎬</div>
+          <div class="list-info">
+            <div class="list-title">Interstellar</div>
+            <div class="list-meta">Movie  •  Watched 3 Jan 2026</div>
+          </div>
+          <div class="list-right">
+            <div class="list-status-chip status-done">✓ Done</div>
+            <!-- REUSABLE: StarRating from components/StarRating.tsx -->
+            <div class="rel" style="font-size:10px;">
+              <span style="position:absolute;top:-12px;right:-6px;background:#4CAF50;color:#fff;padding:2px 4px;border-radius:3px;font-size:7px;font-family:Arial,sans-serif;font-weight:bold;white-space:nowrap;">[REUSE] StarRating</span>
+              ★★★★★
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /List -->
+
+      <!-- FAB -->
+      <!-- REUSABLE: IconButton from features/movies/components/Icon-button.tsx -->
+      <div class="rel-block" style="height:60px;">
+        <span class="badge-reuse" style="bottom:28px;right:8px;top:auto;">[NEW] FAB</span>
+        <div class="fab">+</div>
+      </div>
+
+    </div><!-- /phone-screen -->
+  </div><!-- /phone -->
+</div>
+
+</body>
+</html>

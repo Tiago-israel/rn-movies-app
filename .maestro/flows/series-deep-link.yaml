@@ -1,0 +1,20 @@
+appId: com.tico77.rnapp
+---
+# TMDB TV 1396 — Breaking Bad (stable catalog id).
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "home-root"
+    timeout: 90000
+- openLink:
+    link: "myapp:///movies/series/1396"
+- extendedWaitUntil:
+    visible:
+      id: "series-details-screen"
+    timeout: 90000
+- tapOn:
+    id: "nav-back"
+- extendedWaitUntil:
+    visible:
+      id: "home-root"
+    timeout: 30000

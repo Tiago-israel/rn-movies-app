@@ -12,7 +12,8 @@
       "supportsTablet": true,
       "config": {
         "usesNonExemptEncryption": false
-      }
+      },
+      "bundleIdentifier": "com.tico77.rnapp"
     },
     "android": {
       "edgeToEdgeEnabled": true,
@@ -43,7 +44,7 @@
         {
           "android": {
             "parentTheme": "Default",
-            "enforceNavigationBarContrast": false
+            "enforceNavigationBarContrast": true
           }
         }
       ],

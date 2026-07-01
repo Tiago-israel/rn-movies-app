@@ -1,8 +1,8 @@
 import { ReactNode, useEffect } from "react";
+import { View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import Constants from "expo-constants";
 import { ThemeProvider } from "@/lib";
-import { Box } from "./box";
 import { movieDarkTheme, movieLightTheme } from "../theme";
 import { useUserStore } from "../store";
 import { initializeLanguage } from "../localization";
@@ -24,14 +24,12 @@ export function Layout(props: LayoutProps) {
       theme={userTheme === "dark" ? movieDarkTheme : movieLightTheme}
     >
       <StatusBar style={userTheme === "dark" ? "light" : "dark"} />
-      <Box
-        width={"100%"}
-        height="100%"
-        pt={Constants.statusBarHeight}
-        backgroundColor="surface"
+      <View
+        className="w-full h-full bg-background"
+        style={{ paddingTop: Constants.statusBarHeight }}
       >
         {props.children}
-      </Box>
+      </View>
     </ThemeProvider>
   );
 }

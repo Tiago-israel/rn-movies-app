@@ -1,58 +1,66 @@
-import { useRef, useState } from "react";
-import { type TextInput, type TextInputProps } from "react-native";
+import {
+  View,
+  TextInput,
+  Pressable,
+  type TextInputProps,
+} from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
-import { Box } from "@/components";
-import { useDebounce } from "@/hooks";
+import { haptics } from "@/lib/haptics";
 
-export type SearchFieldProps = TextInputProps & {
+export type SearchFieldProps = Omit<
+  TextInputProps,
+  "value" | "onChangeText" | "defaultValue"
+> & {
+  value: string;
+  onChangeText: (text: string) => void;
   onClear?: () => void;
 };
 
 export function SearchField({
-  placeholder = "Type a movie",
+  placeholder = "Movies, TV shows, or people",
+  value,
   onChangeText,
+  onClear,
   ...props
 }: SearchFieldProps) {
-  const [text, setText] = useState<string>();
-  const onChangeTextDebounce = useDebounce<string>((text: string) => {
-    onChangeText?.(text);
-  }, 300);
-
   function clearText() {
-    setText("");
-    props.onClear?.();
+    haptics.light();
+    onChangeText("");
+    onClear?.();
   }
 
   return (
-    <Box
-      width="100%"
-      height={48}
-      flexDirection="row"
-      backgroundColor="#fff"
-      borderRadius="lg"
-      alignItems="center"
-    >
-      <Box<TextInputProps>
-        as="TextInput"
-        py={0}
-        px={20}
-        flex={1}
-        height="100%"
-        color="#141414"
-        placeholderTextColor="#000"
+    <View className="w-full h-12 flex-row items-center rounded-lg border border-border bg-secondary px-xs">
+      <Icon
+        name="magnify"
+        size={22}
+        color="#95a5a6"
+        style={{ marginLeft: 8 }}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      />
+      <TextInput
+        testID="search-input"
+        className="flex-1 h-full pr-4 text-foreground"
+        style={{ paddingVertical: 0, paddingLeft: 8 }}
+        placeholderTextColor="#95a5a6"
         placeholder={placeholder}
-        value={text}
-        onChangeText={(value) => {
-          setText(value);
-          onChangeTextDebounce(value);
-        }}
+        value={value}
+        onChangeText={onChangeText}
+        returnKeyType="search"
+        clearButtonMode="never"
         {...props}
       />
-      {text && (
-        <Box as="Pressable" pr="xs" onPress={clearText}>
-          <Icon name="close-circle" size={24} />
-        </Box>
-      )}
-    </Box>
+      {value.length > 0 ? (
+        <Pressable
+          testID="search-input-clear"
+          className="pr-1"
+          onPress={clearText}
+          hitSlop={12}
+        >
+          <Icon name="close-circle" size={24} color="#95a5a6" />
+        </Pressable>
+      ) : null}
+    </View>
   );
 }

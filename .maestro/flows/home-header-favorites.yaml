@@ -1,0 +1,17 @@
+appId: com.tico77.rnapp
+---
+# Header heart opens favorites; return via bottom Home tab.
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "home-root"
+    timeout: 90000
+- tapOn:
+    id: "home-header-favorites"
+- extendedWaitUntil:
+    visible:
+      id: "favorites-screen"
+    timeout: 30000
+- tapOn: "Home"
+- assertVisible:
+    id: "home-root"

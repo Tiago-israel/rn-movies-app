@@ -12,7 +12,7 @@ export function useMovieDetails(movieId: number) {
     (state) => state.removeFavoriteMovie
   );
 
-  const { data: movie } = useQuery({
+  const { data: movie, isFetching: isMovieFetching } = useQuery({
     initialData: {},
     queryKey: ["movie", movieId],
     queryFn: async () => {
@@ -20,6 +20,8 @@ export function useMovieDetails(movieId: number) {
       return result;
     },
   });
+
+  const isLoading = isMovieFetching && !(movie as { id?: number })?.id;
 
   const { data: images } = useQuery({
     initialData: [],
@@ -80,5 +82,14 @@ export function useMovieDetails(movieId: number) {
     setFavorite(movieId);
   }, [movieId]);
 
-  return { movie, isFavorite, recommendations, images, cast, watchProviders, onFavoriteMovie };
+  return {
+    movie,
+    isFavorite,
+    recommendations,
+    images,
+    cast,
+    watchProviders,
+    onFavoriteMovie,
+    isLoading,
+  };
 }

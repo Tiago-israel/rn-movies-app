@@ -1,65 +1,536 @@
-import { useTheme } from "@/lib/theme-provider";
-import { Box, Header, TabsGroup } from "../components";
-import { HomeMoviesView } from "./home-movies";
-import { HomeSeriesView } from "./home-series";
-import { MovieTheme } from "../theme";
-import { useWindowDimensions } from "react-native";
-import { useMemo, useState } from "react";
-import { ServiceType } from "../interfaces";
-import { useMediaStore } from "../store";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
+import {
+  Platform,
+  Pressable,
+  ScrollView,
+  View,
+  Text,
+  Dimensions,
+  RefreshControl,
+} from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import { useQueryClient } from "@tanstack/react-query";
+import Icon from "@expo/vector-icons/MaterialCommunityIcons";
+
+import {
+  HomeTitle,
+  HeroCarousel,
+  MovieCarousel,
+  SeriesCarousel,
+  HomeGenreChips,
+  TrendingHomeRow,
+} from "../components";
+import { SkeletonPlaceholder } from "@/components";
+import {
+  useMovieHome,
+  useTVSeriesHome,
+  useTrendingHome,
+  TRENDING_HOME_QUERY_KEY,
+  useHomeGenres,
+  useHomeScrollJankTelemetry,
+  HOME_SESSION_ID,
+} from "../controllers";
+import { useHomeScrollPosition } from "@/hooks/use-home-scroll-position";
+import { getText } from "../localization";
+import { useUserStore } from "../store";
+import type { ServiceType, Genre, SearchResultItem } from "../interfaces";
+import { haptics } from "@/lib/haptics";
+import {
+  getHomeFirstContentElapsedMs,
+  markHomeFirstContentAt,
+  startHomeFirstContentTimer,
+} from "../services/home-first-content-timer";
+import {
+  trackHomeDiscoveryCompleted,
+  trackHomeFirstUsefulContent,
+} from "../services/home-performance-telemetry";
+import {
+  isHomeRenderSuccessRateHealthy,
+  recordHomeRenderOutcome,
+} from "../services/home-render-success-rate";
+
+// ── Constants ──────────────────────────────────────────────────────
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const CONTENT_WIDTH = SCREEN_WIDTH - 40;
+
+// ── Props ──────────────────────────────────────────────────────────
 export type HomeProps = {
   navigateToMovieDetails: (movieId: number) => void;
-  navigateToViewMore: (type: ServiceType, title: string) => void;
+  navigateToSeriesDetails: (seriesId: number) => void;
+  navigateToViewMore: (type: ServiceType, title: string) => () => void;
+  navigateToSearch: () => void;
+  navigateToWatchlist: () => void;
+  navigateToFavorites: () => void;
+  navigateToGenreDiscover: (args: {
+    catalog: "movie" | "tv";
+    genreId: number;
+    title: string;
+  }) => void;
 };
 
-const components = new Map();
-components.set(0, (props: any) => <HomeMoviesView {...props} />);
-components.set(1, (props: any) => <HomeSeriesView {...props} />);
+// ── Animated section wrapper ───────────────────────────────────────
+function AnimatedSection({
+  delay,
+  children,
+}: {
+  delay: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <Animated.View entering={FadeInDown.delay(delay).duration(400).springify()}>
+      {children}
+    </Animated.View>
+  );
+}
 
+// ── Loading skeleton ───────────────────────────────────────────────
+function HomeSkeleton() {
+  return (
+    <ScrollView
+      bounces
+      contentContainerStyle={{ paddingBottom: 200 }}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Hero placeholder */}
+      <SkeletonPlaceholder
+        width={CONTENT_WIDTH}
+        height={200}
+        borderRadius={16}
+        style={{ marginHorizontal: 20, marginBottom: 24 }}
+      />
+      {/* Section placeholder */}
+      <SkeletonPlaceholder
+        width={140}
+        height={22}
+        style={{ marginHorizontal: 20, marginBottom: 16 }}
+      />
+      <View style={{ flexDirection: "row", paddingHorizontal: 20, gap: 12 }}>
+        {[1, 2, 3].map((i) => (
+          <SkeletonPlaceholder
+            key={i}
+            width={110}
+            height={165}
+            borderRadius={12}
+          />
+        ))}
+      </View>
+      {/* Second section placeholder */}
+      <SkeletonPlaceholder
+        width={140}
+        height={22}
+        style={{ marginHorizontal: 20, marginTop: 24, marginBottom: 16 }}
+      />
+      <View style={{ flexDirection: "row", paddingHorizontal: 20, gap: 12 }}>
+        {[1, 2, 3].map((i) => (
+          <SkeletonPlaceholder
+            key={i}
+            width={110}
+            height={165}
+            borderRadius={12}
+          />
+        ))}
+      </View>
+    </ScrollView>
+  );
+}
+
+// ── Main component ─────────────────────────────────────────────────
 export function HomeView(props: HomeProps) {
-  const [componentIndex, setComponentIndex] = useState(0);
-  const { isMovie, setIsMovie } = useMediaStore();
-  const { height } = useWindowDimensions();
-  const theme = useTheme<MovieTheme>();
-  const containerHeight = useMemo(
-    () => height - theme.spacing.xxs * 2 - Header.HEIGHT,
-    [height, theme.spacing.xxs]
+  const {
+    navigateToMovieDetails,
+    navigateToSeriesDetails,
+    navigateToGenreDiscover,
+  } = props;
+  const language = useUserStore((s) => s.language);
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+
+  // ── Data: Movies ──
+  const {
+    nowPlayingMovies = [],
+    popularMovies = [],
+    topRatedMovies = [],
+    upcomingMovies = [],
+    isLoading: isMoviesLoading,
+  } = useMovieHome();
+
+  // ── Data: Series ──
+  const {
+    onTheAir = [],
+    popular: popularSeries = [],
+    topRated: topRatedSeries = [],
+    isLoading: isSeriesLoading,
+  } = useTVSeriesHome();
+
+  // ── Data: Shared ──
+  const { trendingItems, trendingLoading, trendingError, refetchTrending } =
+    useTrendingHome();
+  const { data: movieGenres = [] } = useHomeGenres("movie");
+
+  const { scrollRef, onScroll: onScrollPosition } = useHomeScrollPosition();
+  const { onScroll: onJankScroll } = useHomeScrollJankTelemetry(HOME_SESSION_ID);
+  const onMainScroll = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      onScrollPosition(e);
+      onJankScroll(e);
+    },
+    [onScrollPosition, onJankScroll]
   );
-  const CurrentComponent = useMemo(
-    () => components.get(componentIndex),
-    [componentIndex]
+
+  const firstContentTrackedRef = useRef(false);
+  const discoveryCompletedRef = useRef(false);
+
+  const hasUsefulContent = useMemo(
+    () =>
+      nowPlayingMovies.length > 0 ||
+      popularMovies.length > 0 ||
+      topRatedMovies.length > 0 ||
+      upcomingMovies.length > 0 ||
+      onTheAir.length > 0 ||
+      popularSeries.length > 0 ||
+      topRatedSeries.length > 0 ||
+      trendingItems.length > 0,
+    [
+      nowPlayingMovies.length,
+      popularMovies.length,
+      topRatedMovies.length,
+      upcomingMovies.length,
+      onTheAir.length,
+      popularSeries.length,
+      topRatedSeries.length,
+      trendingItems.length,
+    ]
   );
+
+  useEffect(() => {
+    startHomeFirstContentTimer();
+  }, []);
+
+  useEffect(() => {
+    if (!hasUsefulContent || firstContentTrackedRef.current) return;
+    markHomeFirstContentAt();
+    const elapsed = getHomeFirstContentElapsedMs();
+    if (elapsed !== null) {
+      trackHomeFirstUsefulContent({
+        sessionId: HOME_SESSION_ID,
+        timeFromAppOpenMs: elapsed,
+      });
+      firstContentTrackedRef.current = true;
+      recordHomeRenderOutcome(true);
+    }
+  }, [hasUsefulContent]);
+
+  useEffect(() => {
+    if (isMoviesLoading || isSeriesLoading || trendingLoading) return;
+    if (!hasUsefulContent) {
+      recordHomeRenderOutcome(false);
+    }
+    isHomeRenderSuccessRateHealthy();
+  }, [hasUsefulContent, isMoviesLoading, isSeriesLoading, trendingLoading]);
+
+  // ── Pull-to-refresh ──
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["nowPlayingMovies"] }),
+        queryClient.invalidateQueries({ queryKey: ["popularMovies"] }),
+        queryClient.invalidateQueries({ queryKey: ["topRatedMovies"] }),
+        queryClient.invalidateQueries({ queryKey: ["upcomingMovies"] }),
+        queryClient.invalidateQueries({ queryKey: ["airingToday"] }),
+        queryClient.invalidateQueries({ queryKey: ["onTheAir"] }),
+        queryClient.invalidateQueries({ queryKey: ["popular"] }),
+        queryClient.invalidateQueries({ queryKey: ["topRated"] }),
+        queryClient.invalidateQueries({ queryKey: TRENDING_HOME_QUERY_KEY }),
+        queryClient.invalidateQueries({
+          queryKey: ["homeGenres", "movie", language],
+        }),
+      ]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [queryClient, language]);
+
+  // ── Navigation callbacks ──
+  const onHeroMoviePress = useCallback(
+    (movieId: number) => {
+      if (!discoveryCompletedRef.current) {
+        discoveryCompletedRef.current = true;
+        trackHomeDiscoveryCompleted({
+          sessionId: HOME_SESSION_ID,
+          timeFromAppOpenMs: getHomeFirstContentElapsedMs() ?? 0,
+          firstCarouselId: "home-hero-now-playing",
+        });
+      }
+      navigateToMovieDetails(movieId);
+    },
+    [navigateToMovieDetails]
+  );
+
+  const onTrendingPress = useCallback(
+    (item: SearchResultItem) => {
+      if (!discoveryCompletedRef.current) {
+        discoveryCompletedRef.current = true;
+        trackHomeDiscoveryCompleted({
+          sessionId: HOME_SESSION_ID,
+          timeFromAppOpenMs: getHomeFirstContentElapsedMs() ?? 0,
+          firstCarouselId: "home-trending",
+        });
+      }
+      if (item.mediaType === "movie") {
+        navigateToMovieDetails(item.id);
+      } else {
+        navigateToSeriesDetails(item.id);
+      }
+    },
+    [navigateToMovieDetails, navigateToSeriesDetails]
+  );
+
+  const onGenrePress = useCallback(
+    (genre: Genre) => {
+      navigateToGenreDiscover({
+        catalog: "movie",
+        genreId: genre.id,
+        title: genre.name,
+      });
+    },
+    [navigateToGenreDiscover]
+  );
+
+  // ── Loading state ──
+  if (isMoviesLoading && isSeriesLoading && trendingLoading) {
+    return (
+      <View className="flex-1 bg-background" testID="home-root">
+        <View className="px-sm pt-xs pb-xxs flex-row items-center justify-between">
+          <Text className="text-3xl font-extrabold text-foreground tracking-tight">
+            {getText("home_header_title")}
+          </Text>
+          <View className="flex-row items-center" style={{ gap: 4 }}>
+            <Pressable
+              testID="home-header-watchlist"
+              onPress={() => {
+                haptics.light();
+                props.navigateToWatchlist();
+              }}
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel={getText("home_nav_watchlist_a11y")}
+            >
+              <Icon name="bookmark-outline" size={28} color="#f1c40f" />
+            </Pressable>
+            <Pressable
+              testID="home-header-favorites"
+              onPress={() => {
+                haptics.light();
+                props.navigateToFavorites();
+              }}
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel={getText("home_nav_favorites_a11y")}
+            >
+              <Icon name="heart-outline" size={28} color="#e74c3c" />
+            </Pressable>
+          </View>
+        </View>
+        <HomeSkeleton />
+      </View>
+    );
+  }
 
   return (
-    <Box width={"100%"} height="100%" backgroundColor="surface">
-      <Header />
-      <Box alignItems="center" py={theme.spacing.xxs}>
-        <TabsGroup
-          selectedIndex={componentIndex}
-          items={[{ title: "Movies" }, { title: "Series" }]}
-          onPress={(index) => {
-            setComponentIndex(index);
-            setIsMovie(index === 0);
-          }}
-        />
-      </Box>
-      <Box width="100%" height={containerHeight}>
-        <Box
-          width="100%"
-          height={containerHeight}
-          Index={999}
-          style={{
-            position: "absolute",
-            top: 0,
-            overflow: "hidden",
-          }}
+    <View className="flex-1 bg-background" testID="home-root">
+      {/* ── Header (match loading branch — Maestro needs these ids after data loads) ── */}
+      <View className="px-sm pt-xs pb-xxs flex-row items-center justify-between">
+        <Text
+          className="text-3xl font-extrabold text-foreground tracking-tight"
+          accessibilityRole="header"
         >
-          <CurrentComponent
-            navigateToMovieDetails={props.navigateToMovieDetails}
-            navigateToViewMore={props.navigateToViewMore}
+          {getText("home_header_title")}
+        </Text>
+        <View className="flex-row items-center" style={{ gap: 4 }}>
+          <Pressable
+            testID="home-header-watchlist"
+            onPress={() => {
+              haptics.light();
+              props.navigateToWatchlist();
+            }}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel={getText("home_nav_watchlist_a11y")}
+          >
+            <Icon name="bookmark-outline" size={28} color="#f1c40f" />
+          </Pressable>
+          <Pressable
+            testID="home-header-favorites"
+            onPress={() => {
+              haptics.light();
+              props.navigateToFavorites();
+            }}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel={getText("home_nav_favorites_a11y")}
+          >
+            <Icon name="heart-outline" size={28} color="#e74c3c" />
+          </Pressable>
+        </View>
+      </View>
+
+      {/* ── Search bar ── */}
+      <Pressable
+        testID="home-open-search"
+        className="mx-sm mb-xs flex-row items-center gap-2 rounded-lg bg-secondary px-xs py-2.5"
+        onPress={() => {
+          haptics.light();
+          props.navigateToSearch();
+        }}
+        accessibilityRole="search"
+        accessibilityLabel="Search movies and series"
+      >
+        <Icon name="magnify" size={20} color="#95a5a6" />
+        <Text className="text-sm text-palette-concrete flex-1">
+          {getText("search_idle_hint")}
+        </Text>
+      </Pressable>
+
+      {/* ── Scrollable content ── */}
+      <ScrollView
+        ref={scrollRef}
+        onScroll={onMainScroll}
+        scrollEventThrottle={16}
+        removeClippedSubviews={Platform.OS === "android"}
+        bounces
+        nestedScrollEnabled
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        contentContainerStyle={{ paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Hero — Now Playing Movies */}
+        <AnimatedSection delay={0}>
+          <HeroCarousel
+            data={nowPlayingMovies}
+            onPressItem={onHeroMoviePress}
           />
-        </Box>
-      </Box>
-    </Box>
+        </AnimatedSection>
+
+        {/* Trending (mixed movies + series) */}
+        <AnimatedSection delay={80}>
+          <HomeTitle icon={{ name: "trending-up", color: "#e74c3c" }}>
+            {getText("home_trending_title")}
+          </HomeTitle>
+          <TrendingHomeRow
+            items={trendingItems}
+            loading={trendingLoading}
+            error={trendingError}
+            onRetry={() => {
+              void refetchTrending();
+            }}
+            onSelectItem={onTrendingPress}
+          />
+        </AnimatedSection>
+
+        {/* Genre chips (movies) */}
+        <AnimatedSection delay={160}>
+          <HomeTitle icon={{ name: "shape-outline", color: "#9b59b6" }}>
+            {getText("home_genre_highlights")}
+          </HomeTitle>
+          <HomeGenreChips genres={movieGenres} onSelectGenre={onGenrePress} />
+        </AnimatedSection>
+
+        {/* Popular Movies */}
+        <AnimatedSection delay={240}>
+          <HomeTitle icon={{ name: "fire", color: "#d35400" }}>
+            {getText("movie_home_popular")}
+          </HomeTitle>
+          <MovieCarousel
+            data={popularMovies}
+            onPressItem={props.navigateToMovieDetails}
+            onPressMoreOptions={props.navigateToViewMore(
+              "movies.popular",
+              getText("movie_home_popular")
+            )}
+            carouselTestID="home-popular-carousel"
+            moreOptionsTestID="home-view-more-popular"
+          />
+        </AnimatedSection>
+
+        {/* On The Air — Series */}
+        <AnimatedSection delay={320}>
+          <HomeTitle icon={{ name: "television-play", color: "#1abc9c" }}>
+            {getText("tv_series_home_on_the_air")}
+          </HomeTitle>
+          <SeriesCarousel
+            data={onTheAir}
+            onPressItem={props.navigateToSeriesDetails}
+            onPressMoreOptions={props.navigateToViewMore(
+              "tv.on_the_air",
+              getText("tv_series_home_on_the_air")
+            )}
+          />
+        </AnimatedSection>
+
+        {/* Top Rated Movies */}
+        <AnimatedSection delay={400}>
+          <HomeTitle icon={{ name: "trophy-outline", color: "#f1c40f" }}>
+            {getText("movie_home_top_rated")}
+          </HomeTitle>
+          <MovieCarousel
+            data={topRatedMovies}
+            onPressItem={props.navigateToMovieDetails}
+            onPressMoreOptions={props.navigateToViewMore(
+              "movies.top_rated",
+              getText("movie_home_top_rated")
+            )}
+          />
+        </AnimatedSection>
+
+        {/* Popular Series */}
+        <AnimatedSection delay={480}>
+          <HomeTitle icon={{ name: "star-circle-outline", color: "#1abc9c" }}>
+            {getText("tv_series_home_popular")}
+          </HomeTitle>
+          <SeriesCarousel
+            data={popularSeries}
+            onPressItem={props.navigateToSeriesDetails}
+            onPressMoreOptions={props.navigateToViewMore(
+              "tv.popular",
+              getText("tv_series_home_popular")
+            )}
+          />
+        </AnimatedSection>
+
+        {/* Upcoming Movies */}
+        <AnimatedSection delay={560}>
+          <HomeTitle icon={{ name: "calendar-clock", color: "#2980b9" }}>
+            {getText("movie_home_upcoming")}
+          </HomeTitle>
+          <MovieCarousel
+            data={upcomingMovies}
+            onPressItem={props.navigateToMovieDetails}
+            onPressMoreOptions={props.navigateToViewMore(
+              "movies.upcoming",
+              getText("movie_home_upcoming")
+            )}
+          />
+        </AnimatedSection>
+
+        {/* Top Rated Series */}
+        <AnimatedSection delay={640}>
+          <HomeTitle icon={{ name: "trophy-outline", color: "#1abc9c" }}>
+            {getText("tv_series_home_top_rated")}
+          </HomeTitle>
+          <SeriesCarousel
+            data={topRatedSeries}
+            onPressItem={props.navigateToSeriesDetails}
+            onPressMoreOptions={props.navigateToViewMore(
+              "tv.top_rated",
+              getText("tv_series_home_top_rated")
+            )}
+          />
+        </AnimatedSection>
+      </ScrollView>
+    </View>
   );
 }

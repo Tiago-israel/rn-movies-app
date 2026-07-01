@@ -1,8 +1,7 @@
-import { Box, List } from "@/components";
+import { memo } from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { type MovieDetails } from "../interfaces";
 import { ItemPoster } from "./item-poster";
-import { MovieDetails } from "../interfaces";
-import { memo, useCallback } from "react";
-import { useWindowDimensions } from "react-native";
 import { MoreOptionsCarousel } from "./more-options-carousel";
 
 type MovieCarouselProps = {
@@ -11,43 +10,66 @@ type MovieCarouselProps = {
   itemHeight?: number;
   onPressItem: (movieId: number) => void | Promise<void>;
   onPressMoreOptions: () => void;
+  /** Horizontal list — for Maestro scroll before tapping “Show more”. */
+  carouselTestID?: string;
+  moreOptionsTestID?: string;
 };
 
-export const MovieCarousel = memo(({ ...props }: MovieCarouselProps) => {
-  const { width } = useWindowDimensions();
-  const renderItem = useCallback(
-    ({ item }: any) => (
-      <ItemPoster
-        key={item.id}
-        width={props.itemWidth}
-        height={props.itemHeight}
-        posterUrl={item.posterPath}
-        onPress={() => props.onPressItem(item.id)}
-      />
-    ),
-    [props.onPressItem, props.itemWidth, props.itemHeight]
-  );
-
+/**
+ * Horizontal row of posters + “more” tile. Uses ScrollView instead of FlashList
+ * so layout works when nested in a vertical ScrollView (FlashList v2 often fails to
+ * measure in that configuration).
+ */
+export const MovieCarousel = memo(function MovieCarousel({
+  data,
+  itemWidth = 150,
+  itemHeight = 200,
+  onPressItem,
+  onPressMoreOptions,
+  carouselTestID,
+  moreOptionsTestID,
+}: MovieCarouselProps) {
   return (
-    <List
+    <ScrollView
+      testID={carouselTestID}
       horizontal
+      nestedScrollEnabled
       showsHorizontalScrollIndicator={false}
-      keyExtractor={(item) => `${item.id}`}
-      estimatedItemSize={props.itemHeight ?? 200}
-      estimatedListSize={{ width, height: props.itemHeight ?? 200 }}
-      contentContainerStyle={{ paddingHorizontal: 20 }}
-      ItemSeparatorComponent={() => <Box width={8} height={8} />}
-      data={props.data}
-      renderItem={renderItem}
-      ListFooterComponent={() => {
-        return (
-          <MoreOptionsCarousel
-            width={props.itemWidth}
-            height={props.itemHeight}
-            onPress={props?.onPressMoreOptions}
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={styles.content}
+    >
+      {data.map((item) => (
+        <View key={item.id} style={styles.cell}>
+          <ItemPoster
+            width={itemWidth}
+            height={itemHeight}
+            posterUrl={item.posterPath}
+            recyclingKey={String(item.id)}
+            onPress={() => {
+              if (item.id != null) void onPressItem(item.id);
+            }}
           />
-        );
-      }}
-    />
+        </View>
+      ))}
+      <MoreOptionsCarousel
+        width={itemWidth}
+        height={itemHeight}
+        onPress={onPressMoreOptions}
+        testID={moreOptionsTestID}
+      />
+    </ScrollView>
   );
+});
+
+const styles = StyleSheet.create({
+  content: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    paddingHorizontal: 20,
+    paddingVertical: 2,
+    flexGrow: 0,
+  },
+  cell: {
+    marginRight: 8,
+  },
 });

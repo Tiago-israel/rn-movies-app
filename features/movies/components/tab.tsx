@@ -3,17 +3,22 @@ import {
   Animated,
   LayoutChangeEvent,
   LayoutRectangle,
+  Pressable,
   useAnimatedValue,
+  View,
 } from "react-native";
-import { Box } from "./box";
+import { haptics } from "@/lib/haptics";
 import { Text } from "./text";
 
 const TABSGROUP_HEIGHT = 32;
 
+export type TabsGroupItem = {
+  title: string;
+  testID?: string;
+};
+
 export type TabsGroupProps = {
-  items?: Array<{
-    title: string;
-  }>;
+  items?: TabsGroupItem[];
   onPress?: (index: number) => void;
   selectedIndex?: number;
 };
@@ -24,27 +29,29 @@ export type TabItemProps = {
   selected?: boolean;
   onPress?: (index: number) => void;
   onLoad?: (index: number, measurements: LayoutRectangle) => void;
+  testID?: string;
 };
 
 export const TabItem = forwardRef((props: TabItemProps, ref) => {
   return (
-    <Box
-      as="Pressable"
-      height={TABSGROUP_HEIGHT}
-      alignItems="center"
-      justifyContent="center"
-      borderRadius="full"
-      px="lg"
-      zIndex={999}
+    <Pressable
+      testID={props.testID}
+      className="flex-1 h-8 items-center justify-center rounded-full px-3 z-[999]"
       onLayout={(event: LayoutChangeEvent) => {
         props.onLoad?.(props.index, event.nativeEvent.layout);
       }}
       onPress={() => {
+        haptics.selection();
         props.onPress?.(props.index);
       }}
     >
-      <Text color="#fff">{props.children}</Text>
-    </Box>
+      <Text
+        color={props.selected ? "accent-foreground text-center font-semibold" : "primary-foreground text-center"}
+        numberOfLines={1}
+      >
+        {props.children}
+      </Text>
+    </Pressable>
   );
 });
 
@@ -95,19 +102,10 @@ export function TabsGroup({
   }, [measurements, selectedIndex]);
 
   return (
-    <Box
-      flexDirection="row"
-      borderWidth={2}
-      borderColor="onSurfaceBorder"
-      borderRadius="full"
-    >
-      <Box
-        as="AnimatedView"
-        borderRadius="full"
-        height={TABSGROUP_HEIGHT}
-        backgroundColor="red"
-        position="absolute"
-        top={0}
+    <View className="flex-row border-2 border-border rounded-full">
+      <Animated.View
+        pointerEvents="none"
+        className="rounded-full h-8 absolute top-0 bg-white"
         style={[{ width: selectedWidth, left }]}
       />
       {items?.map((item, index) => {
@@ -117,6 +115,7 @@ export function TabsGroup({
             index={index}
             selected={selectedIndex === index}
             onLoad={onLoad}
+            testID={item.testID}
             onPress={(index) => {
               selectedIndexRef.current = index;
               animate(index);
@@ -126,7 +125,7 @@ export function TabsGroup({
           </TabItem>
         );
       })}
-    </Box>
+    </View>
   );
 }
 

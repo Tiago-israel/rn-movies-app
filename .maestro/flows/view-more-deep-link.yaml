@@ -1,0 +1,36 @@
+appId: com.tico77.rnapp
+---
+# Popular grid from home — swipe the horizontal carousel until the "Show more" tile (last item) is visible.
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "home-root"
+    timeout: 90000
+- scrollUntilVisible:
+    element:
+      id: "home-popular-carousel"
+    direction: DOWN
+    timeout: 90000
+- repeat:
+    times: 25
+    while:
+      notVisible:
+        id: "home-view-more-popular"
+    commands:
+      - swipe:
+          from:
+            id: "home-popular-carousel"
+          direction: LEFT
+          duration: 300
+- tapOn:
+    id: "home-view-more-popular"
+- extendedWaitUntil:
+    visible:
+      id: "view-more-screen"
+    timeout: 90000
+- tapOn:
+    id: "nav-back"
+- extendedWaitUntil:
+    visible:
+      id: "home-root"
+    timeout: 30000

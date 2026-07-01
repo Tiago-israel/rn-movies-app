@@ -1,0 +1,39 @@
+appId: com.tico77.rnapp
+---
+# Search → TV result (TMDB id 1396) → series details → back to home.
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "home-root"
+    timeout: 90000
+- tapOn:
+    id: "home-open-search"
+- extendedWaitUntil:
+    visible:
+      id: "search-screen"
+    timeout: 15000
+- tapOn:
+    id: "search-input"
+- inputText: "Breaking Bad"
+- extendedWaitUntil:
+    visible:
+      id: "search-result-tv-1396"
+    timeout: 60000
+- tapOn:
+    id: "search-result-tv-1396"
+- extendedWaitUntil:
+    visible:
+      id: "series-details-screen"
+    timeout: 30000
+- tapOn:
+    id: "nav-back"
+- extendedWaitUntil:
+    visible:
+      id: "search-input"
+    timeout: 15000
+- tapOn:
+    id: "nav-back"
+- extendedWaitUntil:
+    visible:
+      id: "home-root"
+    timeout: 15000

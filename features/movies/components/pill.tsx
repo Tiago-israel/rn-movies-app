@@ -1,5 +1,5 @@
 import Icon from "@expo/vector-icons/FontAwesome6";
-import { Box } from "@/components/Box";
+import { View, Text } from "react-native";
 import { useTheme } from "@/lib/theme-provider";
 import { MovieTheme } from "../theme";
 
@@ -11,23 +11,17 @@ type PillProps = {
 export function Pill(props: PillProps) {
   const { colors } = useTheme<MovieTheme>();
   return (
-    <Box
-      height={36}
-      px="sm"
-      flexDirection="row"
-      backgroundColor="secondary"
-      borderRadius="full"
-      alignItems="center"
-      gap={"xxs"}
-      justifyContent="center"
-    >
+    <View className="h-9 px-sm flex-row bg-secondary rounded-full items-center gap-xxs justify-center">
       {props.icon && (
-        <Icon name={props.icon || "han"} size={16} color={colors.onSecondary} />
+        <Icon
+          name={props.icon || "han"}
+          size={16}
+          color={colors["secondary-foreground"]}
+        />
       )}
-
-      <Box as="Text" color={colors.onSecondary} fontSize={14} fontWeight={700}>
+      <Text className="text-secondary-foreground text-sm font-bold">
         {props.children}
-      </Box>
-    </Box>
+      </Text>
+    </View>
   );
 }

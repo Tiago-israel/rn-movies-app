@@ -1,0 +1,8 @@
+---
+alwaysApply: true
+---
+
+<!-- SPECKIT START -->
+For additional context about technologies, project structure, and execution
+workflow, read `specs/001-home-performance/plan.md` before implementation.
+<!-- SPECKIT END -->

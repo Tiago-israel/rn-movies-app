@@ -10,8 +10,8 @@ import {
   Easing,
   useAnimatedValue,
   useWindowDimensions,
+  View,
 } from "react-native";
-import { Box } from "./box";
 import { IconButton } from "./Icon-button";
 
 const DRAWER_WIDTH = 300;
@@ -87,42 +87,29 @@ export const Drawer = forwardRef((props: DrawerProps, ref) => {
   if (!isOpen) return null;
 
   return (
-    <Box width={"100%"} height={"100%"} position="absolute">
-      <Box
-        as="AnimatedView"
-        position="absolute"
-        width={"100%"}
-        height={"100%"}
-        backgroundColor="rgba(0,0,0,0.6)"
-        zIndex={1}
-      />
-      <Box
-        as="AnimatedView"
-        position="absolute"
-        width={DRAWER_WIDTH}
-        height="100%"
-        zIndex={2}
-        backgroundColor="surfaceVariant"
-        top={0}
+    <View className="w-full h-full absolute">
+      <Animated.View
+        className="absolute w-full h-full z-[1]"
         style={[
+          { backgroundColor: "rgba(0,0,0,0.6)" },
+          { left: 0, right: 0, top: 0, bottom: 0 },
+        ]}
+      />
+      <Animated.View
+        className="absolute h-full top-0 z-[2] bg-card"
+        style={[
+          { width: DRAWER_WIDTH },
           {
             left: props.direction === "left" ? left : undefined,
             right: props.direction === "right" ? right : undefined,
           },
         ]}
       >
-        <Box
-          width="100%"
-          height={72}
-          flexDirection="row"
-          alignItems="center"
-          justifyContent="flex-end"
-          px="sm"
-        >
+        <View className="w-full flex-row items-center justify-end px-sm h-[72]">
           <IconButton icon="close" onPress={onClose} />
-        </Box>
+        </View>
         {props.children}
-      </Box>
-    </Box>
+      </Animated.View>
+    </View>
   );
 });

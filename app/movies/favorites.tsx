@@ -1,9 +1,22 @@
 import { router } from "expo-router";
-import { FavoriteMoviesView } from "@/features";
+import {
+  FavoriteMoviesView,
+  type FavoriteMediaType,
+} from "@/features";
 
-export default function Favorites() {
-  function goToMovieDetails(movieId?: number) {
-    router.navigate(`/movies/${movieId}`);
+export default function FavoritesScreen() {
+  function goToDetails(id: number, mediaType: FavoriteMediaType = "movie") {
+    if (mediaType === "tv") {
+      router.push(`/movies/series/${id}`);
+    } else {
+      router.push(`/movies/${id}`);
+    }
   }
-  return <FavoriteMoviesView goToDetails={goToMovieDetails} />;
+
+  return (
+    <FavoriteMoviesView
+      onBack={() => router.back()}
+      goToDetails={goToDetails}
+    />
+  );
 }

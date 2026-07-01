@@ -9,8 +9,12 @@ export * from './movie-review.response';
 export * from './movie-video.response';
 export * from './paginated-result.response';
 export * from './person-movie-credits.response';
+export * from './person-tv-credits.response';
 export * from './person.response';
 export * from './tv-series-list-item.response';
+export * from './tv-series-details.response';
+export * from './tv-season-details.response';
 export * from './provider.response'
 export * from './provider-wraper.response';
-export * from './tv-series-details.response';
+export * from './search-multi.response';
+export * from './watch-providers-list.response';

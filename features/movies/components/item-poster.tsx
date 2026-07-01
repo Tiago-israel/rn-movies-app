@@ -1,5 +1,6 @@
-import { Box, Image } from "@/components";
-import { ImageProps } from "react-native";
+import { View, Pressable } from "react-native";
+import { Image } from "expo-image";
+import { haptics } from "@/lib/haptics";
 
 export type ItemPosterProps = {
   width?: number;
@@ -7,31 +8,47 @@ export type ItemPosterProps = {
   posterUrl?: string;
   borderRadius?: "lg" | "none";
   onPress?: () => void | Promise<void>;
+  recyclingKey?: string;
 };
 
 export function ItemPoster({
   width = 150,
   height = 200,
   borderRadius = "lg",
+  recyclingKey,
+  onPress,
   ...props
 }: ItemPosterProps) {
+  const radiusClass = borderRadius === "none" ? "" : "rounded-lg";
+  const Component = onPress ? Pressable : View;
+  const handlePress = onPress
+    ? () => {
+        haptics.light();
+        void onPress();
+      }
+    : undefined;
+
   return (
-    <Box
-      as={props.onPress ? "Pressable" : "View"}
-      width={width}
-      height={height}
-      onPress={props.onPress}
-      overflow="hidden"
-      borderRadius={borderRadius}
+    <Component
+      className={`overflow-hidden ${radiusClass}`}
+      style={{ width, height }}
+      onPress={handlePress}
     >
-      <Image
-        source={{ uri: props.posterUrl }}
-        placeholder={require("../assets/placeholder.png")}
-        style={{
-          width: width,
-          height: height,
-        }}
-      />
-    </Box>
+      {props.posterUrl ? (
+        <Image
+          source={{ uri: props.posterUrl }}
+          style={{ width, height }}
+          contentFit="cover"
+          recyclingKey={recyclingKey ?? props.posterUrl}
+          transition={150}
+          cachePolicy="memory-disk"
+        />
+      ) : (
+        <View
+          className="h-full w-full bg-muted"
+          style={{ width, height }}
+        />
+      )}
+    </Component>
   );
 }

@@ -1,0 +1,22 @@
+appId: com.tico77.rnapp
+---
+# TMDB movie 550 — stable deep link without scrolling home carousels.
+# Prefer myapp:///movies/550 (path /movies/550) for consistent parsing across Android / Expo.
+# Wait for home before openLink — otherwise the VIEW intent can fire before Expo Router subscribes to Linking.
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "home-root"
+    timeout: 90000
+- openLink:
+    link: "myapp:///movies/550"
+- extendedWaitUntil:
+    visible:
+      id: "movie-details-screen"
+    timeout: 90000
+- tapOn:
+    id: "nav-back"
+- extendedWaitUntil:
+    visible:
+      id: "home-root"
+    timeout: 30000

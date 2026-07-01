@@ -1,7 +1,8 @@
-import { useRef, type ReactNode } from "react";
+import { useRef, useCallback, type ReactNode } from "react";
+import { Pressable } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
-import { Box } from "./box";
 import { TapState, TapStateRef } from "@/components";
+import { haptics } from "@/lib/haptics";
 import { useTheme } from "@/lib/theme-provider";
 import { MovieTheme } from "../theme";
 
@@ -10,40 +11,48 @@ export type IconButtonProps = {
   onPress?: () => void | Promise<void>;
   color?: string;
   children?: ReactNode;
+  testID?: string;
+  accessibilityLabel?: string;
 };
 
-export function IconButton(props: IconButtonProps) {
+export function IconButton({
+  icon,
+  onPress: onPressProp,
+  color,
+  children,
+  testID,
+  accessibilityLabel,
+}: IconButtonProps) {
   const TapStateRef = useRef<TapStateRef>(null);
-  const {
-    colors: { components },
-  } = useTheme<MovieTheme>();
+  const { colors } = useTheme<MovieTheme>();
+  const onPress = useCallback(() => {
+    if (onPressProp) {
+      haptics.light();
+      void onPressProp();
+    }
+  }, [onPressProp]);
   return (
-    <Box
-      as="Pressable"
-      width={48}
-      height={48}
-      alignItems="center"
-      justifyContent="center"
-      overflow="hidden"
-      borderRadius="full"
-      onPress={props.onPress}
+    <Pressable
+      testID={testID}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole="button"
+      className={`w-12 h-12 items-center justify-center rounded-full bg-secondary ${
+        children ? "overflow-visible" : "overflow-hidden"
+      }`}
+      onPress={onPress}
       onPressIn={() => TapStateRef.current?.setPressed(true)}
       onPressOut={() => TapStateRef.current?.setPressed(false)}
-      backgroundColor="components.icon-button.primary.container.color"
     >
       <TapState ref={TapStateRef} variant="dark" />
-      {props.children ? (
-        props.children
+      {children ? (
+        children
       ) : (
         <Icon
-          name={props.icon}
-          color={
-            props.color ??
-            components["icon-button"].primary["on-container"].color
-          }
+          name={icon}
+          color={color ?? colors["icon-button"]["on-container"]}
           size={24}
         />
       )}
-    </Box>
+    </Pressable>
   );
 }

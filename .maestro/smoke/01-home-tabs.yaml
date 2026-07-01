@@ -1,0 +1,14 @@
+appId: com.tico77.rnapp
+---
+# Bottom tabs hide labels; Maestro uses tabBarAccessibilityLabel (Home, Watchlist, Favorites, Settings).
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "home-root"
+    timeout: 90000
+- tapOn: "Watchlist"
+- tapOn: "Favorites"
+- tapOn: "Settings"
+- tapOn: "Home"
+- assertVisible:
+    id: "home-root"

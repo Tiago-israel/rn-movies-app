@@ -1,5 +1,7 @@
 export * from "./response";
 export * from "./movie-details";
+export * from "./series-details";
+export * from "./episode";
 export * from "./movie-review";
 export * from "./user";
 export * from "./cast";
@@ -14,4 +16,5 @@ export * from "./generic-item";
 export * from "./paginated-result";
 export * from "./service-type";
 export * from "./provider";
-export * from "./tv-series-details";
+export * from "./watchlist-item";
+export * from "./search-result";

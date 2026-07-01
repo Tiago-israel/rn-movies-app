@@ -5,7 +5,7 @@ import { MoviesService } from "../services";
 export function useMovieCast(movieId: number) {
   const moviesService = useRef(new MoviesService()).current;
 
-  const { data: cast } = useQuery({
+  const { data: cast, isFetching: isCastFetching } = useQuery({
     initialData: [],
     queryKey: ["movieCredits", movieId],
     queryFn: async () => {
@@ -14,5 +14,6 @@ export function useMovieCast(movieId: number) {
     },
   });
 
-  return { cast };
+  const isLoading = isCastFetching && cast.length === 0;
+  return { cast, isLoading };
 }

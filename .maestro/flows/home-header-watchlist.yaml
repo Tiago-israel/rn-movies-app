@@ -1,0 +1,17 @@
+appId: com.tico77.rnapp
+---
+# Header bookmark opens watchlist stack; return via bottom Home tab.
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "home-root"
+    timeout: 90000
+- tapOn:
+    id: "home-header-watchlist"
+- extendedWaitUntil:
+    visible:
+      id: "watchlist-screen"
+    timeout: 30000
+- tapOn: "Home"
+- assertVisible:
+    id: "home-root"

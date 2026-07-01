@@ -1,0 +1,16 @@
+appId: com.tico77.rnapp
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "home-root"
+    timeout: 90000
+- tapOn: "Settings"
+- extendedWaitUntil:
+    visible:
+      id: "preferences-screen"
+    timeout: 60000
+- assertVisible: "Appearance"
+- tapOn: "Home"
+- assertVisible:
+    id: "home-root"

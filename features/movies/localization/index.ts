@@ -15,6 +15,9 @@ export function setLocation(languageCode: string) {
   i18n.locale = languageCode;
 }
 
-export function getText(key: keyof typeof usTexts) {
-  return i18n.t(key);
+export function getText(
+  key: keyof typeof usTexts,
+  params?: Record<string, unknown>
+) {
+  return i18n.t(key, params);
 }

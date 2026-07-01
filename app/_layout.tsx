@@ -1,11 +1,26 @@
+import "../global.css";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      /**
+       * Do not set a global staleTime: queries that use `initialData` (e.g. `{}`
+       * / `[]` on detail screens) would be treated as fresh and would skip the
+       * first fetch until stale. Catalog/home hooks set their own staleTime.
+       */
+      gcTime: 45 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      retry: 2,
+    },
+  },
+});
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
@@ -26,10 +41,12 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="movies" options={{ headerShown: false }} />
       </Stack>
+      </GestureHandlerRootView>
     </QueryClientProvider>
   );
 }

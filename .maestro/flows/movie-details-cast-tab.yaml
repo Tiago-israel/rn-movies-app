@@ -1,0 +1,26 @@
+appId: com.tico77.rnapp
+---
+# TMDB movie 550 — open details, switch to Cast tab, go back.
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "home-root"
+    timeout: 90000
+- openLink:
+    link: "myapp:///movies/550"
+- extendedWaitUntil:
+    visible:
+      id: "movie-details-screen"
+    timeout: 90000
+- extendedWaitUntil:
+    visible:
+      id: "details-tab-overview"
+    timeout: 90000
+- tapOn:
+    id: "details-tab-cast"
+- tapOn:
+    id: "nav-back"
+- extendedWaitUntil:
+    visible:
+      id: "home-root"
+    timeout: 30000

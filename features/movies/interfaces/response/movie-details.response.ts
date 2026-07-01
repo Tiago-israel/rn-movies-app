@@ -1,5 +1,7 @@
 export type MovieDetailsResponse = {
   adult: boolean;
+  /** Present on list/search responses (e.g. popular, now_playing). */
+  genre_ids?: number[];
   backdrop_path: string;
   belongs_to_collection: any;
   budget: number;
