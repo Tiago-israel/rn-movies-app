@@ -7,3 +7,4 @@ export * from "./use-person";
 export * from "./use-search-movies";
 export * from "./use-tv-series-home";
 export * from "./use-view-more";
+export * from "./use-series-details";

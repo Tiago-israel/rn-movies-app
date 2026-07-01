@@ -31,6 +31,7 @@ export const movieLightTheme = {
       "nav-bar": {
         container: {
           color: "#ffffff",
+          floatColor: "#ecf0f1"
         },
       },
       button: {

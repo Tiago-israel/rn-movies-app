@@ -6,17 +6,19 @@ import { MovieTheme } from "../theme";
 import { useWindowDimensions } from "react-native";
 import { useMemo, useState } from "react";
 import { ServiceType } from "../interfaces";
+import { useMediaStore } from "../store";
 export type HomeProps = {
   navigateToMovieDetails: (movieId: number) => void;
   navigateToViewMore: (type: ServiceType, title: string) => void;
 };
 
 const components = new Map();
-components.set(0, (props) => <HomeMoviesView {...props} />);
-components.set(1, (props) => <HomeSeriesView {...props} />);
+components.set(0, (props: any) => <HomeMoviesView {...props} />);
+components.set(1, (props: any) => <HomeSeriesView {...props} />);
 
 export function HomeView(props: HomeProps) {
   const [componentIndex, setComponentIndex] = useState(0);
+  const { isMovie, setIsMovie } = useMediaStore();
   const { height } = useWindowDimensions();
   const theme = useTheme<MovieTheme>();
   const containerHeight = useMemo(
@@ -37,6 +39,7 @@ export function HomeView(props: HomeProps) {
           items={[{ title: "Movies" }, { title: "Series" }]}
           onPress={(index) => {
             setComponentIndex(index);
+            setIsMovie(index === 0);
           }}
         />
       </Box>

@@ -31,7 +31,9 @@ export const movieDarkTheme = {
       "nav-bar": {
         container: {
           color: "#272727",
+          floatColor: "#101218e1"
         },
+
       },
       button: {
         primary: {

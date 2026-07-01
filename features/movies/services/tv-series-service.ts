@@ -7,6 +7,8 @@ import type {
   PaginatedResultResponse,
   TVSeriesListItem,
   TVSeriesListItemResponse,
+  TVSeriesDetailsResponse,
+  TVSeriesDetails
 } from "../interfaces";
 
 export class TVSeriesService {
@@ -29,7 +31,7 @@ export class TVSeriesService {
     >(`tv/airing_today?language=${this.language}&page=${page}`, {
       headers: this.headers,
     });
-    
+
     return {
       totalPages: response.total_results,
       results: response.results.map(this.mapGenericItem),
@@ -75,6 +77,16 @@ export class TVSeriesService {
     };
   };
 
+  getTvSeriesDetails = async (tvSeriesId: number) => {
+    const response = await this.httpClient.get<TVSeriesDetailsResponse>(
+      `tv/${tvSeriesId}?language=${this.language}`,
+      {
+        headers: this.headers,
+      }
+    );
+    return this.mapTVSeriesDetails(response);
+  }
+
   mapTVSeriesListItem = (
     response: TVSeriesListItemResponse
   ): TVSeriesListItem => {
@@ -103,4 +115,13 @@ export class TVSeriesService {
       posterPath: `${movieDBBaseImageUrl}${response.poster_path}`,
     };
   };
+
+  mapTVSeriesDetails = (response: TVSeriesDetailsResponse): TVSeriesDetails => {
+    return {
+      name: response.name,
+      overview: response.overview,
+      posterPath: `${movieDBBaseImageUrl}${response.poster_path}`,
+      backdropPath: `${movieDBBaseImageUrl}${response.backdrop_path}`,
+    };
+  }
 }

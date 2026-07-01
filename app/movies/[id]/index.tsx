@@ -1,8 +1,9 @@
 import { useLocalSearchParams, router } from "expo-router";
 import { Share } from "react-native";
-import { MovieDetails as MovieDetailsView } from "@/features";
+import { MovieDetails as MovieDetailsView, SeriesDetailsView as SeriesDetails, useMediaStore } from "@/features";
 
 export default function MovieDetails() {
+  const { isMovie } = useMediaStore();
   const { id } = useLocalSearchParams<{ id: string }>();
 
   function goBack() {
@@ -21,20 +22,29 @@ export default function MovieDetails() {
     router.setParams({ id: id });
   }
 
-  async function onShareMovie(videoUrl: string) {
+  function onShareMovie(videoUrl = "") {
     Share.share({
       message: videoUrl,
     });
   }
 
-  return (
-    <MovieDetailsView
+  if (isMovie) {
+    return (<MovieDetailsView
       movieId={Number(id)}
       goBack={goBack}
       onPressReview={goToReviews}
       onPressCast={goToCast}
       onPressRecommendation={goToRecommendation}
       onShareMovie={onShareMovie}
-    />
-  );
+    />)
+  }
+
+  return <SeriesDetails
+    seriesId={Number(id)}
+    goBack={goBack}
+    onPressReview={goToReviews}
+    onPressCast={goToCast}
+    onPressRecommendation={goToRecommendation}
+    onShareSeries={onShareMovie}
+  />;
 }
