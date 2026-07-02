@@ -1,6 +1,6 @@
-import { View, Pressable } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { Image } from "expo-image";
-import { haptics } from "@/lib/haptics";
+import { PressableScale } from "@/components/PressableScale";
 
 export type ItemPosterProps = {
   width?: number;
@@ -19,36 +19,41 @@ export function ItemPoster({
   onPress,
   ...props
 }: ItemPosterProps) {
-  const radiusClass = borderRadius === "none" ? "" : "rounded-lg";
-  const Component = onPress ? Pressable : View;
-  const handlePress = onPress
-    ? () => {
-        haptics.light();
-        void onPress();
-      }
-    : undefined;
+  const radius = borderRadius === "none" ? 0 : 8;
+
+  const content = props.posterUrl ? (
+    <Image
+      source={{ uri: props.posterUrl }}
+      style={{ width, height }}
+      contentFit="cover"
+      recyclingKey={recyclingKey ?? props.posterUrl}
+      transition={150}
+      cachePolicy="memory-disk"
+    />
+  ) : (
+    <View className="h-full w-full bg-muted" style={{ width, height }} />
+  );
+
+  if (!onPress) {
+    return (
+      <View style={[styles.container, { width, height, borderRadius: radius }]}>
+        {content}
+      </View>
+    );
+  }
 
   return (
-    <Component
-      className={`overflow-hidden ${radiusClass}`}
-      style={{ width, height }}
-      onPress={handlePress}
+    <PressableScale
+      style={[styles.container, { width, height, borderRadius: radius }]}
+      onPress={onPress}
     >
-      {props.posterUrl ? (
-        <Image
-          source={{ uri: props.posterUrl }}
-          style={{ width, height }}
-          contentFit="cover"
-          recyclingKey={recyclingKey ?? props.posterUrl}
-          transition={150}
-          cachePolicy="memory-disk"
-        />
-      ) : (
-        <View
-          className="h-full w-full bg-muted"
-          style={{ width, height }}
-        />
-      )}
-    </Component>
+      {content}
+    </PressableScale>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    overflow: "hidden",
+  },
+});

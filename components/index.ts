@@ -1,3 +1,4 @@
+export * from "./PressableScale";
 export * from "./Box";
 export * from "./BottomSheet";
 export * from "./bottom-sheet-store";
