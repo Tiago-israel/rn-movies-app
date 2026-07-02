@@ -11,7 +11,6 @@ export {
   SeriesCastView,
   PersonDetailsView,
   ViewMoreView,
-  SeriesDetailsView
 } from "./views";
 export type { FavoriteMediaType } from "./views";
 export { Layout } from "./components";

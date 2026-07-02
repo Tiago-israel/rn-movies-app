@@ -40,11 +40,6 @@ export const movieLightTheme = {
         color: "#ffffff",
         backgroundColor: "#000000",
       },
-      "nav-bar": {
-        container: {
-          color: "#ffffff",
-          floatColor: "#ecf0f1"
-        },
       secondary: {
         color: "#000000",
         backgroundColor: "#ffffff",

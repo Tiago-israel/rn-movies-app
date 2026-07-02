@@ -1,5 +1,5 @@
 import { ImageProps, type ImageBackgroundProps } from "react-native";
-import { Box } from "./box";
+import { Box } from "@/components/Box";
 import { ViewMoreText } from "./view-more-text";
 
 export type MediaBannerDescriptionProps = {

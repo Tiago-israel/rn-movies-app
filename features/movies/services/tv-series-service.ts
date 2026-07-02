@@ -15,11 +15,10 @@ import type {
   ProviderResponse,
   ProviderWrapperResponse,
   SeriesDetails,
+  TVSeriesDetails,
   TVSeriesDetailsResponse,
   TVSeriesListItem,
   TVSeriesListItemResponse,
-  TVSeriesDetailsResponse,
-  TVSeriesDetails
 } from "../interfaces";
 import type { TVSeasonDetailsResponse, TVSeasonEpisodeResponse } from "../interfaces/response/tv-season-details.response";
 
