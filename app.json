@@ -16,6 +16,7 @@
       "bundleIdentifier": "com.tico77.rnapp"
     },
     "android": {
+      "softwareKeyboardLayoutMode": "pan",
       "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",

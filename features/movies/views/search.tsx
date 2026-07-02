@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from "react";
-import { KeyboardAvoidingView, Platform, View } from "react-native";
+import { KeyboardAvoidingView, Platform, View, type ViewProps } from "react-native";
 import { haptics } from "@/lib/haptics";
 import {
   NavBar,
@@ -24,6 +24,23 @@ export type SearchViewProps = {
 
 /** Spacing under the search field, inside scroll areas (aligns with other tab screens). */
 const LIST_INSET_TOP = 8;
+
+/**
+ * Search input sits under the nav bar; on Android 15+ `KeyboardAvoidingView` with
+ * `behavior="height"` (and edge-to-edge) often breaks IME focus in Expo Go.
+ */
+function SearchScreenContainer(props: ViewProps) {
+  if (Platform.OS === "ios") {
+    return (
+      <KeyboardAvoidingView
+        behavior="padding"
+        keyboardVerticalOffset={0}
+        {...props}
+      />
+    );
+  }
+  return <View {...props} />;
+}
 
 export function SearchView(props: SearchViewProps) {
 
@@ -50,6 +67,7 @@ export function SearchView(props: SearchViewProps) {
     recentQueries,
     removeRecentQuery,
     selectRecentQuery,
+    commitRecentQuery,
     showIdleHome,
     awaitingDebounce,
   } = useSearchMovies();
@@ -59,6 +77,14 @@ export function SearchView(props: SearchViewProps) {
   const watchlistKeys = useMemo(
     () => new Set(watchlistItems.map(watchlistEntryKey)),
     [watchlistItems]
+  );
+
+  const handleSelectResult = useCallback(
+    (item: SearchResultItem) => {
+      commitRecentQuery();
+      props.onSelectResult(item);
+    },
+    [commitRecentQuery, props.onSelectResult]
   );
 
   const handleAddToWatchlist = useCallback(
@@ -86,11 +112,9 @@ export function SearchView(props: SearchViewProps) {
   );
 
   return (
-    <KeyboardAvoidingView
+    <SearchScreenContainer
       testID="search-screen"
       className="flex-1 w-full h-full bg-background"
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
     >
       <View className="flex-1 w-full">
         <NavBar
@@ -104,7 +128,8 @@ export function SearchView(props: SearchViewProps) {
             value={searchText}
             onChangeText={setSearchText}
             onClear={clearList}
-            autoFocus
+            onSubmitEditing={commitRecentQuery}
+            autoFocus={Platform.OS === "ios"}
           />
         </View>
         {showIdleHome ? (
@@ -114,7 +139,7 @@ export function SearchView(props: SearchViewProps) {
             trendingLoading={trendingLoading}
             onSelectRecent={selectRecentQuery}
             onRemoveRecent={removeRecentQuery}
-            onSelectResult={props.onSelectResult}
+            onSelectResult={handleSelectResult}
             onAddToWatchlist={handleAddToWatchlist}
             isInWatchlist={isInWatchlist}
             watchlistVersion={watchlistItems.length}
@@ -129,7 +154,7 @@ export function SearchView(props: SearchViewProps) {
             committedQuery={committedQuery}
             errorKey={errorKey}
             onRetry={retry}
-            onPress={props.onSelectResult}
+            onPress={handleSelectResult}
             loadMore={loadMore}
             loadingMore={loadingMore}
             hasMore={hasMore}
@@ -145,6 +170,6 @@ export function SearchView(props: SearchViewProps) {
           />
         )}
       </View>
-    </KeyboardAvoidingView>
+    </SearchScreenContainer>
   );
 }

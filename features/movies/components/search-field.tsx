@@ -49,7 +49,11 @@ export function SearchField({
         onChangeText={onChangeText}
         returnKeyType="search"
         clearButtonMode="never"
+        autoCorrect={false}
+        autoCapitalize="none"
         {...props}
+        blurOnSubmit={false}
+        showSoftInputOnFocus
       />
       {value.length > 0 ? (
         <Pressable

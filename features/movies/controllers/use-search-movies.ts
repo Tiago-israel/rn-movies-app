@@ -95,7 +95,6 @@ export function useSearchMovies() {
         setTotalPages(result.totalPages);
         setCommittedQuery(q);
         setStatus("success");
-        addRecentQuery(q);
       } catch (e: unknown) {
         if ((e as Error)?.name === "AbortError") return;
         setErrorKey("search_error");
@@ -103,8 +102,13 @@ export function useSearchMovies() {
         setItems([]);
       }
     },
-    [addRecentQuery]
+    []
   );
+
+  const commitRecentQuery = useCallback(() => {
+    const q = searchText.trim() || committedQuery.trim();
+    if (q) addRecentQuery(q);
+  }, [searchText, committedQuery, addRecentQuery]);
 
   useEffect(() => {
     if (!searchText.trim()) {
@@ -239,6 +243,7 @@ export function useSearchMovies() {
     recentQueries,
     removeRecentQuery,
     selectRecentQuery,
+    commitRecentQuery,
     showIdleHome,
     awaitingDebounce,
   };

@@ -49,6 +49,7 @@ export default function MoviesLayout() {
       initialRouteName="index"
       screenOptions={{
         headerShown: false,
+        tabBarHideOnKeyboard: true,
         tabBarButton: (props) => <HapticTabBarButton {...props} />,
       }}
       backBehavior="history"
