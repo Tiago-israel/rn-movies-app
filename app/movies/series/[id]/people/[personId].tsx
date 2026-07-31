@@ -12,11 +12,16 @@ export default function SeriesPersonDetails() {
     router.push(`/movies/${movieId}`);
   }
 
+  function goToSeries(seriesId: number) {
+    router.push(`/movies/series/${seriesId}`);
+  }
+
   return (
     <PersonDetailsView
       personId={Number(personId)}
       goBack={goBack}
       goToMovie={goToMovie}
+      goToSeries={goToSeries}
     />
   );
 }

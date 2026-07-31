@@ -7,10 +7,10 @@ import {
   FlatList,
   ImageBackground,
   Linking,
-  Dimensions,
+  useWindowDimensions,
 } from "react-native";
 import Icon from "@expo/vector-icons/Ionicons";
-import { Image, List, SkeletonPlaceholder } from "@/components";
+import { Image, SkeletonPlaceholder } from "@/components";
 import { haptics } from "@/lib/haptics";
 import {
   IconButton,
@@ -19,33 +19,33 @@ import {
   ViewMoreText,
 } from "../components";
 import { usePerson } from "../controllers";
-import { MediaItem } from "../interfaces";
 
 export type PersonDetailsViewProps = {
   personId: number;
   goBack: () => void;
   goToMovie: (movieId: number) => void;
+  goToSeries?: (seriesId: number) => void;
 };
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const CONTENT_WIDTH = SCREEN_WIDTH - 40;
+const NUM_COLUMNS = 3;
+const GRID_GAP = 8;
+const HORIZONTAL_PADDING = 20;
 
 export function PersonDetailsView(props: PersonDetailsViewProps) {
-  const moviesListRef = useRef<any>(null);
   const viewMoreTextRef = useRef<any>(null);
-  const { person, movies, externalMedias, isLoading } = usePerson(
+  const { width: screenWidth } = useWindowDimensions();
+  const { person, credits, externalMedias, isLoading } = usePerson(
     props.personId
   );
+
+  const contentWidth = screenWidth - HORIZONTAL_PADDING * 2;
+  const columnWidth =
+    (contentWidth - GRID_GAP * (NUM_COLUMNS - 1)) / NUM_COLUMNS;
+  const posterHeight = columnWidth * 1.5;
 
   useEffect(() => {
     viewMoreTextRef.current?.hideText?.();
   }, [props.personId]);
-
-  useEffect(() => {
-    return () => {
-      moviesListRef.current?.scrollToOffset?.(0);
-    };
-  });
 
   if (isLoading) {
     return (
@@ -59,42 +59,54 @@ export function PersonDetailsView(props: PersonDetailsViewProps) {
           showsVerticalScrollIndicator={false}
         >
           <SkeletonPlaceholder
-            width={CONTENT_WIDTH}
+            width={contentWidth}
             height={300}
             borderRadius={0}
             style={{ marginBottom: 0 }}
           />
           <View style={{ paddingTop: 16 }}>
             <SkeletonPlaceholder
-              width={CONTENT_WIDTH * 0.7}
+              width={contentWidth * 0.7}
               height={36}
               style={{ marginBottom: 16 }}
             />
             <SkeletonPlaceholder
-              width={CONTENT_WIDTH * 0.4}
+              width={contentWidth * 0.4}
               height={28}
               style={{ marginBottom: 24 }}
             />
             <SkeletonPlaceholder
-              width={CONTENT_WIDTH}
+              width={contentWidth}
               height={80}
               style={{ marginBottom: 8 }}
             />
             <SkeletonPlaceholder
-              width={CONTENT_WIDTH * 0.9}
+              width={contentWidth * 0.9}
               height={16}
               style={{ marginBottom: 8 }}
             />
             <SkeletonPlaceholder
-              width={CONTENT_WIDTH * 0.6}
+              width={contentWidth * 0.6}
               height={16}
               style={{ marginBottom: 32 }}
             />
-            <SkeletonPlaceholder
-              width={CONTENT_WIDTH}
-              height={200}
-              style={{ marginTop: 24 }}
-            />
+            <View
+              style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                gap: GRID_GAP,
+                marginTop: 24,
+              }}
+            >
+              {Array.from({ length: 6 }, (_, i) => (
+                <SkeletonPlaceholder
+                  key={i}
+                  width={columnWidth}
+                  height={posterHeight}
+                  borderRadius={16}
+                />
+              ))}
+            </View>
           </View>
         </ScrollView>
       </View>
@@ -155,58 +167,89 @@ export function PersonDetailsView(props: PersonDetailsViewProps) {
           </View>
           <View className="flex-row pt-xs gap-xxs px-sm">
             <Pill icon="star">{person?.birthday}</Pill>
-            {person?.deathday && (
+            {person?.deathday ? (
               <Pill icon="cross">{person?.deathday}</Pill>
-            )}
+            ) : null}
           </View>
           <View className="py-5">
-          {person?.biography && (
-            <ViewMoreText
-              ref={viewMoreTextRef}
-              className="text-palette-asbestos"
-              fontSize={16}
-              fontWeight={700}
-              numberOfLines={4}
-              containerStyle={{ py: "md", px: "sm" }}
-            >
-              {person?.biography}
-            </ViewMoreText>
-          )}
+            {person?.biography ? (
+              <ViewMoreText
+                ref={viewMoreTextRef}
+                className="text-palette-asbestos"
+                fontSize={16}
+                fontWeight={700}
+                numberOfLines={4}
+                containerStyle={{ py: "md", px: "sm" }}
+              >
+                {person?.biography}
+              </ViewMoreText>
+            ) : null}
           </View>
-         
-          <View className="w-full h-[250]">
-            {movies.length > 0 && (
-              <List
-                innerRef={moviesListRef}
-                horizontal
-                data={movies}
-                estimatedItemSize={250}
-                contentContainerStyle={{ paddingHorizontal: 20 }}
-                showsHorizontalScrollIndicator={false}
-                renderItem={({ item }) => (
+
+          {credits.length > 0 ? (
+            <View
+              style={{
+                paddingHorizontal: HORIZONTAL_PADDING,
+                flexDirection: "row",
+                flexWrap: "wrap",
+                gap: GRID_GAP,
+              }}
+            >
+              {credits.map((credit) => {
+                const badgeLabel = credit.mediaType === "tv" ? "TV" : "Movie";
+                return (
                   <Pressable
-                    className="w-[120] h-[200]"
+                    key={`${credit.mediaType}-${credit.id}`}
+                    style={{ width: columnWidth }}
                     onPress={() => {
                       haptics.light();
-                      props.goToMovie?.(item.id);
+                      if (credit.mediaType === "tv") {
+                        props.goToSeries?.(credit.id);
+                      } else {
+                        props.goToMovie?.(credit.id);
+                      }
                     }}
+                    accessibilityLabel={
+                      credit.title
+                        ? `View ${credit.title} (${badgeLabel})`
+                        : `View ${badgeLabel}`
+                    }
+                    accessibilityRole="button"
                   >
-                    <Image
-                      source={{ uri: item.backdropPath }}
-                      style={{
-                        width: 120,
-                        height: 200,
-                        borderRadius: 16,
-                      }}
-                    />
+                    <View style={{ position: "relative" }}>
+                      <Image
+                        source={{ uri: credit.posterPath }}
+                        style={{
+                          width: columnWidth,
+                          height: posterHeight,
+                          borderRadius: 16,
+                        }}
+                      />
+                      <View
+                        className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded ${
+                          credit.mediaType === "tv"
+                            ? "bg-primary"
+                            : "bg-secondary"
+                        }`}
+                      >
+                        <Text className="text-foreground text-[10px] font-bold">
+                          {badgeLabel}
+                        </Text>
+                      </View>
+                    </View>
+                    {credit.title ? (
+                      <Text
+                        className="text-muted-foreground text-xs mt-1.5"
+                        numberOfLines={2}
+                      >
+                        {credit.title}
+                      </Text>
+                    ) : null}
                   </Pressable>
-                )}
-                ItemSeparatorComponent={() => (
-                  <View className="w-2 h-2" />
-                )}
-              />
-            )}
-          </View>
+                );
+              })}
+            </View>
+          ) : null}
         </View>
       </ScrollView>
     </View>

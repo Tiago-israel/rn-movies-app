@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
   Pressable,
   Linking,
-  Dimensions,
-  ScrollView,
+  useWindowDimensions,
 } from "react-native";
 import { haptics } from "@/lib/haptics";
 import {
@@ -20,10 +19,11 @@ import { ViewMoreText } from "./view-more-text";
 import { usePerson, type PersonCredit } from "../controllers";
 import type { MediaItem } from "../interfaces";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const MODAL_CONTENT_WIDTH = SCREEN_WIDTH - 72;
-const CREDIT_POSTER_WIDTH = 110;
-const CREDIT_POSTER_HEIGHT = 165;
+const NUM_COLUMNS = 3;
+const GRID_GAP = 8;
+/** Matches `BottomSheet` `sheetInner.paddingHorizontal`. */
+const HORIZONTAL_PADDING = 16;
+const MAX_CREDITS = 21;
 
 // Map external media names to MaterialCommunityIcons names
 const SOCIAL_ICON_MAP: Record<string, string> = {
@@ -51,45 +51,57 @@ export type PersonModalRef = {
 // Loading Skeleton
 // ---------------------------------------------------------------------------
 
-function PersonModalSkeleton() {
+function PersonModalSkeleton({
+  columnWidth,
+  posterHeight,
+}: {
+  columnWidth: number;
+  posterHeight: number;
+}) {
+  const contentWidth = columnWidth * NUM_COLUMNS + GRID_GAP * (NUM_COLUMNS - 1);
+
   return (
     <View className="items-center pt-2 pb-4">
       <SkeletonPlaceholder
         width={120}
         height={120}
         borderRadius={60}
-        style={{ marginBottom: 16 }}
+        style={{ marginBottom: 12 }}
       />
       <SkeletonPlaceholder
-        width={MODAL_CONTENT_WIDTH * 0.6}
-        height={24}
+        width={contentWidth * 0.55}
+        height={28}
         borderRadius={4}
         style={{ marginBottom: 12 }}
       />
-      <View style={{ flexDirection: "row", gap: 8, marginBottom: 20 }}>
+      <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
         <SkeletonPlaceholder width={120} height={36} borderRadius={999} />
         <SkeletonPlaceholder width={90} height={36} borderRadius={999} />
       </View>
+      <View style={{ flexDirection: "row", gap: 8, marginBottom: 20 }}>
+        <SkeletonPlaceholder width={40} height={40} borderRadius={20} />
+        <SkeletonPlaceholder width={40} height={40} borderRadius={20} />
+        <SkeletonPlaceholder width={40} height={40} borderRadius={20} />
+      </View>
       <View style={{ width: "100%", marginBottom: 20 }}>
         <SkeletonPlaceholder
-          width={MODAL_CONTENT_WIDTH}
+          width={contentWidth}
           height={14}
           borderRadius={4}
           style={{ marginBottom: 8 }}
         />
         <SkeletonPlaceholder
-          width={MODAL_CONTENT_WIDTH * 0.95}
+          width={contentWidth * 0.95}
           height={14}
           borderRadius={4}
           style={{ marginBottom: 8 }}
         />
         <SkeletonPlaceholder
-          width={MODAL_CONTENT_WIDTH * 0.7}
+          width={contentWidth * 0.7}
           height={14}
           borderRadius={4}
         />
       </View>
-      {/* Credits skeleton */}
       <View style={{ width: "100%" }}>
         <SkeletonPlaceholder
           width={100}
@@ -97,12 +109,18 @@ function PersonModalSkeleton() {
           borderRadius={4}
           style={{ marginBottom: 12 }}
         />
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          {[0, 1, 2].map((i) => (
+        <View
+          style={{
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: GRID_GAP,
+          }}
+        >
+          {Array.from({ length: 6 }, (_, i) => (
             <SkeletonPlaceholder
               key={`credit-skel-${i}`}
-              width={CREDIT_POSTER_WIDTH}
-              height={CREDIT_POSTER_HEIGHT}
+              width={columnWidth}
+              height={posterHeight}
               borderRadius={12}
             />
           ))}
@@ -141,11 +159,19 @@ function SocialLinkButton({ item }: { item: MediaItem }) {
 
 type CreditCardProps = {
   credit: PersonCredit;
+  width: number;
+  height: number;
   onPressMovie?: (movieId: number) => void;
   onPressSeries?: (seriesId: number) => void;
 };
 
-function CreditCard({ credit, onPressMovie, onPressSeries }: CreditCardProps) {
+function CreditCard({
+  credit,
+  width,
+  height,
+  onPressMovie,
+  onPressSeries,
+}: CreditCardProps) {
   const handlePress = useCallback(() => {
     haptics.light();
     if (credit.mediaType === "tv") {
@@ -160,7 +186,7 @@ function CreditCard({ credit, onPressMovie, onPressSeries }: CreditCardProps) {
   return (
     <Pressable
       onPress={handlePress}
-      style={{ width: CREDIT_POSTER_WIDTH }}
+      style={{ width }}
       accessibilityLabel={
         credit.title
           ? `View ${credit.title} (${badgeLabel})`
@@ -172,13 +198,12 @@ function CreditCard({ credit, onPressMovie, onPressSeries }: CreditCardProps) {
         <Image
           source={{ uri: credit.posterPath }}
           style={{
-            width: CREDIT_POSTER_WIDTH,
-            height: CREDIT_POSTER_HEIGHT,
+            width,
+            height,
             borderRadius: 12,
           }}
           contentFit="cover"
         />
-        {/* Media type badge */}
         <View
           className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded ${
             credit.mediaType === "tv" ? "bg-primary" : "bg-secondary"
@@ -224,6 +249,15 @@ function PersonModalContent({
   onPressMovie,
   onPressSeries,
 }: PersonModalContentProps) {
+  const { width: screenWidth } = useWindowDimensions();
+  const columnWidth = useMemo(
+    () =>
+      (screenWidth - HORIZONTAL_PADDING * 2 - GRID_GAP * (NUM_COLUMNS - 1)) /
+      NUM_COLUMNS,
+    [screenWidth]
+  );
+  const posterHeight = columnWidth * 1.5;
+
   return (
     <BottomSheetScrollView
       nestedScrollEnabled
@@ -231,10 +265,12 @@ function PersonModalContent({
       contentContainerStyle={{ paddingBottom: 40 }}
     >
       {isLoading ? (
-        <PersonModalSkeleton />
+        <PersonModalSkeleton
+          columnWidth={columnWidth}
+          posterHeight={posterHeight}
+        />
       ) : (
         <View className="pt-2 pb-4">
-          {/* Profile Header */}
           <View className="items-center mb-4">
             <View className="w-[120px] h-[120px] rounded-full overflow-hidden border-2 border-border mb-3">
               <Image
@@ -244,25 +280,31 @@ function PersonModalContent({
               />
             </View>
 
-            {/* Date Pills */}
-            <View className="flex-row gap-2 flex-wrap justify-center">
-              {person?.birthday ? (
-                <Pill icon="star">{`Born ${person.birthday}`}</Pill>
-              ) : null}
-              {person?.deathday ? (
-                <Pill icon="cross">{`Died ${person.deathday}`}</Pill>
-              ) : null}
-            </View>
-          </View>
+            {person?.name ? (
+              <Text className="text-foreground text-2xl font-bold text-center px-2 mb-3">
+                {person.name}
+              </Text>
+            ) : null}
 
-          {/* Social Links */}
-          {externalMedias && externalMedias.length > 0 && (
-            <View className="flex-row gap-2 justify-center mb-4">
-              {externalMedias.map((item, idx) => (
-                <SocialLinkButton key={`${item.media}-${idx}`} item={item} />
-              ))}
-            </View>
-          )}
+            {person?.birthday || person?.deathday ? (
+              <View className="flex-row gap-2 flex-wrap justify-center mb-3">
+                {person?.birthday ? (
+                  <Pill icon="star">{`Born ${person.birthday}`}</Pill>
+                ) : null}
+                {person?.deathday ? (
+                  <Pill icon="cross">{`Died ${person.deathday}`}</Pill>
+                ) : null}
+              </View>
+            ) : null}
+
+            {externalMedias.length > 0 ? (
+              <View className="flex-row gap-2 justify-center">
+                {externalMedias.map((item, idx) => (
+                  <SocialLinkButton key={`${item.media}-${idx}`} item={item} />
+                ))}
+              </View>
+            ) : null}
+          </View>
 
           {/* Biography */}
           {person?.biography ? (
@@ -280,28 +322,31 @@ function PersonModalContent({
           ) : null}
 
           {/* Known For (Combined Movie & TV Credits) */}
-          {credits.length > 0 && (
+          {credits.length > 0 ? (
             <View>
               <Text className="text-foreground font-bold text-base mb-3">
                 Known For
               </Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 10 }}
-                nestedScrollEnabled
+              <View
+                style={{
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  gap: GRID_GAP,
+                }}
               >
-                {credits.slice(0, 20).map((credit) => (
+                {credits.slice(0, MAX_CREDITS).map((credit) => (
                   <CreditCard
                     key={`${credit.mediaType}-${credit.id}`}
                     credit={credit}
+                    width={columnWidth}
+                    height={posterHeight}
                     onPressMovie={onPressMovie}
                     onPressSeries={onPressSeries}
                   />
                 ))}
-              </ScrollView>
+              </View>
             </View>
-          )}
+          ) : null}
         </View>
       )}
     </BottomSheetScrollView>
@@ -363,7 +408,6 @@ export function PersonModal({
     <BottomSheet
       visible={visible}
       onClose={handleClose}
-      title={person?.name}
       heightRatio={0.82}
       enableContentDrag
     >

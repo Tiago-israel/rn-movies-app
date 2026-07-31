@@ -12,7 +12,16 @@ export default function MovieReview() {
     router.push(`/movies/${movieId}`);
   }
 
+  function goToSeries(seriesId: number) {
+    router.push(`/movies/series/${seriesId}`);
+  }
+
   return (
-    <PersonDetailsView personId={Number(id)} goBack={goBack} goToMovie={goToMovie} />
+    <PersonDetailsView
+      personId={Number(id)}
+      goBack={goBack}
+      goToMovie={goToMovie}
+      goToSeries={goToSeries}
+    />
   );
 }
