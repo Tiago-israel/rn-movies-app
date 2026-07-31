@@ -1,30 +1,27 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  Pressable,
-  Text,
-  View,
-  useWindowDimensions,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
-  type ViewToken,
-} from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { Pressable, Text, View, useWindowDimensions } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   FadeIn,
   FadeOut,
   LinearTransition,
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import type { ListRenderItemInfo } from "@shopify/flash-list";
-import { List } from "@/components";
 import { haptics } from "@/lib/haptics";
 import type { GenericItem } from "../interfaces";
 
 const MAX_VISIBLE_DOTS = 5;
 const DOT_ANIMATION_MS = 220;
+const PAGE_ANIMATION_MS = 240;
+/** Pan activates only after clear horizontal movement. */
+const ACTIVE_OFFSET_X = 12;
+/** If vertical movement wins first, pan fails and parent scroll keeps the gesture. */
+const FAIL_OFFSET_Y = 10;
 
 const DOT_ACTIVE = { width: 24, height: 8, opacity: 1 };
 const DOT_MEDIUM = { width: 6, height: 6, opacity: 0.5 };
@@ -41,11 +38,6 @@ function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
 }
 
-/**
- * While not on the last item, keep the active pill on the penultimate visible
- * slot so there is always one dot ahead and the window keeps sliding.
- * On the last item, pin the window to the end.
- */
 function getWindowStart(activeIndex: number, total: number): number {
   if (total <= MAX_VISIBLE_DOTS) return 0;
 
@@ -55,8 +47,6 @@ function getWindowStart(activeIndex: number, total: number): number {
     return maxStart;
   }
 
-  // Active sits at slot (MAX - 2) whenever possible → continuous sliding
-  // until the final page, with one dot always ahead.
   return clamp(activeIndex - (MAX_VISIBLE_DOTS - 2), 0, maxStart);
 }
 
@@ -151,108 +141,91 @@ function HeroCarouselDot({
 export function HeroCarousel({ data, onPressItem }: HeroCarouselProps) {
   const { width } = useWindowDimensions();
   const [activeIndex, setActiveIndex] = useState(0);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const listRef = useRef<any>(null);
-  const activeIndexRef = useRef(0);
 
-  const updateActiveIndex = useCallback((nextIndex: number) => {
-    if (nextIndex === activeIndexRef.current) return;
-    activeIndexRef.current = nextIndex;
-    setActiveIndex(nextIndex);
-  }, []);
+  const translateX = useSharedValue(0);
+  const dragStartX = useSharedValue(0);
+  const pageIndexSV = useSharedValue(0);
+  const pageWidthSV = useSharedValue(width);
+  const pageCountSV = useSharedValue(data.length);
 
-  const updateActiveIndexRef = useRef(updateActiveIndex);
-  updateActiveIndexRef.current = updateActiveIndex;
+  const firstItem = data[0];
+  const aspectRatio = firstItem?.backdropPath ? 16 / 9 : 2 / 3;
+  const slideHeight = width / aspectRatio;
 
   useEffect(() => {
-    if (!data.length) return;
-    if (activeIndex > data.length - 1) {
-      updateActiveIndex(Math.max(0, data.length - 1));
-    }
-  }, [activeIndex, data.length, updateActiveIndex]);
+    pageWidthSV.value = width;
+    pageCountSV.value = data.length;
+  }, [data.length, pageCountSV, pageWidthSV, width]);
 
-  const handleViewableItemsChanged = useRef(
-    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      const index = viewableItems[0]?.index;
-      if (index == null) return;
-      updateActiveIndexRef.current(index);
-    }
-  ).current;
+  useEffect(() => {
+    const max = Math.max(0, data.length - 1);
+    setActiveIndex((prev) => {
+      const next = clamp(prev, 0, max);
+      pageIndexSV.value = next;
+      translateX.value = -next * width;
+      return next;
+    });
+  }, [data.length, pageIndexSV, translateX, width]);
 
-  const viewabilityConfig = useRef({
-    itemVisiblePercentThreshold: 50,
-  }).current;
+  const commitPage = useCallback((index: number) => {
+    setActiveIndex(index);
+  }, []);
 
-  const syncIndexFromOffset = useCallback(
-    (offsetX: number) => {
-      if (width <= 0 || data.length === 0) return;
-      const index = Math.round(offsetX / width);
-      const clamped = clamp(index, 0, data.length - 1);
-      updateActiveIndex(clamped);
+  const goToPage = useCallback(
+    (index: number) => {
+      const next = clamp(index, 0, data.length - 1);
+      pageIndexSV.value = next;
+      translateX.value = withTiming(-next * width, {
+        duration: PAGE_ANIMATION_MS,
+      });
+      setActiveIndex(next);
     },
-    [data.length, updateActiveIndex, width]
+    [data.length, pageIndexSV, translateX, width]
   );
 
-  const onMomentumScrollEnd = useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      syncIndexFromOffset(e.nativeEvent.contentOffset.x);
-    },
-    [syncIndexFromOffset]
-  );
+  const pan = Gesture.Pan()
+    .activeOffsetX([-ACTIVE_OFFSET_X, ACTIVE_OFFSET_X])
+    .failOffsetY([-FAIL_OFFSET_Y, FAIL_OFFSET_Y])
+    .onBegin(() => {
+      dragStartX.value = translateX.value;
+    })
+    .onUpdate((e) => {
+      const maxOffset = 0;
+      const minOffset = -Math.max(0, pageCountSV.value - 1) * pageWidthSV.value;
+      const next = dragStartX.value + e.translationX;
+      translateX.value = Math.max(minOffset, Math.min(maxOffset, next));
+    })
+    .onEnd((e) => {
+      const widthPx = pageWidthSV.value;
+      const count = pageCountSV.value;
+      const current = pageIndexSV.value;
+      const threshold = widthPx * 0.22;
+      let next = current;
 
-  const onScrollEndDrag = useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      syncIndexFromOffset(e.nativeEvent.contentOffset.x);
-    },
-    [syncIndexFromOffset]
-  );
+      if (e.translationX < -threshold || e.velocityX < -600) {
+        next = current + 1;
+      } else if (e.translationX > threshold || e.velocityX > 600) {
+        next = current - 1;
+      }
 
-  const renderItem = useCallback(
-    ({ item }: ListRenderItemInfo<GenericItem>) => {
-      const imageUri = item.backdropPath || item.posterPath;
-      const aspectRatio = item.backdropPath ? 16 / 9 : 2 / 3;
-      const height = width / aspectRatio;
+      next = Math.max(0, Math.min(next, count - 1));
+      pageIndexSV.value = next;
+      translateX.value = withTiming(-next * widthPx, {
+        duration: PAGE_ANIMATION_MS,
+      });
+      runOnJS(commitPage)(next);
+    });
 
-      return (
-        <Pressable
-          onPress={() => {
-            haptics.light();
-            onPressItem(item.id);
-          }}
-          style={{ width }}
-          className="overflow-hidden"
-          accessibilityRole="button"
-          accessibilityLabel={item.title ?? "Open details"}
-        >
-          <Image
-            source={{ uri: imageUri }}
-            style={{ width, height }}
-            contentFit="cover"
-            cachePolicy="memory-disk"
-            recyclingKey={`hero-${item.id}-${imageUri}`}
-            transition={200}
-          />
-        </Pressable>
-      );
-    },
-    [width, onPressItem]
-  );
+  const trackStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+  }));
 
   const handleBulletPress = useCallback(
     (index: number) => {
       haptics.selection();
-      updateActiveIndex(index);
-      listRef.current?.scrollToOffset({
-        offset: index * width,
-        animated: true,
-      });
+      goToPage(index);
     },
-    [updateActiveIndex, width]
-  );
-
-  const keyExtractor = useCallback(
-    (item: GenericItem) => `hero-${item.id}`,
-    []
+    [goToPage]
   );
 
   if (!data?.length) return null;
@@ -260,24 +233,50 @@ export function HeroCarousel({ data, onPressItem }: HeroCarouselProps) {
   const visibleIndices = getVisiblePageIndices(activeIndex, data.length);
 
   return (
-    <View className="w-full">
-      <List<GenericItem>
-        innerRef={listRef}
-        data={data}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        estimatedItemSize={width}
-        snapToInterval={width}
-        snapToAlignment="start"
-        decelerationRate="fast"
-        onViewableItemsChanged={handleViewableItemsChanged}
-        viewabilityConfig={viewabilityConfig}
-        onMomentumScrollEnd={onMomentumScrollEnd}
-        onScrollEndDrag={onScrollEndDrag}
-      />
+    <View style={{ width, height: slideHeight }}>
+      <GestureDetector gesture={pan}>
+        <Animated.View
+          style={{ width, height: slideHeight, overflow: "hidden" }}
+        >
+          <Animated.View
+            style={[
+              {
+                flexDirection: "row",
+                height: slideHeight,
+                width: width * data.length,
+              },
+              trackStyle,
+            ]}
+          >
+            {data.map((item) => {
+              const imageUri = item.backdropPath || item.posterPath;
+
+              return (
+                <Pressable
+                  key={item.id}
+                  onPress={() => {
+                    haptics.light();
+                    onPressItem(item.id);
+                  }}
+                  style={{ width, height: slideHeight }}
+                  accessibilityRole="button"
+                  accessibilityLabel={item.title ?? "Open details"}
+                >
+                  <Image
+                    source={{ uri: imageUri }}
+                    style={{ width, height: slideHeight }}
+                    contentFit="cover"
+                    cachePolicy="memory-disk"
+                    recyclingKey={`hero-${item.id}-${imageUri}`}
+                    transition={200}
+                  />
+                </Pressable>
+              );
+            })}
+          </Animated.View>
+        </Animated.View>
+      </GestureDetector>
+
       <LinearGradient
         colors={["transparent", "rgba(0,0,0,0.88)"]}
         pointerEvents="box-none"

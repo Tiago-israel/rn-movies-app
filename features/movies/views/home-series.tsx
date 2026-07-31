@@ -142,6 +142,7 @@ export function HomeSeriesView(props: HomeSeriesProps) {
   return (
     <ScrollView
       bounces
+      nestedScrollEnabled
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
