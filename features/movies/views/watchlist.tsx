@@ -82,6 +82,7 @@ export function WatchlistView({
     activeTab,
     setActiveTab,
     counts,
+    sortOrder,
     sortLabel,
     cycleSortOrder,
     updateWatchStatus,
@@ -141,12 +142,14 @@ export function WatchlistView({
 
       <View className="flex-1">
         <List
+          key={`watchlist-${activeTab}-${sortOrder}`}
           data={filteredItems}
+          extraData={sortOrder}
           estimatedItemSize={96}
           keyExtractor={(item) =>
             `${item.mediaType ?? "movie"}-${item.id}`
           }
-          ListHeaderComponent={() => ListHeader}
+          ListHeaderComponent={ListHeader}
           ListEmptyComponent={
             <EmptyTab tab={activeTab} onSearch={goToSearch} />
           }

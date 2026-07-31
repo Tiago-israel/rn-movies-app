@@ -4,6 +4,7 @@ export type SearchMultiMovieResult = {
   title: string;
   poster_path: string | null;
   genre_ids?: number[];
+  vote_average?: number;
 };
 
 export type SearchMultiTvResult = {
@@ -12,6 +13,7 @@ export type SearchMultiTvResult = {
   name: string;
   poster_path: string | null;
   genre_ids?: number[];
+  vote_average?: number;
 };
 
 export type SearchMultiPersonResult = {

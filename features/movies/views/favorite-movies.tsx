@@ -8,7 +8,6 @@ import { useFavoriteMovies } from "../controllers";
 import { getText } from "../localization";
 import {
   NavBar,
-  Drawer,
   Text,
   Input,
   Button,
@@ -34,6 +33,7 @@ type FavoriteEntry = {
   mediaType: FavoriteMediaType;
   meta: string;
   rating?: string;
+  voteAverage?: number;
 };
 
 const TAB_ITEMS = [{ title: "Ungrouped" }, { title: "Groups" }];
@@ -41,32 +41,32 @@ const TAB_ITEMS = [{ title: "Ungrouped" }, { title: "Groups" }];
 export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
   const insets = useSafeAreaInsets();
   const {
-    drawerRef,
     createGroupModalRef,
     assignGroupModalRef,
     favoriteMovies,
     favoriteSeries,
     favoriteRanking,
     favoriteGroups,
-    name,
-    description,
     activeTab,
+    sortOrder,
     newGroupName,
-    assigningItemKey,
     expandedGroupId,
-    setDescription,
-    setName,
     setFavoriteRanking,
     setActiveTab,
     setNewGroupName,
+    cycleSortOrder,
     removeFavoriteGroup,
     removeItemFromGroup,
-    subimtFavoriteItem,
     handleCreateGroup,
     handleOpenAssignModal,
     handleAssignToGroup,
     handleToggleGroup,
   } = useFavoriteMovies();
+
+  const isRatingSort = sortOrder === "rating";
+  const sortLabel = getText(
+    isRatingSort ? "favorites_sort_rating" : "favorites_sort_custom"
+  );
 
   // Build all favorite entries
   const allEntries = useMemo<FavoriteEntry[]>(() => {
@@ -84,6 +84,7 @@ export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
           mediaType: "movie" as const,
           meta: [m.genre, m.runtime ?? m.releaseDate].filter(Boolean).join(" · "),
           rating: m.voteAverageStr,
+          voteAverage: m.voteAverage,
         })),
       ...favoriteSeries
         .filter((s) => s.id != null)
@@ -95,6 +96,7 @@ export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
           mediaType: "tv" as const,
           meta: [s.genre, s.firstAirDate].filter(Boolean).join(" · "),
           rating: s.voteAverageStr,
+          voteAverage: s.voteAverage,
         })),
     ].sort((a, b) => {
       const aPos = rankingOrder.get(a.rankingKey);
@@ -118,10 +120,13 @@ export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
   }, [favoriteGroups]);
 
   // Ungrouped entries (not in any group)
-  const ungroupedEntries = useMemo(
-    () => allEntries.filter((e) => !groupedKeys.has(e.rankingKey)),
-    [allEntries, groupedKeys]
-  );
+  const ungroupedEntries = useMemo(() => {
+    const entries = allEntries.filter((e) => !groupedKeys.has(e.rankingKey));
+    if (sortOrder !== "rating") return entries;
+    return [...entries].sort(
+      (a, b) => (b.voteAverage ?? 0) - (a.voteAverage ?? 0)
+    );
+  }, [allEntries, groupedKeys, sortOrder]);
 
   // Map for quick lookup of entries by rankingKey
   const entryMap = useMemo(() => {
@@ -144,9 +149,11 @@ export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
       <NavBar
         title={getText("favorites_title")}
         onPressLeading={props.onBack}
-        trainlingIcon={[
-          { name: "plus", onPress: () => drawerRef.current?.open() },
-        ]}
+        trainlingIcon={
+          activeTab === "ungrouped"
+            ? [{ name: "sort-variant", onPress: cycleSortOrder }]
+            : []
+        }
       />
       <View style={styles.counterContainer}>
         <Text className="text-muted-foreground text-xs">
@@ -165,111 +172,133 @@ export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
 
       {/* Ungrouped tab */}
       {activeTab === "ungrouped" && (
-        <DraggableFlatList
-          data={ungroupedEntries}
-          keyExtractor={(item) => item.rankingKey}
-          onDragEnd={({ data }) => {
-            // Preserve ranking of grouped items, update ungrouped order
-            const groupedRanking = favoriteRanking.filter((k) =>
-              groupedKeys.has(k)
-            );
-            const ungroupedRanking = data.map((entry) => entry.rankingKey);
-            setFavoriteRanking([...ungroupedRanking, ...groupedRanking]);
-          }}
-          renderItem={({ item, drag, isActive }) => (
-            <Pressable
-              onPress={() => {
-                haptics.light();
-                props.goToDetails(item.id, item.mediaType);
-              }}
-              onLongPress={() => {
-                haptics.medium();
-                drag();
-              }}
-              disabled={isActive}
-              style={[
-                styles.itemRow,
-                { opacity: isActive ? 0.95 : 1 },
-              ]}
-            >
-              <View style={styles.dragHandle}>
-                <Icon name="drag-vertical" size={18} color="#7f8c8d" />
-              </View>
-              <ItemPoster
-                width={52}
-                height={76}
-                posterUrl={item.posterPath}
-                borderRadius="lg"
-              />
-              <View className="flex-1" style={styles.itemContent}>
-                <Text
-                  className="text-foreground font-bold text-sm"
-                  numberOfLines={2}
-                  style={styles.itemTitle}
-                >
-                  {item.title}
-                </Text>
-                <Text
-                  className="text-muted-foreground text-xs"
-                  numberOfLines={1}
-                  style={styles.itemMeta}
-                >
-                  {item.meta ||
-                    (item.mediaType === "movie" ? "Movie" : "TV Series")}
-                </Text>
-                {item.rating && (
-                  <View style={styles.ratingRow}>
-                    <Icon name="star-outline" size={11} color="#7f8c8d" />
+        <>
+          <Pressable
+            onPress={() => {
+              haptics.selection();
+              cycleSortOrder();
+            }}
+            style={styles.sortRow}
+            hitSlop={8}
+            accessibilityLabel={`${getText("favorites_sort_label")}: ${sortLabel}`}
+          >
+            <Icon name="sort-variant" size={14} color="#7f8c8d" />
+            <Text className="text-muted-foreground text-xs">
+              {getText("favorites_sort_label")}: {sortLabel}
+            </Text>
+          </Pressable>
+          <DraggableFlatList
+            data={ungroupedEntries}
+            keyExtractor={(item) => item.rankingKey}
+            onDragEnd={({ data }) => {
+              // Preserve ranking of grouped items, update ungrouped order
+              const groupedRanking = favoriteRanking.filter((k) =>
+                groupedKeys.has(k)
+              );
+              const ungroupedRanking = data.map((entry) => entry.rankingKey);
+              setFavoriteRanking([...ungroupedRanking, ...groupedRanking]);
+            }}
+            renderItem={({ item, drag, isActive }) => (
+              <Pressable
+                onPress={() => {
+                  haptics.light();
+                  props.goToDetails(item.id, item.mediaType);
+                }}
+                onLongPress={
+                  isRatingSort
+                    ? undefined
+                    : () => {
+                        haptics.medium();
+                        drag();
+                      }
+                }
+                disabled={isActive}
+                style={[
+                  styles.itemRow,
+                  { opacity: isActive ? 0.95 : 1 },
+                ]}
+              >
+                {!isRatingSort ? (
+                  <View style={styles.dragHandle}>
+                    <Icon name="drag-vertical" size={18} color="#7f8c8d" />
+                  </View>
+                ) : null}
+                <ItemPoster
+                  width={52}
+                  height={76}
+                  posterUrl={item.posterPath}
+                  borderRadius="lg"
+                />
+                <View className="flex-1" style={styles.itemContent}>
+                  <Text
+                    className="text-foreground font-bold text-sm"
+                    numberOfLines={2}
+                    style={styles.itemTitle}
+                  >
+                    {item.title}
+                  </Text>
+                  <Text
+                    className="text-muted-foreground text-xs"
+                    numberOfLines={1}
+                    style={styles.itemMeta}
+                  >
+                    {item.meta ||
+                      (item.mediaType === "movie" ? "Movie" : "TV Series")}
+                  </Text>
+                  {item.rating ? (
+                    <View style={styles.ratingRow}>
+                      <Icon name="star-outline" size={11} color="#7f8c8d" />
+                      <Text className="text-muted-foreground text-xs">
+                        {item.rating}/10
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+                <View style={styles.itemActions}>
+                  <Pressable
+                    onPress={() => handleOpenAssignModal(item.rankingKey)}
+                    hitSlop={8}
+                    accessibilityLabel="Add to group"
+                    style={styles.addToGroupBtn}
+                  >
+                    <Icon
+                      name="folder-plus-outline"
+                      size={16}
+                      color="#3498db"
+                    />
+                  </Pressable>
+                  <View style={styles.mediaTypeBadge}>
+                    <Icon
+                      name={
+                        item.mediaType === "movie"
+                          ? "movie-outline"
+                          : "television-classic"
+                      }
+                      size={11}
+                      color="#7f8c8d"
+                    />
                     <Text className="text-muted-foreground text-xs">
-                      {item.rating}/10
+                      {item.mediaType === "movie" ? "Movie" : "TV"}
                     </Text>
                   </View>
-                )}
-              </View>
-              <View style={styles.itemActions}>
-                <Pressable
-                  onPress={() => handleOpenAssignModal(item.rankingKey)}
-                  hitSlop={8}
-                  accessibilityLabel="Add to group"
-                  style={styles.addToGroupBtn}
-                >
-                  <Icon
-                    name="folder-plus-outline"
-                    size={16}
-                    color="#3498db"
-                  />
-                </Pressable>
-                <View style={styles.mediaTypeBadge}>
-                  <Icon
-                    name={
-                      item.mediaType === "movie"
-                        ? "movie-outline"
-                        : "television-classic"
-                    }
-                    size={11}
-                    color="#7f8c8d"
-                  />
-                  <Text className="text-muted-foreground text-xs">
-                    {item.mediaType === "movie" ? "Movie" : "TV"}
-                  </Text>
                 </View>
+              </Pressable>
+            )}
+            contentContainerStyle={{ paddingBottom: 100 + insets.bottom }}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={
+              <View style={styles.emptyState}>
+                <Icon name="star-check-outline" size={48} color="#7f8c8d" />
+                <Text className="text-muted-foreground text-sm" style={styles.emptyTitle}>
+                  No ungrouped items
+                </Text>
+                <Text className="text-muted-foreground text-xs" style={styles.emptySubtitle}>
+                  All favorites are organized into groups
+                </Text>
               </View>
-            </Pressable>
-          )}
-          contentContainerStyle={{ paddingBottom: 100 + insets.bottom }}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View style={styles.emptyState}>
-              <Icon name="star-check-outline" size={48} color="#7f8c8d" />
-              <Text className="text-muted-foreground text-sm" style={styles.emptyTitle}>
-                No ungrouped items
-              </Text>
-              <Text className="text-muted-foreground text-xs" style={styles.emptySubtitle}>
-                All favorites are organized into groups
-              </Text>
-            </View>
-          }
-        />
+            }
+          />
+        </>
       )}
 
       {/* Groups tab */}
@@ -325,33 +354,6 @@ export function FavoriteMoviesView(props: FavoriteMoviesViewProps) {
           }
         />
       )}
-
-      {/* Existing add-favorite drawer */}
-      <Drawer ref={drawerRef} direction="right">
-        <View className="px-sm gap-sm">
-          <View className="flex-col gap-xxs">
-            <Text color="secondary-foreground">Name*</Text>
-            <Input placeholder="name" value={name} onChangeText={setName} />
-          </View>
-          <View className="flex-col gap-xxs">
-            <Text color="secondary-foreground">Description</Text>
-            <Input
-              multiline
-              numberOfLines={10}
-              textAlign="left"
-              value={description}
-              onChangeText={setDescription}
-            />
-          </View>
-          <Button
-            variant="primary"
-            disabled={name === ""}
-            onPress={subimtFavoriteItem}
-          >
-            Save
-          </Button>
-        </View>
-      </Drawer>
 
       {/* Create Group modal */}
       <Modal ref={createGroupModalRef} title="Create Group">
@@ -421,6 +423,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 8,
     paddingBottom: 12,
+  },
+  sortRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+    gap: 4,
   },
   itemRow: {
     flexDirection: "row",

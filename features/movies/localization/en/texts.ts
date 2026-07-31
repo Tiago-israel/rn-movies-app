@@ -59,4 +59,7 @@ export const usTexts = {
   search_in_watchlist_a11y: "Already in watchlist",
   favorites_title: "Favorites",
   favorites_count: "%{count} favorites",
+  favorites_sort_label: "Sort",
+  favorites_sort_custom: "Custom",
+  favorites_sort_rating: "Rating",
 };

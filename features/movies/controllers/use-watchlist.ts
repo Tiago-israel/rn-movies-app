@@ -1,9 +1,28 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useUserStore } from "../store";
+import type { WatchlistItem } from "../interfaces";
 
 type SortOrder = "date" | "title" | "rating";
 
 export const WATCHLIST_TABS = [{ title: "Saved" }, { title: "Watched" }];
+
+function itemRating(item: WatchlistItem): number {
+  if (typeof item.voteAverage === "number" && !Number.isNaN(item.voteAverage)) {
+    return item.voteAverage;
+  }
+  if (item.voteAverageStr) {
+    const parsed = Number.parseFloat(item.voteAverageStr);
+    if (!Number.isNaN(parsed)) return parsed;
+  }
+  if (typeof item.userRating === "number") {
+    return item.userRating;
+  }
+  return 0;
+}
+
+function itemAddedAt(item: WatchlistItem): string {
+  return item.addedAt ?? "";
+}
 
 export function useWatchlist() {
   const watchlistItems = useUserStore((state) => state.watchlistItems);
@@ -15,7 +34,7 @@ export function useWatchlist() {
   const [sortOrder, setSortOrder] = useState<SortOrder>("date");
 
   const filteredItems = useMemo(() => {
-    let items =
+    const items =
       activeTab === 0
         ? watchlistItems.filter(
             (item) =>
@@ -25,30 +44,26 @@ export function useWatchlist() {
 
     switch (sortOrder) {
       case "title":
-        items = [...items].sort((a, b) =>
+        return [...items].sort((a, b) =>
           (a.title ?? "").localeCompare(b.title ?? "")
         );
-        break;
       case "rating":
-        items = [...items].sort(
-          (a, b) => (b.voteAverage ?? 0) - (a.voteAverage ?? 0)
-        );
-        break;
+        return [...items].sort((a, b) => itemRating(b) - itemRating(a));
       case "date":
       default:
-        items = [...items].sort((a, b) => b.addedAt.localeCompare(a.addedAt));
-        break;
+        return [...items].sort((a, b) =>
+          itemAddedAt(b).localeCompare(itemAddedAt(a))
+        );
     }
-    return items;
   }, [watchlistItems, activeTab, sortOrder]);
 
-  function cycleSortOrder() {
+  const cycleSortOrder = useCallback(() => {
     setSortOrder((prev) => {
       if (prev === "date") return "title";
       if (prev === "title") return "rating";
       return "date";
     });
-  }
+  }, []);
 
   const sortLabel: Record<SortOrder, string> = {
     date: "Newest",

@@ -134,6 +134,10 @@ export function watchlistItemFromSearchResult(
   const posterImageId = tmdbFilePathFromImageUrl(item.posterPath);
   const isTv = item.mediaType === "tv";
 
+  const voteAverage = item.voteAverage;
+  const voteAverageStr =
+    typeof voteAverage === "number" ? voteAverage.toFixed(1) : undefined;
+
   return {
     id: item.id,
     title: item.title,
@@ -143,7 +147,9 @@ export function watchlistItemFromSearchResult(
     watchStatus: status,
     progress: status === "watching" ? 1 : 0,
     isSeries: isTv,
-    addedAt: new Date().toISOString().slice(0, 10),
+    voteAverage,
+    voteAverageStr,
+    addedAt: new Date().toISOString(),
   };
 }
 
@@ -167,7 +173,7 @@ export function watchlistItemFromMovieDetails(
     watchStatus: status,
     progress: status === "watching" ? 1 : 0,
     isSeries: false,
-    addedAt: new Date().toISOString().slice(0, 10),
+    addedAt: new Date().toISOString(),
   };
 }
 
@@ -196,6 +202,6 @@ export function watchlistItemFromSeriesDetails(
     progress: status === "watching" ? 1 : 0,
     isSeries: true,
     totalEpisodes: series.numberOfEpisodes,
-    addedAt: new Date().toISOString().slice(0, 10),
+    addedAt: new Date().toISOString(),
   };
 }

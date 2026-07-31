@@ -236,6 +236,7 @@ export class MoviesService {
         mediaType: "movie",
         title: item.title,
         genreIds: item.genre_ids,
+        voteAverage: item.vote_average,
         posterPath: item.poster_path
           ? `${movieDBBaseImageUrl}${item.poster_path}`
           : undefined,
@@ -247,6 +248,7 @@ export class MoviesService {
         mediaType: "tv",
         title: item.name,
         genreIds: item.genre_ids,
+        voteAverage: item.vote_average,
         posterPath: item.poster_path
           ? `${movieDBBaseImageUrl}${item.poster_path}`
           : undefined,

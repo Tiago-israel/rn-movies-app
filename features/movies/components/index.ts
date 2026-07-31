@@ -13,7 +13,6 @@ export * from "./search-results";
 export * from "./search-result-card";
 export * from "./search-idle-content";
 export * from "./header";
-export * from "./drawer";
 export * from "./text";
 export * from "./view-more-text";
 export * from "./input";

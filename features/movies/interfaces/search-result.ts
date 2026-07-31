@@ -12,6 +12,7 @@ export type SearchResultItem = {
   mediaType: SearchMediaKind;
   /** Present for movie / tv from search/multi (used for genre filters). */
   genreIds?: number[];
+  voteAverage?: number;
 };
 
 export type SearchMultiPage = {

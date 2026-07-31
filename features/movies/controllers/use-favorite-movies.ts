@@ -1,14 +1,11 @@
 import { useCallback, useRef, useState } from "react";
 import { useUserStore } from "../store";
-import { DrawerRef, ModalRef } from "../components";
-import { FavoriteService } from "../services";
-
-const favoriteService = new FavoriteService();
+import { ModalRef } from "../components";
 
 export type ActiveTab = "ungrouped" | "groups";
+export type FavoriteSortOrder = "custom" | "rating";
 
 export function useFavoriteMovies() {
-  const drawerRef = useRef<DrawerRef>(null);
   const createGroupModalRef = useRef<ModalRef>(null);
   const assignGroupModalRef = useRef<ModalRef>(null);
 
@@ -30,19 +27,15 @@ export function useFavoriteMovies() {
     (state) => state.removeItemFromGroup
   );
 
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
   const [activeTab, setActiveTab] = useState<ActiveTab>("ungrouped");
+  const [sortOrder, setSortOrder] = useState<FavoriteSortOrder>("custom");
   const [newGroupName, setNewGroupName] = useState("");
   const [assigningItemKey, setAssigningItemKey] = useState<string | null>(null);
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
 
-  function subimtFavoriteItem() {
-    drawerRef.current?.close();
-    setName("");
-    setDescription("");
-    favoriteService.addFavorite(name, description);
-  }
+  const cycleSortOrder = useCallback(() => {
+    setSortOrder((prev) => (prev === "custom" ? "rating" : "custom"));
+  }, []);
 
   const handleCreateGroup = useCallback(() => {
     if (newGroupName.trim()) {
@@ -76,31 +69,27 @@ export function useFavoriteMovies() {
   );
 
   return {
-    drawerRef,
     createGroupModalRef,
     assignGroupModalRef,
-    name,
-    description,
     favoriteMovies,
     favoriteSeries,
     favoriteRanking,
     favoriteItems,
     favoriteGroups,
     activeTab,
+    sortOrder,
     newGroupName,
     assigningItemKey,
     expandedGroupId,
-    setName,
-    setDescription,
     setFavoriteRanking,
     setActiveTab,
     setNewGroupName,
+    cycleSortOrder,
     addFavoriteGroup,
     removeFavoriteGroup,
     renameFavoriteGroup,
     addItemToGroup,
     removeItemFromGroup,
-    subimtFavoriteItem,
     handleCreateGroup,
     handleOpenAssignModal,
     handleAssignToGroup,

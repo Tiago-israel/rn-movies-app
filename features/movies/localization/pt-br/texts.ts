@@ -59,4 +59,7 @@ export const ptBRTexts = {
   search_in_watchlist_a11y: "Já na lista",
   favorites_title: "Favoritos",
   favorites_count: "%{count} favoritos",
+  favorites_sort_label: "Ordenar",
+  favorites_sort_custom: "Personalizado",
+  favorites_sort_rating: "Nota",
 };
