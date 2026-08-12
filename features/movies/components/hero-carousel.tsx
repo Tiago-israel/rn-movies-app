@@ -1,13 +1,27 @@
-import { useCallback, useEffect, useState } from "react";
-import { Pressable, Text, View, useWindowDimensions } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type MutableRefObject,
+} from "react";
+import {
+  LayoutChangeEvent,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   FadeIn,
   FadeOut,
   LinearTransition,
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -17,11 +31,13 @@ import type { GenericItem } from "../interfaces";
 
 const MAX_VISIBLE_DOTS = 5;
 const DOT_ANIMATION_MS = 220;
-const PAGE_ANIMATION_MS = 240;
-/** Pan activates only after clear horizontal movement. */
-const ACTIVE_OFFSET_X = 12;
-/** If vertical movement wins first, pan fails and parent scroll keeps the gesture. */
-const FAIL_OFFSET_Y = 10;
+/** Max finger movement (px) still counted as a tap, not a swipe. */
+const TAP_SLOP = 10;
+
+const GRADIENT_END = "rgba(0,0,0,0.88)";
+/** Extra paint under the gradient — Android can leave a hairline while scrolling. */
+const GRADIENT_SEAL_PX = 3;
+const GRADIENT_HEIGHT_RATIO = 0.42;
 
 const DOT_ACTIVE = { width: 24, height: 8, opacity: 1 };
 const DOT_MEDIUM = { width: 6, height: 6, opacity: 0.5 };
@@ -138,87 +154,155 @@ function HeroCarouselDot({
   );
 }
 
-export function HeroCarousel({ data, onPressItem }: HeroCarouselProps) {
-  const { width } = useWindowDimensions();
-  const [activeIndex, setActiveIndex] = useState(0);
+type HeroSlideProps = {
+  item: GenericItem;
+  width: number;
+  height: number;
+  isDraggingRef: MutableRefObject<boolean>;
+  onPressItem: (id: number) => void | Promise<void>;
+};
 
-  const translateX = useSharedValue(0);
-  const dragStartX = useSharedValue(0);
-  const pageIndexSV = useSharedValue(0);
-  const pageWidthSV = useSharedValue(width);
-  const pageCountSV = useSharedValue(data.length);
+/**
+ * Gradient lives on the slide (not a fixed overlay) so it stays locked to the
+ * image during horizontal paging — fixed overlays leave a 1px hairline on Android.
+ */
+function HeroSlide({
+  item,
+  width,
+  height,
+  isDraggingRef,
+  onPressItem,
+}: HeroSlideProps) {
+  const touchStart = useRef({ x: 0, y: 0 });
+  const imageUri = item.backdropPath || item.posterPath;
+  const gradientHeight = Math.ceil(height * GRADIENT_HEIGHT_RATIO);
+
+  return (
+    <View
+      style={{ width, height, overflow: "hidden" }}
+      accessibilityRole="button"
+      accessibilityLabel={item.title ?? "Open details"}
+      onTouchStart={(e) => {
+        touchStart.current = {
+          x: e.nativeEvent.pageX,
+          y: e.nativeEvent.pageY,
+        };
+      }}
+      onTouchEnd={(e) => {
+        if (isDraggingRef.current) return;
+        const dx = Math.abs(e.nativeEvent.pageX - touchStart.current.x);
+        const dy = Math.abs(e.nativeEvent.pageY - touchStart.current.y);
+        if (dx > TAP_SLOP || dy > TAP_SLOP) return;
+        haptics.light();
+        void onPressItem(item.id);
+      }}
+    >
+      <Image
+        source={{ uri: imageUri }}
+        style={StyleSheet.absoluteFillObject}
+        contentFit="cover"
+        cachePolicy="memory-disk"
+        recyclingKey={`hero-${item.id}-${imageUri}`}
+        transition={200}
+        pointerEvents="none"
+      />
+      <LinearGradient
+        colors={["transparent", GRADIENT_END]}
+        pointerEvents="none"
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: gradientHeight,
+        }}
+      />
+      <View
+        pointerEvents="none"
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: GRADIENT_SEAL_PX,
+          backgroundColor: GRADIENT_END,
+        }}
+      />
+      {item.title ? (
+        <Text
+          pointerEvents="none"
+          numberOfLines={2}
+          style={styles.slideTitle}
+        >
+          {item.title}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+/**
+ * Uses a native horizontal paging ScrollView so Android's nested-scroll /
+ * SwipeRefreshLayout stack can distinguish sideways swipes from pull-to-refresh.
+ */
+export function HeroCarousel({ data, onPressItem }: HeroCarouselProps) {
+  const { width: windowWidth } = useWindowDimensions();
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [pageWidth, setPageWidth] = useState(() => Math.floor(windowWidth));
+  const scrollRef = useRef<ScrollView>(null);
+  const isDraggingRef = useRef(false);
 
   const firstItem = data[0];
   const aspectRatio = firstItem?.backdropPath ? 16 / 9 : 2 / 3;
-  const slideHeight = width / aspectRatio;
+  const slideHeight = Math.ceil(pageWidth / aspectRatio);
 
-  useEffect(() => {
-    pageWidthSV.value = width;
-    pageCountSV.value = data.length;
-  }, [data.length, pageCountSV, pageWidthSV, width]);
+  const onRootLayout = useCallback((e: LayoutChangeEvent) => {
+    const next = Math.floor(e.nativeEvent.layout.width);
+    if (next > 0) {
+      setPageWidth((prev) => (prev === next ? prev : next));
+    }
+  }, []);
 
   useEffect(() => {
     const max = Math.max(0, data.length - 1);
     setActiveIndex((prev) => {
       const next = clamp(prev, 0, max);
-      pageIndexSV.value = next;
-      translateX.value = -next * width;
+      scrollRef.current?.scrollTo({ x: next * pageWidth, animated: false });
       return next;
     });
-  }, [data.length, pageIndexSV, translateX, width]);
-
-  const commitPage = useCallback((index: number) => {
-    setActiveIndex(index);
-  }, []);
+  }, [data.length, pageWidth]);
 
   const goToPage = useCallback(
     (index: number) => {
       const next = clamp(index, 0, data.length - 1);
-      pageIndexSV.value = next;
-      translateX.value = withTiming(-next * width, {
-        duration: PAGE_ANIMATION_MS,
-      });
+      scrollRef.current?.scrollTo({ x: next * pageWidth, animated: true });
       setActiveIndex(next);
     },
-    [data.length, pageIndexSV, translateX, width]
+    [data.length, pageWidth]
   );
 
-  const pan = Gesture.Pan()
-    .activeOffsetX([-ACTIVE_OFFSET_X, ACTIVE_OFFSET_X])
-    .failOffsetY([-FAIL_OFFSET_Y, FAIL_OFFSET_Y])
-    .onBegin(() => {
-      dragStartX.value = translateX.value;
-    })
-    .onUpdate((e) => {
-      const maxOffset = 0;
-      const minOffset = -Math.max(0, pageCountSV.value - 1) * pageWidthSV.value;
-      const next = dragStartX.value + e.translationX;
-      translateX.value = Math.max(minOffset, Math.min(maxOffset, next));
-    })
-    .onEnd((e) => {
-      const widthPx = pageWidthSV.value;
-      const count = pageCountSV.value;
-      const current = pageIndexSV.value;
-      const threshold = widthPx * 0.22;
-      let next = current;
+  const onScrollBeginDrag = useCallback(() => {
+    isDraggingRef.current = true;
+  }, []);
 
-      if (e.translationX < -threshold || e.velocityX < -600) {
-        next = current + 1;
-      } else if (e.translationX > threshold || e.velocityX > 600) {
-        next = current - 1;
+  const onMomentumScrollEnd = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      isDraggingRef.current = false;
+      const x = e.nativeEvent.contentOffset.x;
+      const next = clamp(Math.round(x / pageWidth), 0, data.length - 1);
+      setActiveIndex(next);
+    },
+    [data.length, pageWidth]
+  );
+
+  const onScrollEndDrag = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      if (e.nativeEvent.velocity?.x === 0) {
+        isDraggingRef.current = false;
       }
-
-      next = Math.max(0, Math.min(next, count - 1));
-      pageIndexSV.value = next;
-      translateX.value = withTiming(-next * widthPx, {
-        duration: PAGE_ANIMATION_MS,
-      });
-      runOnJS(commitPage)(next);
-    });
-
-  const trackStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-  }));
+    },
+    []
+  );
 
   const handleBulletPress = useCallback(
     (index: number) => {
@@ -233,72 +317,40 @@ export function HeroCarousel({ data, onPressItem }: HeroCarouselProps) {
   const visibleIndices = getVisiblePageIndices(activeIndex, data.length);
 
   return (
-    <View style={{ width, height: slideHeight }}>
-      <GestureDetector gesture={pan}>
-        <Animated.View
-          style={{ width, height: slideHeight, overflow: "hidden" }}
-        >
-          <Animated.View
-            style={[
-              {
-                flexDirection: "row",
-                height: slideHeight,
-                width: width * data.length,
-              },
-              trackStyle,
-            ]}
-          >
-            {data.map((item) => {
-              const imageUri = item.backdropPath || item.posterPath;
-
-              return (
-                <Pressable
-                  key={item.id}
-                  onPress={() => {
-                    haptics.light();
-                    onPressItem(item.id);
-                  }}
-                  style={{ width, height: slideHeight }}
-                  accessibilityRole="button"
-                  accessibilityLabel={item.title ?? "Open details"}
-                >
-                  <Image
-                    source={{ uri: imageUri }}
-                    style={{ width, height: slideHeight }}
-                    contentFit="cover"
-                    cachePolicy="memory-disk"
-                    recyclingKey={`hero-${item.id}-${imageUri}`}
-                    transition={200}
-                  />
-                </Pressable>
-              );
-            })}
-          </Animated.View>
-        </Animated.View>
-      </GestureDetector>
-
-      <LinearGradient
-        colors={["transparent", "rgba(0,0,0,0.88)"]}
-        pointerEvents="box-none"
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          paddingBottom: 20,
-          paddingTop: 56,
-        }}
+    <View
+      onLayout={onRootLayout}
+      style={{ width: "100%", height: slideHeight, overflow: "hidden" }}
+    >
+      <ScrollView
+        ref={scrollRef}
+        horizontal
+        pagingEnabled
+        nestedScrollEnabled
+        bounces={false}
+        overScrollMode="never"
+        decelerationRate="fast"
+        showsHorizontalScrollIndicator={false}
+        onScrollBeginDrag={onScrollBeginDrag}
+        onScrollEndDrag={onScrollEndDrag}
+        onMomentumScrollEnd={onMomentumScrollEnd}
+        style={{ width: pageWidth, height: slideHeight }}
       >
-        {data[activeIndex]?.title ? (
-          <Text
-            className="px-4 text-xl font-bold text-white"
-            numberOfLines={2}
-          >
-            {data[activeIndex].title}
-          </Text>
-        ) : null}
-        <View className="mt-4 flex-row justify-center px-4">
-          <View className="flex-row items-center gap-2 rounded-full bg-black/40 px-3 py-2">
+        {data.map((item) => (
+          <HeroSlide
+            key={item.id}
+            item={item}
+            width={pageWidth}
+            height={slideHeight}
+            isDraggingRef={isDraggingRef}
+            onPressItem={onPressItem}
+          />
+        ))}
+      </ScrollView>
+
+      {/* Dots only — must not block slide taps outside the pill. */}
+      <View pointerEvents="box-none" style={styles.dotsOverlay}>
+        <View pointerEvents="box-none" style={styles.dotsRow}>
+          <View style={styles.dotsPill}>
             {visibleIndices.map((pageIndex) => {
               const variant = getDotVariant(
                 pageIndex,
@@ -319,7 +371,38 @@ export function HeroCarousel({ data, onPressItem }: HeroCarouselProps) {
             })}
           </View>
         </View>
-      </LinearGradient>
+      </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  slideTitle: {
+    position: "absolute",
+    left: 16,
+    right: 16,
+    bottom: 52,
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "700",
+  },
+  dotsOverlay: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 20,
+  },
+  dotsRow: {
+    alignItems: "center",
+    paddingHorizontal: 16,
+  },
+  dotsPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderRadius: 999,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+});

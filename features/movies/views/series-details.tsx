@@ -806,12 +806,12 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
         <AnimatedHero imageUri={series?.backdropPath} height={240}>
           <View className="bg-background/90 p-3 rounded-xl border-2 border-border">
             <Text
-              className="text-foreground text-lg font-bold mb-2"
+              className="text-foreground text-lg font-bold mb-2 pl-sm"
               numberOfLines={2}
             >
               {series?.name}
             </Text>
-            <View className="flex-row flex-wrap gap-2">
+            <View className="flex-row flex-wrap gap-2 pl-sm">
               <Pill>{`${series?.genre}`}</Pill>
               <Pill>{`${series?.firstAirDate}`}</Pill>
               {series?.numberOfSeasons != null && (

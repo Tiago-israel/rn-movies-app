@@ -543,12 +543,12 @@ export function MovieDetails(props: MovieDetailsProps) {
         <AnimatedHero imageUri={movie?.backdropPath} height={240}>
           <View className="bg-background/90 p-3 rounded-xl border-2 border-border">
             <Text
-              className="text-foreground text-lg font-bold mb-2"
+              className="text-foreground text-lg font-bold mb-2 pl-sm"
               numberOfLines={2}
             >
               {movie?.title}
             </Text>
-            <View className="flex-row flex-wrap gap-2">
+            <View className="flex-row flex-wrap gap-2 pl-sm">
               <Pill>{`${movie?.genre}`}</Pill>
               <Pill>{`${movie?.releaseDate}`}</Pill>
               <Pill icon="clock">{movie?.runtime}</Pill>
