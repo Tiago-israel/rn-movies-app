@@ -44,6 +44,8 @@ export type ViewMoreProps = {
   onPressItem: (item: GenericItem) => void;
   /** Raw `genreIds` route param (comma-separated TMDB genre ids). */
   initialGenreIdsParam?: string;
+  /** TMDB movie/TV id for recommendation lists. */
+  mediaId?: number;
 };
 
 /* ─── poster card (Pressable scale — avoids per-cell RN Animated) ─ */
@@ -178,8 +180,10 @@ export function ViewMoreView(props: ViewMoreProps) {
     applyFilters,
     providersLoading,
     isListFooterLoading,
+    filtersEnabled,
   } = useViewMore(props.type, {
     initialGenreIdsParam: props.initialGenreIdsParam,
+    mediaId: props.mediaId,
   });
 
   const { width } = useWindowDimensions();
@@ -289,8 +293,10 @@ export function ViewMoreView(props: ViewMoreProps) {
   const activeFilterCount = appliedGenreIds.length + appliedProviderIds.length;
 
   /* ── navbar trailing icon ────────────────────────────── */
-  const navBarTrailing = useMemo(
-    () => [
+  const navBarTrailing = useMemo(() => {
+    const close = { name: "close" as const, onPress: props.goBack };
+    if (!filtersEnabled) return [close];
+    return [
       {
         name: "tune" as const,
         onPress: openFilters,
@@ -316,10 +322,9 @@ export function ViewMoreView(props: ViewMoreProps) {
           </View>
         ),
       },
-      { name: "close" as const, onPress: props.goBack },
-    ],
-    [openFilters, props.goBack, activeFilterCount, colors],
-  );
+      close,
+    ];
+  }, [filtersEnabled, openFilters, props.goBack, activeFilterCount, colors]);
 
   /* ── list renderers ──────────────────────────────────── */
   const renderItem = useCallback(

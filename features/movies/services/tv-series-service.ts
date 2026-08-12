@@ -297,13 +297,26 @@ export class TVSeriesService {
   }
 
   async getSeriesRecommendations(id: number): Promise<GenericItem[]> {
+    const { results } = await this.getSeriesRecommendationsPage(id, 1);
+    return results;
+  }
+
+  getSeriesRecommendationsPage = async (
+    id: number,
+    page = 1
+  ): Promise<PaginatedResult<GenericItem>> => {
     const response = await this.httpClient.get<
       PaginatedResultResponse<TVSeriesListItemResponse>
-    >(`tv/${id}/recommendations?language=${this.language}&page=1`, {
+    >(`tv/${id}/recommendations?language=${this.language}&page=${page}`, {
       headers: this.headers,
     });
-    return (response?.results || []).map(this.mapGenericItem);
-  }
+
+    return {
+      totalPages: response.total_pages,
+      totalResults: response.total_results,
+      results: (response?.results || []).map(this.mapGenericItem),
+    };
+  };
 
   async getSeasonDetails(seriesId: number, seasonNumber: number): Promise<Episode[]> {
     const response = await this.httpClient.get<TVSeasonDetailsResponse>(

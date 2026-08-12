@@ -3,7 +3,9 @@ export type ServiceType =
   | "movies.top_rated"
   | "movies.popular"
   | "movies.upcoming"
+  | "movies.recommendations"
   | "tv.airing_today"
   | "tv.on_the_air"
   | "tv.popular"
-  | "tv.top_rated";
+  | "tv.top_rated"
+  | "tv.recommendations";

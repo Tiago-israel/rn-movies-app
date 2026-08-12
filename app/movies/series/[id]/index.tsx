@@ -1,6 +1,7 @@
 import { useLocalSearchParams, router } from "expo-router";
 import { Share } from "react-native";
 import { SeriesDetailsView } from "@/features";
+import { getText } from "@/features/movies/localization";
 
 export default function SeriesDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -23,6 +24,17 @@ export default function SeriesDetails() {
     }
   }
 
+  function goToMoreRecommendations() {
+    router.push({
+      pathname: "/movies/view-more",
+      params: {
+        type: "tv.recommendations",
+        title: getText("movie_details_you_also_may_like"),
+        mediaId: String(id),
+      },
+    });
+  }
+
   async function onShareSeries(videoUrl?: string) {
     if (videoUrl) {
       Share.share({ message: videoUrl });
@@ -36,6 +48,7 @@ export default function SeriesDetails() {
       onPressReview={goToReviews}
       onPressCast={goToCast}
       onPressRecommendation={goToRecommendation}
+      onPressMoreRecommendations={goToMoreRecommendations}
       onShareSeries={onShareSeries}
     />
   );

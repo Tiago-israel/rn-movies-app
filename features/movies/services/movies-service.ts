@@ -179,9 +179,25 @@ export class MoviesService {
     >(`movie/${id}/recommendations?language=${this.language}&page=1`, {
       headers: this.headers,
     });
-    const result = response.results.map(this.mapMovieDetails);
-    return result;
+    return response.results.map(this.mapMovieDetails);
   }
+
+  getRecommendationsPage = async (
+    id: number,
+    page = 1
+  ): Promise<PaginatedResult<GenericItem>> => {
+    const response = await this.httpClient.get<
+      PaginatedResultResponse<MovieDetailsResponse>
+    >(`movie/${id}/recommendations?language=${this.language}&page=${page}`, {
+      headers: this.headers,
+    });
+
+    return {
+      totalPages: response.total_pages,
+      totalResults: response.total_results,
+      results: response.results.map(this.mapGenericItem),
+    };
+  };
 
   async searchMulti(
     query: string,

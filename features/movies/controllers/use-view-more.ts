@@ -41,7 +41,15 @@ function parseGenreIdsFromParam(param: string | undefined): number[] {
 export type UseViewMoreOptions = {
   /** Comma- or pipe-separated genre ids (e.g. from route `genreIds`). */
   initialGenreIdsParam?: string;
+  /** TMDB movie/TV id — required for `*.recommendations` lists. */
+  mediaId?: number;
 };
+
+function isRecommendationsType(type: ServiceType): boolean {
+  return (
+    type === "movies.recommendations" || type === "tv.recommendations"
+  );
+}
 
 function discoverSortByForViewMore(type: ServiceType): string {
   switch (type) {
@@ -65,10 +73,15 @@ function discoverSortByForViewMore(type: ServiceType): string {
 export function useViewMore(type: ServiceType, options?: UseViewMoreOptions) {
   const language = useUserStore((s) => s.language);
   const isMovieCatalog = type.startsWith("movies.");
+  const isRecommendations = isRecommendationsType(type);
+  const mediaId = options?.mediaId;
 
   const moviesService = useRef(new MoviesService()).current;
   const tvService = useRef(new TVSeriesService()).current;
-  const viewMoreService = useMemo(() => new ViewMoreService(type), [type]);
+  const viewMoreService = useMemo(
+    () => (isRecommendations ? null : new ViewMoreService(type)),
+    [type, isRecommendations]
+  );
 
   const parsedInitialGenreIds = useMemo(
     () => parseGenreIdsFromParam(options?.initialGenreIdsParam),
@@ -97,7 +110,8 @@ export function useViewMore(type: ServiceType, options?: UseViewMoreOptions) {
     [appliedGenreIds]
   );
   const hasGenreFilter = appliedGenreIds.length > 0;
-  const needsDiscover = hasProviderFilter || hasGenreFilter;
+  const needsDiscover =
+    !isRecommendations && (hasProviderFilter || hasGenreFilter);
 
   const { data: genres = [] } = useQuery<Genre[]>({
     queryKey: ["viewMoreGenres", isMovieCatalog ? "movie" : "tv", language],
@@ -107,7 +121,7 @@ export function useViewMore(type: ServiceType, options?: UseViewMoreOptions) {
         : await moviesService.getTvGenres({ signal });
       return [...g].sort((a, b) => a.name.localeCompare(b.name));
     },
-    enabled: Boolean(type),
+    enabled: Boolean(type) && !isRecommendations,
     staleTime: FILTER_META_STALE_MS,
   });
 
@@ -124,7 +138,7 @@ export function useViewMore(type: ServiceType, options?: UseViewMoreOptions) {
       );
       return catalog.slice(0, 48);
     },
-    enabled: Boolean(type),
+    enabled: Boolean(type) && !isRecommendations,
     staleTime: FILTER_META_STALE_MS,
   });
 
@@ -137,7 +151,7 @@ export function useViewMore(type: ServiceType, options?: UseViewMoreOptions) {
   >({
     queryKey: ["viewMore", type, language],
     queryFn: async ({ pageParam }) =>
-      viewMoreService.getPaginatedItems(pageParam),
+      viewMoreService!.getPaginatedItems(pageParam),
     initialPageParam: 1,
     getNextPageParam: (lastPage, _pages, lastPageParam) => {
       const p = lastPageParam as number;
@@ -146,7 +160,35 @@ export function useViewMore(type: ServiceType, options?: UseViewMoreOptions) {
       }
       return p + 1;
     },
-    enabled: Boolean(type) && !needsDiscover,
+    enabled: Boolean(type) && !needsDiscover && !isRecommendations,
+  });
+
+  const recommendationsQuery = useInfiniteQuery<
+    PaginatedResult<GenericItem>,
+    Error,
+    InfiniteData<PaginatedResult<GenericItem>>,
+    (string | ServiceType | number | undefined)[],
+    number
+  >({
+    queryKey: ["viewMoreRecommendations", type, mediaId, language],
+    queryFn: async ({ pageParam }) => {
+      if (mediaId == null) {
+        return { results: [], totalPages: 0, totalResults: 0 };
+      }
+      if (type === "movies.recommendations") {
+        return moviesService.getRecommendationsPage(mediaId, pageParam);
+      }
+      return tvService.getSeriesRecommendationsPage(mediaId, pageParam);
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, _pages, lastPageParam) => {
+      const p = lastPageParam as number;
+      if (!lastPage.results.length || p >= lastPage.totalPages) {
+        return undefined;
+      }
+      return p + 1;
+    },
+    enabled: isRecommendations && mediaId != null && mediaId > 0,
   });
 
   const discoverQuery = useInfiniteQuery<
@@ -186,7 +228,11 @@ export function useViewMore(type: ServiceType, options?: UseViewMoreOptions) {
     enabled: Boolean(type) && needsDiscover,
   });
 
-  const activeQuery = needsDiscover ? discoverQuery : baseListQuery;
+  const activeQuery = isRecommendations
+    ? recommendationsQuery
+    : needsDiscover
+      ? discoverQuery
+      : baseListQuery;
 
   const flatItems = useMemo(
     () => activeQuery.data?.pages.flatMap((p) => p.results) ?? [],
@@ -209,9 +255,11 @@ export function useViewMore(type: ServiceType, options?: UseViewMoreOptions) {
     activeQuery.isFetchingNextPage,
   ]);
 
-  /** Full skeleton só na lista base (sem Discover). */
+  /** Full skeleton só na lista base (sem Discover) ou recomendações. */
   const isLoading =
-    !needsDiscover && Boolean(type) && baseListQuery.isLoading;
+    Boolean(type) &&
+    ((isRecommendations && recommendationsQuery.isLoading) ||
+      (!isRecommendations && !needsDiscover && baseListQuery.isLoading));
 
   const providersLoading =
     needsDiscover &&
@@ -243,5 +291,6 @@ export function useViewMore(type: ServiceType, options?: UseViewMoreOptions) {
     providersLoading,
     isListFooterLoading,
     isMovieCatalog,
+    filtersEnabled: !isRecommendations,
   };
 }

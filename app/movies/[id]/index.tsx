@@ -1,6 +1,7 @@
 import { useLocalSearchParams, router } from "expo-router";
 import { Share } from "react-native";
 import { MovieDetails as MovieDetailsView, SeriesDetailsView as SeriesDetails, useMediaStore } from "@/features";
+import { getText } from "@/features/movies/localization";
 
 export default function MovieDetails() {
   const { isMovie } = useMediaStore();
@@ -22,6 +23,17 @@ export default function MovieDetails() {
     router.setParams({ id: id });
   }
 
+  function goToMoreRecommendations() {
+    router.push({
+      pathname: "/movies/view-more",
+      params: {
+        type: "movies.recommendations",
+        title: getText("movie_details_you_also_may_like"),
+        mediaId: String(id),
+      },
+    });
+  }
+
   function onShareMovie(videoUrl = "") {
     Share.share({
       message: videoUrl,
@@ -35,6 +47,7 @@ export default function MovieDetails() {
       onPressReview={goToReviews}
       onPressCast={goToCast}
       onPressRecommendation={goToRecommendation}
+      onPressMoreRecommendations={goToMoreRecommendations}
       onShareMovie={onShareMovie}
     />)
   }
@@ -45,6 +58,16 @@ export default function MovieDetails() {
     onPressReview={goToReviews}
     onPressCast={goToCast}
     onPressRecommendation={goToRecommendation}
+    onPressMoreRecommendations={() => {
+      router.push({
+        pathname: "/movies/view-more",
+        params: {
+          type: "tv.recommendations",
+          title: getText("movie_details_you_also_may_like"),
+          mediaId: String(id),
+        },
+      });
+    }}
     onShareSeries={onShareMovie}
   />;
 }

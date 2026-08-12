@@ -88,6 +88,7 @@ type MovieDetailsProps = {
   goBack: () => void;
   onPressReview: (movieId?: number) => void;
   onPressRecommendation: (movieId?: number) => void;
+  onPressMoreRecommendations?: () => void;
   onPressCast: (movieId?: number) => void;
   onShareMovie: (movieName?: string) => void;
 };
@@ -433,7 +434,9 @@ export function MovieDetails(props: MovieDetailsProps) {
             props.onPressRecommendation?.(recommendationMovieId);
             scrollViewRef.current?.scrollTo?.({ y: 0, animated: true });
           }}
-          onPressMoreOptions={() => { }}
+          onPressMoreOptions={() => {
+            props.onPressMoreRecommendations?.();
+          }}
         />
       </View>
     </View>
@@ -483,7 +486,9 @@ export function MovieDetails(props: MovieDetailsProps) {
           props.onPressRecommendation?.(recommendationMovieId);
           scrollViewRef.current?.scrollTo?.({ y: 0, animated: true });
         }}
-        onPressMoreOptions={() => { }}
+        onPressMoreOptions={() => {
+          props.onPressMoreRecommendations?.();
+        }}
       />
     </View>
   );

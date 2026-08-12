@@ -52,6 +52,7 @@ type SeriesDetailsProps = {
   goBack: () => void;
   onPressReview: (seriesId?: number) => void;
   onPressRecommendation: (seriesId?: number) => void;
+  onPressMoreRecommendations?: () => void;
   onPressCast: (seriesId?: number) => void;
   onShareSeries: (seriesName?: string) => void;
 };
@@ -592,7 +593,9 @@ export function SeriesDetailsView(props: SeriesDetailsProps) {
           itemHeight={180}
           data={recommendations}
           onPressItem={handlePressRecommendation}
-          onPressMoreOptions={() => {}}
+          onPressMoreOptions={() => {
+            props.onPressMoreRecommendations?.();
+          }}
         />
       </View>
     </View>

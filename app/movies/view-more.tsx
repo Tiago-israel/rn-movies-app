@@ -4,13 +4,23 @@ import { GenericItem, ServiceType } from "@/features/movies/interfaces";
 
 export default function ViewMore() {
   const router = useRouter();
-  const { type, title, genreIds } = useLocalSearchParams();
+  const { type, title, genreIds, mediaId } = useLocalSearchParams();
   const genreIdsParam =
     typeof genreIds === "string"
       ? genreIds
       : Array.isArray(genreIds)
         ? genreIds[0]
         : undefined;
+  const mediaIdParam =
+    typeof mediaId === "string"
+      ? Number(mediaId)
+      : Array.isArray(mediaId)
+        ? Number(mediaId[0])
+        : undefined;
+  const parsedMediaId =
+    mediaIdParam != null && !Number.isNaN(mediaIdParam)
+      ? mediaIdParam
+      : undefined;
 
   function goBack() {
     router.back();
@@ -32,6 +42,7 @@ export default function ViewMore() {
       goBack={goBack}
       onPressItem={onPressItem}
       initialGenreIdsParam={genreIdsParam}
+      mediaId={parsedMediaId}
     />
   );
 }
